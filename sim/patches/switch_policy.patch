@@ -1,0 +1,358 @@
+diff --git a/contribs/sim/sim_events.c b/contribs/sim/sim_events.c
+index 6bd53ff..4def851 100644
+--- a/contribs/sim/sim_events.c
++++ b/contribs/sim/sim_events.c
+@@ -126,6 +126,10 @@ extern void sim_print_event(sim_event_t * event)
+ 				event->when, payload->job_id, payload->wall_utime, str);
+ 		str[0]='\0';
+ 		break;
++	case SIM_SWITCH_POLICY:
++		info("%" PRId64 "\tSIM_SWITCH_POLICY %s", event->when,
++		     (char*)event->payload);
++		break;
+ 	default:
+ 		info("%" PRId64 "\t%d", event->when, event->type);
+ 		break;
+@@ -379,6 +383,8 @@ int sim_insert_event_by_cmdline(char *cmdline) {
+ 			++iarg;
+ 			if(xstrcmp(event_argv[iarg], "submit_batch_job")==0) {
+ 				event->type = SIM_SUBMIT_BATCH_JOB;
++			} else if(xstrcmp(event_argv[iarg], "switch_policy")==0) {
++				event->type = SIM_SWITCH_POLICY;
+ 			}
+ 		}
+ 	}
+@@ -410,6 +416,17 @@ int sim_insert_event_by_cmdline(char *cmdline) {
+ 	// parse event details
+ 	if(event->type == SIM_SUBMIT_BATCH_JOB) {
+ 		event->payload = sim_submit_batch_job_get_payload(event_details);
++	} else if(event->type == SIM_SWITCH_POLICY) {
++		/* event details hold just the policy name, e.g. " utilization " */
++		char *name = NULL, *save_ptr = NULL;
++		if(event_details != NULL)
++			name = strtok_r(event_details, " \t\r\n", &save_ptr);
++		if(name == NULL || name[0] == '\0') {
++			error("switch_policy event without a policy name: %s", cmdline);
++			xfree(event);
++			return -1;
++		}
++		event->payload = xstrdup(name);
+ 	}
+ 
+ 	//xfree(event_details);
+diff --git a/contribs/sim/sim_events.h b/contribs/sim/sim_events.h
+index 6d64404..f9a2dc1 100644
+--- a/contribs/sim/sim_events.h
++++ b/contribs/sim/sim_events.h
+@@ -18,6 +18,7 @@ typedef enum {
+ 	SIM_ACCOUNTING_UPDATE,
+ 	SIM_PRIORITY_DECAY,
+ 	SIM_SET_DB_INDEX,
++	SIM_SWITCH_POLICY, /* payload: policy name (char*) */
+ } sim_event_type_t;
+ 
+ typedef struct sim_event_submit_batch_job {
+diff --git a/contribs/sim/slurmctld_controller.c b/contribs/sim/slurmctld_controller.c
+index 7fdd586..d879123 100644
+--- a/contribs/sim/slurmctld_controller.c
++++ b/contribs/sim/slurmctld_controller.c
+@@ -43,6 +43,7 @@ extern int sim_registration_engine();
+ extern bool sim_job_epilog_complete(uint32_t job_id, char *node_name,
+                                     uint32_t return_code);
+ extern void sim_notify_slurmctld_nodes();
++extern void sim_switch_policy(const char *policy);
+ 
+ 
+ 
+@@ -540,6 +541,12 @@ int64_t sim_events_loop()
+ 				}
+ 				sim_insert_event(event->when + 5*USEC_IN_SEC, SIM_SET_DB_INDEX,NULL);
+ 				break;
++			case SIM_SWITCH_POLICY:
++				event_started(GENERAL_SSIM_RT_EVENT);
++				sim_switch_policy((char*)event->payload);
++				event_ended(GENERAL_SSIM_RT_EVENT);
++				xfree(event->payload);
++				break;
+ 			default:
+ 				break;
+ 			}
+diff --git a/src/slurmctld/controller.c b/src/slurmctld/controller.c
+index bb8a30c..ed1109c 100644
+--- a/src/slurmctld/controller.c
++++ b/src/slurmctld/controller.c
+@@ -1265,6 +1265,274 @@ static void _reconfigure_slurm(void)
+ 	reconfigure_slurm_post_send(reconfigure_slurm());
+ }
+ 
++#ifdef SLURM_SIMULATOR
++/*
++ * Simulator: switch to a named scheduling policy at the current simulated
++ * time (event "-e switch_policy | <name>" in the events file).
++ *
++ * The simulator does not serve client RPCs (no scontrol) and cannot do a full
++ * reconfigure (it would message slurmd), so this applies a policy's settings
++ * directly, the way the scontrol update handlers do. It reads
++ * <slurm.conf dir>/policies/<name>.conf, the same slurm.conf-syntax file that
++ * slurm.conf includes (via policy_active.conf) at startup, and applies:
++ *
++ *   PriorityWeightAge/Fairshare/JobSize/Partition/QOS=<n>, PriorityFavorSmall
++ *       set in slurm_conf, then the priority plugin is reconfigured and all
++ *       pending jobs are re-prioritized
++ *   NodeName=<nodes> ... Weight=<n>
++ *       as "scontrol update NodeName=<nodes> Weight=<n>"
++ *   PartitionName=<part> ... LLN=YES|NO
++ *       as "scontrol update PartitionName=<part> LLN=YES|NO"
++ *
++ * Other keys on NodeName/PartitionName lines describe hardware and are
++ * ignored (they must match the startup policy). Any other global key cannot
++ * change mid-run here; it is reported and ignored.
++ */
++#define SIM_POLICY_MAX_ITEMS 64
++
++typedef struct {
++	char *name;
++	uint32_t value;
++} sim_policy_item_t;
++
++static bool _sim_policy_bool(const char *v)
++{
++	return (!xstrcasecmp(v, "yes") || !xstrcasecmp(v, "true") ||
++		!xstrcmp(v, "1"));
++}
++
++static char *_sim_policy_conf_dir(void)
++{
++	char *conf_path, *conf_dir, *slash;
++
++	conf_path = slurm_conf.slurm_conf ? slurm_conf.slurm_conf :
++		getenv("SLURM_CONF");
++	if (!conf_path)
++		return NULL;
++	conf_dir = xstrdup(conf_path);
++	if ((slash = strrchr(conf_dir, '/')))
++		*slash = '\0';
++	else {
++		xfree(conf_dir);
++		conf_dir = xstrdup(".");
++	}
++	return conf_dir;
++}
++
++/* Keep policy_active.conf in step with the policy in force. */
++static void _sim_policy_copy(const char *src, const char *dst)
++{
++	char *tmp = xstrdup_printf("%s.tmp", dst);
++	FILE *in = fopen(src, "r"), *out = NULL;
++	char block[4096];
++	size_t n;
++
++	if (in && (out = fopen(tmp, "w"))) {
++		while ((n = fread(block, 1, sizeof(block), in)) > 0)
++			fwrite(block, 1, n, out);
++		fclose(out);
++		if (rename(tmp, dst))
++			error("SIM_SWITCH_POLICY: rename %s -> %s failed: %m",
++			      tmp, dst);
++	} else {
++		error("SIM_SWITCH_POLICY: cannot update %s: %m", dst);
++	}
++	if (in)
++		fclose(in);
++	xfree(tmp);
++}
++
++extern void sim_switch_policy(const char *policy)
++{
++	static char *current = NULL;
++	/* Locks: write config, job, node and partition; read federation */
++	slurmctld_lock_t policy_write_lock = {
++		WRITE_LOCK, WRITE_LOCK, WRITE_LOCK, WRITE_LOCK, READ_LOCK };
++	char *conf_dir, *src = NULL, *dst = NULL, *line = NULL;
++	FILE *in = NULL;
++	size_t len = 0;
++	sim_policy_item_t nodes[SIM_POLICY_MAX_ITEMS];
++	sim_policy_item_t parts[SIM_POLICY_MAX_ITEMS];
++	int n_nodes = 0, n_parts = 0, n_errors = 0, i;
++	/* NO_VAL = not set by this policy */
++	uint32_t w_age = NO_VAL, w_fs = NO_VAL, w_js = NO_VAL;
++	uint32_t w_part = NO_VAL, w_qos = NO_VAL, favor_small = NO_VAL;
++	list_itr_t *job_iter;
++	job_record_t *job_ptr;
++	int n_reprio = 0;
++
++	if (!(conf_dir = _sim_policy_conf_dir())) {
++		error("SIM_SWITCH_POLICY: cannot locate slurm.conf");
++		return;
++	}
++	src = xstrdup_printf("%s/policies/%s.conf", conf_dir, policy);
++	dst = xstrdup_printf("%s/policy_active.conf", conf_dir);
++	if (!(in = fopen(src, "r"))) {
++		error("SIM_SWITCH_POLICY: cannot open %s: %m", src);
++		goto done;
++	}
++
++	/* Parse the policy file. */
++	while (getline(&line, &len, in) != -1) {
++		char *hash = strchr(line, '#'), *tok, *save = NULL;
++		char *node_names = NULL, *part_name = NULL;
++		uint32_t weight = NO_VAL, lln = NO_VAL;
++
++		if (hash)
++			*hash = '\0';
++		for (tok = strtok_r(line, " \t\r\n", &save); tok;
++		     tok = strtok_r(NULL, " \t\r\n", &save)) {
++			char *eq = strchr(tok, '=');
++			char *key = tok, *val;
++
++			if (!eq) {
++				error("SIM_SWITCH_POLICY: %s: cannot parse '%s'",
++				      policy, tok);
++				n_errors++;
++				continue;
++			}
++			*eq = '\0';
++			val = eq + 1;
++
++			if (!xstrcasecmp(key, "NodeName"))
++				node_names = val;
++			else if (!xstrcasecmp(key, "PartitionName"))
++				part_name = val;
++			else if (node_names || part_name) {
++				if (node_names && !xstrcasecmp(key, "Weight"))
++					weight = strtoul(val, NULL, 10);
++				else if (part_name && !xstrcasecmp(key, "LLN"))
++					lln = _sim_policy_bool(val);
++				/* other node/partition keys: hardware */
++			} else if (!xstrcasecmp(key, "PriorityWeightAge"))
++				w_age = strtoul(val, NULL, 10);
++			else if (!xstrcasecmp(key, "PriorityWeightFairshare"))
++				w_fs = strtoul(val, NULL, 10);
++			else if (!xstrcasecmp(key, "PriorityWeightJobSize"))
++				w_js = strtoul(val, NULL, 10);
++			else if (!xstrcasecmp(key, "PriorityWeightPartition"))
++				w_part = strtoul(val, NULL, 10);
++			else if (!xstrcasecmp(key, "PriorityWeightQOS"))
++				w_qos = strtoul(val, NULL, 10);
++			else if (!xstrcasecmp(key, "PriorityFavorSmall"))
++				favor_small = _sim_policy_bool(val);
++			else {
++				error("SIM_SWITCH_POLICY: %s: %s cannot change mid-run; ignored",
++				      policy, key);
++				n_errors++;
++			}
++		}
++		if (node_names && (weight != NO_VAL) &&
++		    (n_nodes < SIM_POLICY_MAX_ITEMS)) {
++			nodes[n_nodes].name = xstrdup(node_names);
++			nodes[n_nodes++].value = weight;
++		}
++		if (part_name && (lln != NO_VAL) &&
++		    (n_parts < SIM_POLICY_MAX_ITEMS)) {
++			parts[n_parts].name = xstrdup(part_name);
++			parts[n_parts++].value = lln;
++		}
++	}
++
++	info("SIM_SWITCH_POLICY: begin %s -> %s",
++	     current ? current : "(start)", policy);
++
++	/* Apply node weights, partition LLN and priority settings. */
++	lock_slurmctld(policy_write_lock);
++	for (i = 0; i < n_nodes; i++) {
++		update_node_msg_t msg;
++		int rc;
++
++		slurm_init_update_node_msg(&msg);
++		msg.node_names = nodes[i].name;
++		msg.weight = nodes[i].value;
++		rc = update_node(&msg, slurm_conf.slurm_user_id);
++		if (rc != SLURM_SUCCESS) {
++			error("SIM_SWITCH_POLICY: NodeName=%s Weight=%u failed: %s",
++			      nodes[i].name, nodes[i].value,
++			      slurm_strerror(rc));
++			n_errors++;
++		} else {
++			info("SIM_SWITCH_POLICY: NodeName=%s Weight=%u",
++			     nodes[i].name, nodes[i].value);
++		}
++	}
++	for (i = 0; i < n_parts; i++) {
++		update_part_msg_t msg;
++		int rc;
++
++		slurm_init_part_desc_msg(&msg);
++		msg.name = parts[i].name;
++		msg.flags = parts[i].value ? PART_FLAG_LLN : PART_FLAG_LLN_CLR;
++		rc = update_part(&msg, false);
++		if (rc != SLURM_SUCCESS) {
++			error("SIM_SWITCH_POLICY: PartitionName=%s LLN=%s failed: %s",
++			      parts[i].name, parts[i].value ? "YES" : "NO",
++			      slurm_strerror(rc));
++			n_errors++;
++		} else {
++			info("SIM_SWITCH_POLICY: PartitionName=%s LLN=%s",
++			     parts[i].name, parts[i].value ? "YES" : "NO");
++		}
++	}
++	if (w_age != NO_VAL)
++		slurm_conf.priority_weight_age = w_age;
++	if (w_fs != NO_VAL)
++		slurm_conf.priority_weight_fs = w_fs;
++	if (w_js != NO_VAL)
++		slurm_conf.priority_weight_js = w_js;
++	if (w_part != NO_VAL)
++		slurm_conf.priority_weight_part = w_part;
++	if (w_qos != NO_VAL)
++		slurm_conf.priority_weight_qos = w_qos;
++	if (favor_small != NO_VAL)
++		slurm_conf.priority_favor_small = favor_small;
++	unlock_slurmctld(policy_write_lock);
++
++	/* The priority plugin caches the weights: reload them. */
++	priority_g_reconfig(false);
++	info("SIM_SWITCH_POLICY: priority weights age=%u fairshare=%u jobsize=%u partition=%u qos=%u favor_small=%u",
++	     slurm_conf.priority_weight_age, slurm_conf.priority_weight_fs,
++	     slurm_conf.priority_weight_js, slurm_conf.priority_weight_part,
++	     slurm_conf.priority_weight_qos, slurm_conf.priority_favor_small);
++
++	/* Re-prioritize pending jobs under the new weights. */
++	lock_slurmctld(policy_write_lock);
++	job_iter = list_iterator_create(job_list);
++	while ((job_ptr = list_next(job_iter))) {
++		if (IS_JOB_PENDING(job_ptr)) {
++			set_job_prio(job_ptr);
++			n_reprio++;
++		}
++	}
++	list_iterator_destroy(job_iter);
++	unlock_slurmctld(policy_write_lock);
++	info("SIM_SWITCH_POLICY: re-prioritized %d pending jobs", n_reprio);
++
++	_sim_policy_copy(src, dst);
++	queue_job_scheduler();
++
++	if (n_errors)
++		error("SIM_SWITCH_POLICY: %d problem(s) applying %s",
++		      n_errors, policy);
++	info("SIM_SWITCH_POLICY: done, active policy %s", policy);
++	xfree(current);
++	current = xstrdup(policy);
++
++done:
++	for (i = 0; i < n_nodes; i++)
++		xfree(nodes[i].name);
++	for (i = 0; i < n_parts; i++)
++		xfree(parts[i].name);
++	if (in)
++		fclose(in);
++	free(line);
++	xfree(conf_dir);
++	xfree(src);
++	xfree(dst);
++}
++#endif
++
+ /* Request that the job scheduler execute soon (typically within seconds) */
+ extern void queue_job_scheduler_c(const char* from)
+ {

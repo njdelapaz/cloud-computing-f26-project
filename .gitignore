@@ -1,0 +1,12 @@
+# Third-party simulator checkouts, used only to read the source and edit
+# sim/patches/switch_policy.patch (see sim/README.md)
+external/
+
+# Simulator runtime state and outputs
+sim/log/
+sim/var/
+sim/results/
+
+# Active policy (written by scripts/run_sim.sh and switch_policy events)
+sim/etc/policy_active.conf
+sim/etc/policy_active.conf.tmp
