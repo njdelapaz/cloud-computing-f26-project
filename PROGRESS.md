@@ -2,8 +2,6 @@
 
 As of 2026-11-07 · Brian Benson
 
-Snapshot of the live progress doc: https://claude.ai/artifact/3Z54MniFxPbAzZZEuba8kq. Edit the live doc and re-export rather than editing this file.
-
 ## Status at a glance
 
 Phase 1 (environment setup) is done, and Phase 2 (metrics and baseline) is next. The 24-GPU cluster runs in the UB Slurm Simulator about 200x faster than real time, and the scheduling policy can now be switched at a set simulated time during a run.
