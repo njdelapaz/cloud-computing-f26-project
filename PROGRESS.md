@@ -8,7 +8,7 @@ Phase 2 (metrics and baseline) is done, and Phase 3a (fixed policies) is next. O
 
 - **Last finished:** workload generator, converter, metrics script and baseline results for all five starter workloads (1,738 jobs, all finished).
 - **Next up:** the four policy files (utilization, performance, load balance, fairness), each checked against the baseline on its own metric.
-- **Code:** branch `dev` of the project repo. Phase 2 is not committed yet; the latest commit is `e645f78`.
+- **Code:** branch `dev` of the project repo, Phase 2 in commit `fb7f50f`.
 
 ## Phase tracker
 
@@ -18,7 +18,7 @@ Three of six phases are done.
 | --- | --- | --- | --- |
 | 0. Decisions | Done | D1–D4 settled | D2b revised after Phase 1 testing |
 | 1. Environment setup | Done | Simulator running the 24-GPU cluster | Committed in `6f5406d` |
-| 2. Metrics and baseline | Done | Workload generator, starter workloads, metrics script, baseline results | Not committed yet |
+| 2. Metrics and baseline | Done | Workload generator, starter workloads, metrics script, baseline results | Committed in `fb7f50f` |
 | 3a. Fixed policies | Not started | Four policy files that each beat the baseline on their own metric | `SETUP=<policy> scripts/run_baseline.sh` already runs and measures any policy |
 | 3b. Switching mechanism | In progress | State snapshot, decision hook and check interval in the simulator | Policy switcher, scheduled triggers and switch log done in Phase 1 |
 | 4. Evaluation | Not started | Results matrix and charts |  |
@@ -111,7 +111,7 @@ Add a row at the top for each commit or milestone.
 
 | Date | Commit | What changed |
 | --- | --- | --- |
-| 2026-11-08 | — | Phase 2 done: workload generator, converter, metrics script, five starter workloads, baseline results (not committed yet) |
+| 2026-11-08 | `fb7f50f` | Phase 2 done: workload generator, converter, metrics script, five starter workloads, baseline results |
 | 2026-11-07 | `6f5406d` | Phase 1 done: 24-GPU simulation, run script, `switch_policy` patch, test workloads, docs |
 | 2026-11-07 | — | D2b revised to in-simulator switching after testing showed no client commands work mid-run |
 | 2026-11-07 | `edddbed` | Spec and development plan added; all Phase 0 decisions settled |
