@@ -1,0 +1,16 @@
+{
+  "name": "skewed_users",
+  "description": "One heavy user (60% of jobs) and four light ones: fairness",
+  "seed": 5,
+  "phases": [
+    {
+      "duration": 43200,
+      "load": 1.0,
+      "gpus": {"1": 0.3, "2": 0.25, "4": 0.25, "8": 0.15, "16": 0.05},
+      "runtime": {"median": 600, "sigma": 0.8, "min": 60, "max": 14400},
+      "time_limit_factor": [1.2, 3.0],
+      "timeout_fraction": 0.05,
+      "users": {"user1": 0.6, "user2": 0.1, "user3": 0.1, "user4": 0.1, "user5": 0.1}
+    }
+  ]
+}

@@ -46,12 +46,60 @@ sim/
     slurmdbd.conf, sim.conf, slurm.key, slurm.cert
   patches/
     switch_policy.patch adds the switch_policy event (see below)
-  workloads/*.events    workloads in the simulator's events format
+  workloads/
+    specs/*.json        seeded generator specs for the starter workloads
+    *.csv               workloads in the common format
+    *.events            the same workloads in the simulator's events format
 docker/Dockerfile       patched simulator image
-scripts/run_sim.sh      runs one simulation
+scripts/
+  run_sim.sh            runs one simulation
+  generate_workload.py  spec -> workload .csv and .events
+  convert_workload.py   workload .csv <-> .events, optional scheduled switches
+  metrics.py            one run's results -> metrics.json (+ summary CSV row)
+  run_baseline.sh       generate, run and measure every starter workload
+  workload_format.py    the common format, shared by the scripts above
+results/
+  baseline.csv          baseline metrics, one row per workload
+  baseline/*.json       full baseline metrics, incl. per user and per node
 ```
 
-`sim/log/`, `sim/var/`, `sim/results/` and `sim/etc/policy_active.conf` are created at run time and are not committed.
+## Workloads and metrics
+
+The scripts use only the Python standard library.
+
+Every workload is a CSV in the common format, one row per job: `job_id,user,submit_time,gpus,runtime,time_limit` (seconds; see `scripts/workload_format.py`). A job whose `runtime` is at least its `time_limit` ends as `TIMEOUT`.
+
+To regenerate all five starter workloads from their seeds (same seed, same files) and run the baseline on each:
+
+```bash
+scripts/run_baseline.sh
+```
+
+`SETUP=<policy> scripts/run_baseline.sh` runs the same workloads under another policy and writes `results/<policy>.csv`. To recompute metrics from existing runs without simulating again:
+
+```bash
+scripts/run_baseline.sh --metrics-only
+```
+
+The pieces can also run alone:
+
+```bash
+scripts/generate_workload.py sim/workloads/specs/heavy_small.json
+```
+
+```bash
+scripts/convert_workload.py sim/workloads/heavy_small.csv -o sim/workloads/heavy_small_switch.events --switch 21600:test_lln
+```
+
+```bash
+scripts/metrics.py sim/results/baseline_light/dtstart_59_1 sim/workloads/light.csv
+```
+
+The spec format and every metric are documented at the top of `generate_workload.py` and `metrics.py`.
+
+**Per-node GPU use is reconstructed.** `slurm_acct.out` lists a job's nodes but not its GPUs on each, so `metrics.py` replays job starts and ends. Single-node jobs and multi-node jobs using whole nodes (16 or 24 GPUs) are exact. Other multi-node jobs (e.g. 12 GPUs on 2 nodes) are split as evenly as free GPUs allow and counted in `approx_split_jobs`. The starter workloads only use multiples of 8 for multi-node jobs, so they have none.
+
+`sim/log/`, `sim/var/`, `sim/results/` and `sim/etc/policy_active.conf` are created at run time and are not committed. The summaries in `results/` are committed.
 
 ## Events file format
 

@@ -1,0 +1,16 @@
+{
+  "name": "heavy_mixed",
+  "description": "Heavy load of mixed sizes including 8-GPU and multi-node jobs: contention for whole nodes",
+  "seed": 3,
+  "phases": [
+    {
+      "duration": 43200,
+      "load": 1.1,
+      "gpus": {"1": 0.25, "2": 0.2, "4": 0.2, "8": 0.2, "16": 0.1, "24": 0.05},
+      "runtime": {"median": 900, "sigma": 0.8, "min": 60, "max": 14400},
+      "time_limit_factor": [1.2, 3.0],
+      "timeout_fraction": 0.05,
+      "users": {"user1": 1, "user2": 1, "user3": 1, "user4": 1, "user5": 1}
+    }
+  ]
+}

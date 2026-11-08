@@ -94,7 +94,9 @@ For packing, a policy can give the nodes different `Weight` values (e.g. 1, 2, 3
 
 **Goal:** Be able to measure every metric before changing the scheduler.
 
-- [ ] Write an analysis script that reads the simulator's job output (`sacct`-style records) and computes these metrics:
+**Status: done.** How to run it is in [sim/README.md](sim/README.md#workloads-and-metrics).
+
+- [x] Write an analysis script that reads the simulator's job output (`sacct`-style records) and computes these metrics. Done: [scripts/metrics.py](scripts/metrics.py), which also rebuilds per-node GPU use by replaying job starts and ends:
 
 | Objective | Metric(s) |
 |---|---|
@@ -103,17 +105,17 @@ For packing, a policy can give the nodes different `Weight` values (e.g. 1, 2, 3
 | Stability / load balance | Variance of GPUs in use across the three nodes; variance in wait time |
 | Fairness | Jain's fairness index over per-user slowdown or share of GPU-hours |
 
-- [ ] Write the converter from the common workload format into the simulator's input format. Test it on the hand-written Phase 1 workload. Phase 1 findings to follow:
+- [x] Write the converter from the common workload format into the simulator's input format. Test it on the hand-written Phase 1 workload. Done: [scripts/convert_workload.py](scripts/convert_workload.py); converting [test20.csv](sim/workloads/test20.csv) gives a file identical to the hand-written `test20.events`. `--switch SECONDS:POLICY` adds scheduled switches to any workload. Phase 1 findings to follow:
   - Request GPUs as `-N <fewest nodes> --gpus=<G>`. The simulator rejects `--gpus-per-task`, and without `-N` a 4-GPU job can be split across nodes.
   - Use `-sim-walltime -1` for a job that runs until its time limit. A walltime of `0` ends the job instantly.
   - `slurm_acct.out` does not list GPUs per job, so the metrics script must take GPU counts from the workload file.
-- [ ] Write the workload generator with the parameters above. The same seed must always produce the same file.
+- [x] Write the workload generator with the parameters above. The same seed must always produce the same file. Done: [scripts/generate_workload.py](scripts/generate_workload.py), driven by JSON specs in [sim/workloads/specs/](sim/workloads/specs/). Arrival rate is set as a target offered load.
 - [x] Set up the users and accounts in Slurm's accounting database (`sacctmgr`) so fair-share has users to work with. Done in Phase 1: 5 users in 3 accounts ([sim/etc/sacctmgr.script](sim/etc/sacctmgr.script), [sim/etc/users.sim](sim/etc/users.sim)). Extend them if the starter workloads need more users.
-- [ ] Generate the starter set of five workloads.
-- [ ] Run the default Slurm scheduler (FIFO plus backfill) on every workload as the **baseline**.
-- [ ] Save the results in a consistent format such as CSV or JSON.
+- [x] Generate the starter set of five workloads: `light`, `heavy_small`, `heavy_mixed`, `shifting`, `skewed_users` (99–665 jobs each, 12 h of submissions; `shifting` 18 h).
+- [x] Run the default Slurm scheduler (FIFO plus backfill) on every workload as the **baseline**. Done: `scripts/run_baseline.sh` regenerates, runs and measures all five; about 10 minutes in total.
+- [x] Save the results in a consistent format such as CSV or JSON. Done: [results/baseline.csv](results/baseline.csv) (one row per run) and `results/baseline/<workload>.metrics.json` (per user and per node).
 
-**Done when:** The starter workloads can be regenerated from their seeds, and the baseline results for every metric come out of a script, not hand calculation.
+**Done when:** The starter workloads can be regenerated from their seeds, and the baseline results for every metric come out of a script, not hand calculation. ✅
 
 ---
 

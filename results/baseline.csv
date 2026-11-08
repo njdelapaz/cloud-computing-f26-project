@@ -1,0 +1,6 @@
+run,setup,workload,jobs_finished,makespan,gpu_util,idle_gpu_hours,wait_mean,wait_p50,wait_p95,wait_std,turnaround_mean,bsld_mean,bsld_p95,node_gpu_var_mean,node_gpu_imbalance_mean,jain_bsld,jain_wait
+baseline_heavy_mixed/dtstart_59_1,baseline,heavy_mixed,144,60418.0000,0.8547,58.5219,4390.5694,2338.0000,16810.0000,4963.7952,5780.2153,5.8027,19.5440,2.4353,2.0589,0.9725,0.9778
+baseline_heavy_small/dtstart_59_1,baseline,heavy_small,665,52667.0000,0.8956,36.6575,2788.5564,2638.0000,5490.0000,1916.0899,3599.9158,6.3953,18.1047,0.5132,1.0073,0.9912,0.9984
+baseline_light/dtstart_59_1,baseline,light,99,43457.0000,0.3573,186.1897,65.1111,0.0000,398.0000,256.7639,865.8182,1.1967,1.8464,6.3238,4.5586,0.9555,0.5471
+baseline_shifting/dtstart_59_1,baseline,shifting,511,67918.0000,0.8185,82.1642,427.3738,243.0000,1157.0000,596.8515,1295.5714,1.7988,4.0895,3.5974,2.7418,0.9984,0.9764
+baseline_skewed_users/dtstart_59_1,baseline,skewed_users,319,47703.0000,0.8207,57.0103,870.8934,464.0000,2930.0000,1025.2805,1617.7680,2.7294,8.2944,3.1716,2.7822,0.9720,0.9642

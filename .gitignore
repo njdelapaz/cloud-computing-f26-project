@@ -10,3 +10,6 @@ sim/results/
 # Active policy (written by scripts/run_sim.sh and switch_policy events)
 sim/etc/policy_active.conf
 sim/etc/policy_active.conf.tmp
+
+# Python bytecode
+__pycache__/
