@@ -1,0 +1,64 @@
+{
+  "jobs_in_workload": 20,
+  "jobs_finished": 20,
+  "jobs_missing": 0,
+  "states": {
+    "COMPLETED": 19,
+    "TIMEOUT": 1
+  },
+  "gpu_count_mismatches": 0,
+  "makespan": 6427.0,
+  "gpu_util": 0.786551527410404,
+  "idle_gpu_hours": 9.145555555555555,
+  "wait_mean": 1534.7,
+  "wait_p50": 252.0,
+  "wait_p95": 4487.0,
+  "wait_max": 4507.0,
+  "wait_std": 1789.4406975365237,
+  "turnaround_mean": 2440.75,
+  "bsld_mean": 2.5759095026807173,
+  "bsld_p95": 5.974444444444444,
+  "jain_bsld": 0.972869302180506,
+  "jain_wait": 0.9132367963105499,
+  "node_gpu_hours": {
+    "gpu1": 12.33,
+    "gpu2": 11.0,
+    "gpu3": 10.37
+  },
+  "node_gpu_var_mean": 2.0990612520097502,
+  "node_gpu_imbalance_mean": 1.9148903065193714,
+  "approx_split_jobs": 2,
+  "overcommit_events": 0,
+  "users": {
+    "user1": {
+      "jobs": 4,
+      "gpu_hours": 6.53,
+      "wait_mean": 676.75,
+      "bsld_mean": 1.8996666666666666
+    },
+    "user2": {
+      "jobs": 4,
+      "gpu_hours": 7.83,
+      "wait_mean": 2036.5,
+      "bsld_mean": 2.642638888888889
+    },
+    "user3": {
+      "jobs": 4,
+      "gpu_hours": 7.08,
+      "wait_mean": 1743.75,
+      "bsld_mean": 2.7777777777777777
+    },
+    "user4": {
+      "jobs": 4,
+      "gpu_hours": 7.17,
+      "wait_mean": 1412.75,
+      "bsld_mean": 3.191805555555556
+    },
+    "user5": {
+      "jobs": 4,
+      "gpu_hours": 5.08,
+      "wait_mean": 1803.75,
+      "bsld_mean": 2.3676586245146978
+    }
+  }
+}

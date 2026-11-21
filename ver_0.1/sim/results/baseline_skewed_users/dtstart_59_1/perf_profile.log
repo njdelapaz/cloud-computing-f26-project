@@ -1,0 +1,253 @@
+[
+{
+ "time": 1794114773.100567,
+ "slurmdbd": {
+  "cpu_times": {
+   "user": 1.23,
+   "system": 0.38,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 0.0,
+  "memory_info": {
+   "rss": 9261056,
+   "vms": 219058176,
+   "shared": 7827456,
+   "text": 65536,
+   "lib": 0,
+   "data": 6418432,
+   "dirty": 0
+  },
+  "io_counters": {
+   "read_count": 320,
+   "write_count": 285,
+   "read_bytes": 0,
+   "write_bytes": 8192,
+   "read_chars": 69254,
+   "write_chars": 15501
+  },
+  "num_threads": 6,
+  "threads": [
+   {
+    "id": 186,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 187,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 188,
+    "user_time": 0.64,
+    "system_time": 0.15
+   },
+   {
+    "id": 189,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 190,
+    "user_time": 0.58,
+    "system_time": 0.18
+   },
+   {
+    "id": 224,
+    "user_time": 0.0,
+    "system_time": 0.0
+   }
+  ]
+ },
+ "slurmd": {
+  "cpu_times": {
+   "user": 0.0,
+   "system": 0.0,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 0.0,
+  "memory_info": {
+   "rss": 0,
+   "vms": 0,
+   "shared": 0,
+   "text": 0,
+   "lib": 0,
+   "data": 0,
+   "dirty": 0
+  },
+  "io_counters": null,
+  "num_threads": 1,
+  "threads": [
+   {
+    "id": 222,
+    "user_time": 0.0,
+    "system_time": 0.0
+   }
+  ]
+ },
+ "slurmctld": {
+  "cpu_times": {
+   "user": 1.03,
+   "system": 0.03,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 0.0,
+  "memory_info": {
+   "rss": 10428416,
+   "vms": 11784192,
+   "shared": 7217152,
+   "text": 999424,
+   "lib": 0,
+   "data": 3248128,
+   "dirty": 0
+  },
+  "io_counters": {
+   "read_count": 435,
+   "write_count": 797,
+   "read_bytes": 0,
+   "write_bytes": 532480,
+   "read_chars": 218260,
+   "write_chars": 301390
+  },
+  "num_threads": 1,
+  "threads": [
+   {
+    "id": 223,
+    "user_time": 1.03,
+    "system_time": 0.03
+   }
+  ]
+ }
+},
+{
+ "time": 1794114833.2341132,
+ "slurmdbd": {
+  "cpu_times": {
+   "user": 4.8,
+   "system": 1.86,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 8.4,
+  "memory_info": {
+   "rss": 9433088,
+   "vms": 287219712,
+   "shared": 7827456,
+   "text": 65536,
+   "lib": 0,
+   "data": 7684096,
+   "dirty": 0
+  },
+  "io_counters": {
+   "read_count": 1686,
+   "write_count": 1651,
+   "read_bytes": 0,
+   "write_bytes": 8192,
+   "read_chars": 590503,
+   "write_chars": 49189
+  },
+  "num_threads": 6,
+  "threads": [
+   {
+    "id": 186,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 187,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 188,
+    "user_time": 2.74,
+    "system_time": 0.52
+   },
+   {
+    "id": 189,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 190,
+    "user_time": 2.04,
+    "system_time": 1.08
+   },
+   {
+    "id": 224,
+    "user_time": 0.08,
+    "system_time": 0.14
+   }
+  ]
+ },
+ "slurmd": {
+  "cpu_times": {
+   "user": 0.0,
+   "system": 0.0,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 0.0,
+  "memory_info": {
+   "rss": 0,
+   "vms": 0,
+   "shared": 0,
+   "text": 0,
+   "lib": 0,
+   "data": 0,
+   "dirty": 0
+  },
+  "io_counters": null,
+  "num_threads": 1,
+  "threads": [
+   {
+    "id": 222,
+    "user_time": 0.0,
+    "system_time": 0.0
+   }
+  ]
+ },
+ "slurmctld": {
+  "cpu_times": {
+   "user": 2.73,
+   "system": 0.53,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 3.7,
+  "memory_info": {
+   "rss": 18857984,
+   "vms": 21102592,
+   "shared": 7217152,
+   "text": 999424,
+   "lib": 0,
+   "data": 11612160,
+   "dirty": 0
+  },
+  "io_counters": {
+   "read_count": 2537,
+   "write_count": 13842,
+   "read_bytes": 0,
+   "write_bytes": 8900608,
+   "read_chars": 402406,
+   "write_chars": 4984514
+  },
+  "num_threads": 1,
+  "threads": [
+   {
+    "id": 223,
+    "user_time": 2.73,
+    "system_time": 0.53
+   }
+  ]
+ }
+}

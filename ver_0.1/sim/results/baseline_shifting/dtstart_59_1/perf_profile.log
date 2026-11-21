@@ -1,0 +1,379 @@
+[
+{
+ "time": 1794114622.8922162,
+ "slurmdbd": {
+  "cpu_times": {
+   "user": 0.99,
+   "system": 0.62,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 0.0,
+  "memory_info": {
+   "rss": 9256960,
+   "vms": 219058176,
+   "shared": 7823360,
+   "text": 65536,
+   "lib": 0,
+   "data": 6418432,
+   "dirty": 0
+  },
+  "io_counters": {
+   "read_count": 322,
+   "write_count": 287,
+   "read_bytes": 0,
+   "write_bytes": 8192,
+   "read_chars": 67661,
+   "write_chars": 15511
+  },
+  "num_threads": 6,
+  "threads": [
+   {
+    "id": 186,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 187,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 188,
+    "user_time": 0.65,
+    "system_time": 0.14
+   },
+   {
+    "id": 189,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 190,
+    "user_time": 0.23,
+    "system_time": 0.53
+   },
+   {
+    "id": 224,
+    "user_time": 0.0,
+    "system_time": 0.0
+   }
+  ]
+ },
+ "slurmd": {
+  "cpu_times": {
+   "user": 0.0,
+   "system": 0.0,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 0.0,
+  "memory_info": {
+   "rss": 0,
+   "vms": 0,
+   "shared": 0,
+   "text": 0,
+   "lib": 0,
+   "data": 0,
+   "dirty": 0
+  },
+  "io_counters": null,
+  "num_threads": 1,
+  "threads": [
+   {
+    "id": 222,
+    "user_time": 0.0,
+    "system_time": 0.0
+   }
+  ]
+ },
+ "slurmctld": {
+  "cpu_times": {
+   "user": 1.02,
+   "system": 0.03,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 0.0,
+  "memory_info": {
+   "rss": 10682368,
+   "vms": 12021760,
+   "shared": 7274496,
+   "text": 999424,
+   "lib": 0,
+   "data": 3465216,
+   "dirty": 0
+  },
+  "io_counters": {
+   "read_count": 445,
+   "write_count": 1003,
+   "read_bytes": 0,
+   "write_bytes": 532480,
+   "read_chars": 243798,
+   "write_chars": 367642
+  },
+  "num_threads": 1,
+  "threads": [
+   {
+    "id": 223,
+    "user_time": 1.02,
+    "system_time": 0.03
+   }
+  ]
+ }
+},
+{
+ "time": 1794114683.0294964,
+ "slurmdbd": {
+  "cpu_times": {
+   "user": 4.46,
+   "system": 2.25,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 8.5,
+  "memory_info": {
+   "rss": 9416704,
+   "vms": 287219712,
+   "shared": 7823360,
+   "text": 65536,
+   "lib": 0,
+   "data": 7667712,
+   "dirty": 0
+  },
+  "io_counters": {
+   "read_count": 1710,
+   "write_count": 1676,
+   "read_bytes": 0,
+   "write_bytes": 12288,
+   "read_chars": 757011,
+   "write_chars": 57855
+  },
+  "num_threads": 6,
+  "threads": [
+   {
+    "id": 186,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 187,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 188,
+    "user_time": 2.87,
+    "system_time": 0.39
+   },
+   {
+    "id": 189,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 190,
+    "user_time": 1.17,
+    "system_time": 1.96
+   },
+   {
+    "id": 224,
+    "user_time": 0.09,
+    "system_time": 0.16
+   }
+  ]
+ },
+ "slurmd": {
+  "cpu_times": {
+   "user": 0.0,
+   "system": 0.0,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 0.0,
+  "memory_info": {
+   "rss": 0,
+   "vms": 0,
+   "shared": 0,
+   "text": 0,
+   "lib": 0,
+   "data": 0,
+   "dirty": 0
+  },
+  "io_counters": null,
+  "num_threads": 1,
+  "threads": [
+   {
+    "id": 222,
+    "user_time": 0.0,
+    "system_time": 0.0
+   }
+  ]
+ },
+ "slurmctld": {
+  "cpu_times": {
+   "user": 2.15,
+   "system": 0.49,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 2.6,
+  "memory_info": {
+   "rss": 22282240,
+   "vms": 24920064,
+   "shared": 7274496,
+   "text": 999424,
+   "lib": 0,
+   "data": 15065088,
+   "dirty": 0
+  },
+  "io_counters": {
+   "read_count": 2659,
+   "write_count": 17767,
+   "read_bytes": 0,
+   "write_bytes": 8306688,
+   "read_chars": 428886,
+   "write_chars": 5253104
+  },
+  "num_threads": 1,
+  "threads": [
+   {
+    "id": 223,
+    "user_time": 2.15,
+    "system_time": 0.49
+   }
+  ]
+ }
+},
+{
+ "time": 1794114743.0427985,
+ "slurmdbd": {
+  "cpu_times": {
+   "user": 7.71,
+   "system": 3.87,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 8.1,
+  "memory_info": {
+   "rss": 9453568,
+   "vms": 287219712,
+   "shared": 7823360,
+   "text": 65536,
+   "lib": 0,
+   "data": 7720960,
+   "dirty": 0
+  },
+  "io_counters": {
+   "read_count": 2898,
+   "write_count": 2864,
+   "read_bytes": 0,
+   "write_bytes": 12288,
+   "read_chars": 1172397,
+   "write_chars": 84669
+  },
+  "num_threads": 6,
+  "threads": [
+   {
+    "id": 186,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 187,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 188,
+    "user_time": 4.85,
+    "system_time": 0.76
+   },
+   {
+    "id": 189,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 190,
+    "user_time": 2.02,
+    "system_time": 3.44
+   },
+   {
+    "id": 224,
+    "user_time": 0.17,
+    "system_time": 0.27
+   }
+  ]
+ },
+ "slurmd": {
+  "cpu_times": {
+   "user": 0.0,
+   "system": 0.0,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 0.0,
+  "memory_info": {
+   "rss": 0,
+   "vms": 0,
+   "shared": 0,
+   "text": 0,
+   "lib": 0,
+   "data": 0,
+   "dirty": 0
+  },
+  "io_counters": null,
+  "num_threads": 1,
+  "threads": [
+   {
+    "id": 222,
+    "user_time": 0.0,
+    "system_time": 0.0
+   }
+  ]
+ },
+ "slurmctld": {
+  "cpu_times": {
+   "user": 10.86,
+   "system": 1.08,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 15.5,
+  "memory_info": {
+   "rss": 28565504,
+   "vms": 31842304,
+   "shared": 7274496,
+   "text": 999424,
+   "lib": 0,
+   "data": 21266432,
+   "dirty": 0
+  },
+  "io_counters": {
+   "read_count": 4404,
+   "write_count": 27717,
+   "read_bytes": 0,
+   "write_bytes": 16920576,
+   "read_chars": 568718,
+   "write_chars": 9151095
+  },
+  "num_threads": 1,
+  "threads": [
+   {
+    "id": 223,
+    "user_time": 10.96,
+    "system_time": 0.97
+   }
+  ]
+ }
+}

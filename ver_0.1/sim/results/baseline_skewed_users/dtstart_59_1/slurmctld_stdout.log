@@ -1,0 +1,689 @@
+slurmctld: Starting Slurm Simulator
+slurmctld: error: _find_node_record: lookup failure for node "localhost"
+slurmctld: error: _find_node_record: lookup failure for node "localhost", alias "localhost"
+slurmctld: warning: Ignoring file-less GPU gpu:(null) from final GRES list
+slurmctld: process_create_time_real: 1794114767540000
+slurmctld: sim_constructor_start_time: 1794114768101159
+slurmctld: sim_slurmctld_main_start_time: 1794114768101919
+slurmctld: will read events file from /home/slurm/project/sim/workloads/skewed_users.events
+slurmctld: microseconds_before_first_job (dtstart) reset to 59000000 usec
+slurmctld: Sim: Slurm simulator configuration:
+slurmctld: TimeStart=1641013200000000
+slurmctld: TimeStop=0
+slurmctld:     i.e. Slurm Simulator spins forever
+slurmctld: SecondsBeforeFirstJob=59.000000
+slurmctld: ClockScaling=1.000000
+slurmctld: SharedMemoryName=/slurm_sim.shm
+slurmctld: EventsFile=/home/slurm/project/sim/workloads/skewed_users.events
+slurmctld: TimeAfterAllEventsDone=10000000
+slurmctld: FirstJobDelay=-320000
+slurmctld: CompJobDelay=0
+slurmctld: TimeLimitDelay=0
+Users (from user.sim):
+    0            admin    1000            admin    1000
+    1            user1    1001           group1    1001
+    2            user2    1002           group1    1001
+    3            user3    1003           group2    1002
+    4            user4    1004           group2    1002
+    5            user5    1005           group3    1003
+Users (passwd sim):
+    0            admin hashed passphrase    1000    1000            admin       /home/user        /bin/bash
+    1            user1 hashed passphrase    1001    1001            user1       /home/user        /bin/bash
+    2            user2 hashed passphrase    1002    1001            user2       /home/user        /bin/bash
+    3            user3 hashed passphrase    1003    1002            user3       /home/user        /bin/bash
+    4            user4 hashed passphrase    1004    1002            user4       /home/user        /bin/bash
+    5            user5 hashed passphrase    1005    1003            user5       /home/user        /bin/bash
+Groups (passwd sim):
+    0            admin         password    1000
+    admin 
+    1           group1         password    1001
+    user1 user2 
+    2           group2         password    1002
+    user3 user4 
+    3           group3         password    1003
+    user5 
+slurmctld: Simulation Events:
+slurmctld: 0	1001
+slurmctld: 1641013214542847	 SIM_NODE_REGISTRATION
+slurmctld: 1641013272656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 261000000 sbatch --chdir=/home/user1 -J jobid_1001 --uid=user1 -t 00:11:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 261 
+slurmctld: 1641013354656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 665000000 sbatch --chdir=/home/user5 -J jobid_1002 --uid=user5 -t 00:18:00 -N 1 --gpus=2 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 665 
+slurmctld: 1641013544656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user1 -J jobid_1003 --uid=user1 -t 00:03:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641013575656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 709000000 sbatch --chdir=/home/user2 -J jobid_1004 --uid=user2 -t 00:19:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 709 
+slurmctld: 1641014018656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 477000000 sbatch --chdir=/home/user1 -J jobid_1005 --uid=user1 -t 00:12:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 477 
+slurmctld: 1641014139656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 435000000 sbatch --chdir=/home/user1 -J jobid_1006 --uid=user1 -t 00:20:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 435 
+slurmctld: 1641014225656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user5 -J jobid_1007 --uid=user5 -t 00:04:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641014253656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1514000000 sbatch --chdir=/home/user3 -J jobid_1008 --uid=user3 -t 00:47:00 -N 1 --gpus=8 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1514 
+slurmctld: 1641014268656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 342000000 sbatch --chdir=/home/user5 -J jobid_1009 --uid=user5 -t 00:17:00 -N 1 --gpus=4 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 342 
+slurmctld: 1641014371656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 127000000 sbatch --chdir=/home/user1 -J jobid_1010 --uid=user1 -t 00:07:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 127 
+slurmctld: 1641014934656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 247000000 sbatch --chdir=/home/user1 -J jobid_1011 --uid=user1 -t 00:12:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 247 
+slurmctld: 1641014942656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 568000000 sbatch --chdir=/home/user5 -J jobid_1012 --uid=user5 -t 00:14:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 568 
+slurmctld: 1641015072656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 540000000 sbatch --chdir=/home/user1 -J jobid_1013 --uid=user1 -t 00:25:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 540 
+slurmctld: 1641016019656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 530000000 sbatch --chdir=/home/user1 -J jobid_1014 --uid=user1 -t 00:23:00 -N 2 --gpus=16 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 530 
+slurmctld: 1641016087656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 850000000 sbatch --chdir=/home/user1 -J jobid_1015 --uid=user1 -t 00:26:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 850 
+slurmctld: 1641016285656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 3432000000 sbatch --chdir=/home/user3 -J jobid_1016 --uid=user3 -t 02:21:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 3432 
+slurmctld: 1641016344656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 551000000 sbatch --chdir=/home/user5 -J jobid_1017 --uid=user5 -t 00:23:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 551 
+slurmctld: 1641016481656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 654000000 sbatch --chdir=/home/user4 -J jobid_1018 --uid=user4 -t 00:27:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 654 
+slurmctld: 1641016617656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1275000000 sbatch --chdir=/home/user4 -J jobid_1019 --uid=user4 -t 00:58:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1275 
+slurmctld: 1641016883656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 2202000000 sbatch --chdir=/home/user4 -J jobid_1020 --uid=user4 -t 01:20:00 -N 2 --gpus=16 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 2202 
+slurmctld: 1641017244656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1835000000 sbatch --chdir=/home/user1 -J jobid_1021 --uid=user1 -t 00:47:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1835 
+slurmctld: 1641017387656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user1 -J jobid_1022 --uid=user1 -t 00:16:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641017524656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 724000000 sbatch --chdir=/home/user1 -J jobid_1023 --uid=user1 -t 00:25:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 724 
+slurmctld: 1641017543656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 556000000 sbatch --chdir=/home/user1 -J jobid_1024 --uid=user1 -t 00:22:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 556 
+slurmctld: 1641017848656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 358000000 sbatch --chdir=/home/user1 -J jobid_1025 --uid=user1 -t 00:09:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 358 
+slurmctld: 1641017852656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 659000000 sbatch --chdir=/home/user4 -J jobid_1026 --uid=user4 -t 00:25:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 659 
+slurmctld: 1641017923656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 487000000 sbatch --chdir=/home/user5 -J jobid_1027 --uid=user5 -t 00:19:00 -N 1 --gpus=4 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 487 
+slurmctld: 1641018372656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 174000000 sbatch --chdir=/home/user2 -J jobid_1028 --uid=user2 -t 00:07:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 174 
+slurmctld: 1641018662656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 353000000 sbatch --chdir=/home/user5 -J jobid_1029 --uid=user5 -t 00:18:00 -N 1 --gpus=2 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 353 
+slurmctld: 1641018981656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 2225000000 sbatch --chdir=/home/user5 -J jobid_1030 --uid=user5 -t 01:13:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 2225 
+slurmctld: 1641019069656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 152000000 sbatch --chdir=/home/user3 -J jobid_1031 --uid=user3 -t 00:06:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 152 
+slurmctld: 1641019298656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1002000000 sbatch --chdir=/home/user5 -J jobid_1032 --uid=user5 -t 00:29:00 -N 1 --gpus=2 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1002 
+slurmctld: 1641019343656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 991000000 sbatch --chdir=/home/user3 -J jobid_1033 --uid=user3 -t 00:42:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 991 
+slurmctld: 1641019390656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 332000000 sbatch --chdir=/home/user3 -J jobid_1034 --uid=user3 -t 00:12:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 332 
+slurmctld: 1641019507656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 289000000 sbatch --chdir=/home/user1 -J jobid_1035 --uid=user1 -t 00:14:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 289 
+slurmctld: 1641019703656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1305000000 sbatch --chdir=/home/user1 -J jobid_1036 --uid=user1 -t 00:45:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1305 
+slurmctld: 1641019768656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 116000000 sbatch --chdir=/home/user2 -J jobid_1037 --uid=user2 -t 00:03:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 116 
+slurmctld: 1641019842656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 562000000 sbatch --chdir=/home/user1 -J jobid_1038 --uid=user1 -t 00:20:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 562 
+slurmctld: 1641019957656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 77000000 sbatch --chdir=/home/user1 -J jobid_1039 --uid=user1 -t 00:04:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 77 
+slurmctld: 1641020124656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 802000000 sbatch --chdir=/home/user2 -J jobid_1040 --uid=user2 -t 00:37:00 -N 2 --gpus=16 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 802 
+slurmctld: 1641020521656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 175000000 sbatch --chdir=/home/user2 -J jobid_1041 --uid=user2 -t 00:06:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 175 
+slurmctld: 1641020527656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 896000000 sbatch --chdir=/home/user1 -J jobid_1042 --uid=user1 -t 00:42:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 896 
+slurmctld: 1641020576656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1570000000 sbatch --chdir=/home/user1 -J jobid_1043 --uid=user1 -t 00:35:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1570 
+slurmctld: 1641020706656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 732000000 sbatch --chdir=/home/user1 -J jobid_1044 --uid=user1 -t 00:21:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 732 
+slurmctld: 1641020887656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 336000000 sbatch --chdir=/home/user3 -J jobid_1045 --uid=user3 -t 00:15:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 336 
+slurmctld: 1641021026656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 711000000 sbatch --chdir=/home/user1 -J jobid_1046 --uid=user1 -t 00:33:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 711 
+slurmctld: 1641021234656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 390000000 sbatch --chdir=/home/user4 -J jobid_1047 --uid=user4 -t 00:20:00 -N 1 --gpus=4 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 390 
+slurmctld: 1641021253656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 348000000 sbatch --chdir=/home/user1 -J jobid_1048 --uid=user1 -t 00:14:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 348 
+slurmctld: 1641021273656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1254000000 sbatch --chdir=/home/user1 -J jobid_1049 --uid=user1 -t 00:58:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1254 
+slurmctld: 1641021384656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user4 -J jobid_1050 --uid=user4 -t 00:20:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641021510656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 313000000 sbatch --chdir=/home/user1 -J jobid_1051 --uid=user1 -t 00:08:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 313 
+slurmctld: 1641021787656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 417000000 sbatch --chdir=/home/user1 -J jobid_1052 --uid=user1 -t 00:12:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 417 
+slurmctld: 1641021791656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 942000000 sbatch --chdir=/home/user2 -J jobid_1053 --uid=user2 -t 00:46:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 942 
+slurmctld: 1641021836656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 336000000 sbatch --chdir=/home/user1 -J jobid_1054 --uid=user1 -t 00:07:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 336 
+slurmctld: 1641021903656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 369000000 sbatch --chdir=/home/user3 -J jobid_1055 --uid=user3 -t 00:11:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 369 
+slurmctld: 1641021926656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1149000000 sbatch --chdir=/home/user5 -J jobid_1056 --uid=user5 -t 00:25:00 -N 1 --gpus=4 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1149 
+slurmctld: 1641022021656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 497000000 sbatch --chdir=/home/user1 -J jobid_1057 --uid=user1 -t 00:11:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 497 
+slurmctld: 1641022087656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user1 -J jobid_1058 --uid=user1 -t 00:08:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641022180656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 261000000 sbatch --chdir=/home/user5 -J jobid_1059 --uid=user5 -t 00:07:00 -N 1 --gpus=2 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 261 
+slurmctld: 1641022299656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 575000000 sbatch --chdir=/home/user3 -J jobid_1060 --uid=user3 -t 00:18:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 575 
+slurmctld: 1641022618656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1069000000 sbatch --chdir=/home/user1 -J jobid_1061 --uid=user1 -t 00:26:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1069 
+slurmctld: 1641022811656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 409000000 sbatch --chdir=/home/user1 -J jobid_1062 --uid=user1 -t 00:14:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 409 
+slurmctld: 1641022819656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 337000000 sbatch --chdir=/home/user1 -J jobid_1063 --uid=user1 -t 00:11:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 337 
+slurmctld: 1641022868656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 2888000000 sbatch --chdir=/home/user1 -J jobid_1064 --uid=user1 -t 02:04:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 2888 
+slurmctld: 1641023089656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1710000000 sbatch --chdir=/home/user1 -J jobid_1065 --uid=user1 -t 00:48:00 -N 2 --gpus=16 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1710 
+slurmctld: 1641023108656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 220000000 sbatch --chdir=/home/user3 -J jobid_1066 --uid=user3 -t 00:07:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 220 
+slurmctld: 1641023214656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 272000000 sbatch --chdir=/home/user2 -J jobid_1067 --uid=user2 -t 00:13:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 272 
+slurmctld: 1641023248656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1172000000 sbatch --chdir=/home/user1 -J jobid_1068 --uid=user1 -t 00:49:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1172 
+slurmctld: 1641023273656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 279000000 sbatch --chdir=/home/user1 -J jobid_1069 --uid=user1 -t 00:14:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 279 
+slurmctld: 1641023349656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 2623000000 sbatch --chdir=/home/user4 -J jobid_1070 --uid=user4 -t 01:40:00 -N 1 --gpus=8 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 2623 
+slurmctld: 1641023420656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 487000000 sbatch --chdir=/home/user1 -J jobid_1071 --uid=user1 -t 00:16:00 -N 2 --gpus=16 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 487 
+slurmctld: 1641023449656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 945000000 sbatch --chdir=/home/user5 -J jobid_1072 --uid=user5 -t 00:29:00 -N 1 --gpus=2 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 945 
+slurmctld: 1641023688656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 512000000 sbatch --chdir=/home/user1 -J jobid_1073 --uid=user1 -t 00:24:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 512 
+slurmctld: 1641023712656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1191000000 sbatch --chdir=/home/user2 -J jobid_1074 --uid=user2 -t 00:53:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1191 
+slurmctld: 1641023972656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 624000000 sbatch --chdir=/home/user1 -J jobid_1075 --uid=user1 -t 00:16:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 624 
+slurmctld: 1641023975656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 537000000 sbatch --chdir=/home/user4 -J jobid_1076 --uid=user4 -t 00:18:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 537 
+slurmctld: 1641024311656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 771000000 sbatch --chdir=/home/user2 -J jobid_1077 --uid=user2 -t 00:24:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 771 
+slurmctld: 1641024408656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 249000000 sbatch --chdir=/home/user3 -J jobid_1078 --uid=user3 -t 00:10:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 249 
+slurmctld: 1641024455656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 826000000 sbatch --chdir=/home/user5 -J jobid_1079 --uid=user5 -t 00:36:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 826 
+slurmctld: 1641024752656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1392000000 sbatch --chdir=/home/user4 -J jobid_1080 --uid=user4 -t 00:37:00 -N 1 --gpus=8 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1392 
+slurmctld: 1641024788656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 499000000 sbatch --chdir=/home/user5 -J jobid_1081 --uid=user5 -t 00:20:00 -N 1 --gpus=2 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 499 
+slurmctld: 1641024912656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1072000000 sbatch --chdir=/home/user4 -J jobid_1082 --uid=user4 -t 00:45:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1072 
+slurmctld: 1641024943656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 3069000000 sbatch --chdir=/home/user3 -J jobid_1083 --uid=user3 -t 01:17:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 3069 
+slurmctld: 1641024976656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1026000000 sbatch --chdir=/home/user5 -J jobid_1084 --uid=user5 -t 00:34:00 -N 1 --gpus=4 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1026 
+slurmctld: 1641025023656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 745000000 sbatch --chdir=/home/user1 -J jobid_1085 --uid=user1 -t 00:20:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 745 
+slurmctld: 1641025159656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 187000000 sbatch --chdir=/home/user1 -J jobid_1086 --uid=user1 -t 00:09:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 187 
+slurmctld: 1641025406656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 176000000 sbatch --chdir=/home/user1 -J jobid_1087 --uid=user1 -t 00:08:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 176 
+slurmctld: 1641025434656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 173000000 sbatch --chdir=/home/user3 -J jobid_1088 --uid=user3 -t 00:05:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 173 
+slurmctld: 1641025655656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 283000000 sbatch --chdir=/home/user2 -J jobid_1089 --uid=user2 -t 00:09:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 283 
+slurmctld: 1641025833656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 660000000 sbatch --chdir=/home/user1 -J jobid_1090 --uid=user1 -t 00:16:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 660 
+slurmctld: 1641025983656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 2156000000 sbatch --chdir=/home/user1 -J jobid_1091 --uid=user1 -t 01:03:00 -N 2 --gpus=16 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 2156 
+slurmctld: 1641026040656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 478000000 sbatch --chdir=/home/user3 -J jobid_1092 --uid=user3 -t 00:17:00 -N 1 --gpus=8 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 478 
+slurmctld: 1641026152656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1620000000 sbatch --chdir=/home/user1 -J jobid_1093 --uid=user1 -t 00:35:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1620 
+slurmctld: 1641026295656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 208000000 sbatch --chdir=/home/user1 -J jobid_1094 --uid=user1 -t 00:11:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 208 
+slurmctld: 1641026649656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1062000000 sbatch --chdir=/home/user1 -J jobid_1095 --uid=user1 -t 00:22:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1062 
+slurmctld: 1641026712656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 517000000 sbatch --chdir=/home/user5 -J jobid_1096 --uid=user5 -t 00:12:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 517 
+slurmctld: 1641026864656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 309000000 sbatch --chdir=/home/user5 -J jobid_1097 --uid=user5 -t 00:11:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 309 
+slurmctld: 1641026999656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 233000000 sbatch --chdir=/home/user1 -J jobid_1098 --uid=user1 -t 00:11:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 233 
+slurmctld: 1641027906656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 517000000 sbatch --chdir=/home/user2 -J jobid_1099 --uid=user2 -t 00:18:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 517 
+slurmctld: 1641027924656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 233000000 sbatch --chdir=/home/user1 -J jobid_1100 --uid=user1 -t 00:11:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 233 
+slurmctld: 1641027926656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 702000000 sbatch --chdir=/home/user5 -J jobid_1101 --uid=user5 -t 00:20:00 -N 2 --gpus=16 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 702 
+slurmctld: 1641027930656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 163000000 sbatch --chdir=/home/user1 -J jobid_1102 --uid=user1 -t 00:06:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 163 
+slurmctld: 1641028025656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 822000000 sbatch --chdir=/home/user1 -J jobid_1103 --uid=user1 -t 00:26:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 822 
+slurmctld: 1641028466656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 293000000 sbatch --chdir=/home/user1 -J jobid_1104 --uid=user1 -t 00:13:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 293 
+slurmctld: 1641028626656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 479000000 sbatch --chdir=/home/user1 -J jobid_1105 --uid=user1 -t 00:19:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 479 
+slurmctld: 1641028716656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 483000000 sbatch --chdir=/home/user2 -J jobid_1106 --uid=user2 -t 00:14:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 483 
+slurmctld: 1641029054656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 433000000 sbatch --chdir=/home/user1 -J jobid_1107 --uid=user1 -t 00:21:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 433 
+slurmctld: 1641029227656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1378000000 sbatch --chdir=/home/user1 -J jobid_1108 --uid=user1 -t 00:51:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1378 
+slurmctld: 1641029284656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 288000000 sbatch --chdir=/home/user1 -J jobid_1109 --uid=user1 -t 00:07:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 288 
+slurmctld: 1641029304656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 145000000 sbatch --chdir=/home/user4 -J jobid_1110 --uid=user4 -t 00:07:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 145 
+slurmctld: 1641029432656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 374000000 sbatch --chdir=/home/user4 -J jobid_1111 --uid=user4 -t 00:18:00 -N 1 --gpus=4 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 374 
+slurmctld: 1641029458656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user1 -J jobid_1112 --uid=user1 -t 00:18:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641029725656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 890000000 sbatch --chdir=/home/user1 -J jobid_1113 --uid=user1 -t 00:24:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 890 
+slurmctld: 1641029734656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 199000000 sbatch --chdir=/home/user3 -J jobid_1114 --uid=user3 -t 00:08:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 199 
+slurmctld: 1641029743656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 374000000 sbatch --chdir=/home/user1 -J jobid_1115 --uid=user1 -t 00:08:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 374 
+slurmctld: 1641030046656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 354000000 sbatch --chdir=/home/user1 -J jobid_1116 --uid=user1 -t 00:18:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 354 
+slurmctld: 1641030103656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 967000000 sbatch --chdir=/home/user1 -J jobid_1117 --uid=user1 -t 00:25:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 967 
+slurmctld: 1641030254656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 320000000 sbatch --chdir=/home/user1 -J jobid_1118 --uid=user1 -t 00:12:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 320 
+slurmctld: 1641030396656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1152000000 sbatch --chdir=/home/user1 -J jobid_1119 --uid=user1 -t 00:27:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1152 
+slurmctld: 1641030684656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 467000000 sbatch --chdir=/home/user1 -J jobid_1120 --uid=user1 -t 00:19:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 467 
+slurmctld: 1641030690656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1182000000 sbatch --chdir=/home/user1 -J jobid_1121 --uid=user1 -t 00:33:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1182 
+slurmctld: 1641030703656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 234000000 sbatch --chdir=/home/user1 -J jobid_1122 --uid=user1 -t 00:06:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 234 
+slurmctld: 1641031078656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 606000000 sbatch --chdir=/home/user1 -J jobid_1123 --uid=user1 -t 00:20:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 606 
+slurmctld: 1641031187656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 761000000 sbatch --chdir=/home/user1 -J jobid_1124 --uid=user1 -t 00:37:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 761 
+slurmctld: 1641031378656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 666000000 sbatch --chdir=/home/user5 -J jobid_1125 --uid=user5 -t 00:19:00 -N 1 --gpus=2 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 666 
+slurmctld: 1641031450656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1518000000 sbatch --chdir=/home/user1 -J jobid_1126 --uid=user1 -t 01:00:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1518 
+slurmctld: 1641031668656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 552000000 sbatch --chdir=/home/user1 -J jobid_1127 --uid=user1 -t 00:27:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 552 
+slurmctld: 1641031711656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 507000000 sbatch --chdir=/home/user1 -J jobid_1128 --uid=user1 -t 00:20:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 507 
+slurmctld: 1641031866656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 494000000 sbatch --chdir=/home/user2 -J jobid_1129 --uid=user2 -t 00:23:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 494 
+slurmctld: 1641031881656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 487000000 sbatch --chdir=/home/user3 -J jobid_1130 --uid=user3 -t 00:21:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 487 
+slurmctld: 1641031934656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 531000000 sbatch --chdir=/home/user1 -J jobid_1131 --uid=user1 -t 00:26:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 531 
+slurmctld: 1641032207656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 137000000 sbatch --chdir=/home/user1 -J jobid_1132 --uid=user1 -t 00:06:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 137 
+slurmctld: 1641032583656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 879000000 sbatch --chdir=/home/user1 -J jobid_1133 --uid=user1 -t 00:40:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 879 
+slurmctld: 1641032754656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1295000000 sbatch --chdir=/home/user1 -J jobid_1134 --uid=user1 -t 00:33:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1295 
+slurmctld: 1641032958656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 156000000 sbatch --chdir=/home/user1 -J jobid_1135 --uid=user1 -t 00:06:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 156 
+slurmctld: 1641033436656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 2189000000 sbatch --chdir=/home/user1 -J jobid_1136 --uid=user1 -t 01:10:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 2189 
+slurmctld: 1641033478656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 927000000 sbatch --chdir=/home/user1 -J jobid_1137 --uid=user1 -t 00:33:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 927 
+slurmctld: 1641033651656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1134000000 sbatch --chdir=/home/user1 -J jobid_1138 --uid=user1 -t 00:47:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1134 
+slurmctld: 1641033891656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 221000000 sbatch --chdir=/home/user1 -J jobid_1139 --uid=user1 -t 00:08:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 221 
+slurmctld: 1641033987656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1590000000 sbatch --chdir=/home/user3 -J jobid_1140 --uid=user3 -t 01:12:00 -N 1 --gpus=4 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1590 
+slurmctld: 1641034235656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 470000000 sbatch --chdir=/home/user1 -J jobid_1141 --uid=user1 -t 00:15:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 470 
+slurmctld: 1641034236656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1003000000 sbatch --chdir=/home/user4 -J jobid_1142 --uid=user4 -t 00:26:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1003 
+slurmctld: 1641034388656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 535000000 sbatch --chdir=/home/user3 -J jobid_1143 --uid=user3 -t 00:12:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 535 
+slurmctld: 1641034542656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 428000000 sbatch --chdir=/home/user3 -J jobid_1144 --uid=user3 -t 00:18:00 -N 1 --gpus=4 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 428 
+slurmctld: 1641034619656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 204000000 sbatch --chdir=/home/user1 -J jobid_1145 --uid=user1 -t 00:09:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 204 
+slurmctld: 1641034858656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 753000000 sbatch --chdir=/home/user1 -J jobid_1146 --uid=user1 -t 00:19:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 753 
+slurmctld: 1641034879656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1066000000 sbatch --chdir=/home/user1 -J jobid_1147 --uid=user1 -t 00:37:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1066 
+slurmctld: 1641035206656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 273000000 sbatch --chdir=/home/user1 -J jobid_1148 --uid=user1 -t 00:10:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 273 
+slurmctld: 1641035252656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 640000000 sbatch --chdir=/home/user1 -J jobid_1149 --uid=user1 -t 00:26:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 640 
+slurmctld: 1641035423656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 267000000 sbatch --chdir=/home/user1 -J jobid_1150 --uid=user1 -t 00:07:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 267 
+slurmctld: 1641035556656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 164000000 sbatch --chdir=/home/user1 -J jobid_1151 --uid=user1 -t 00:06:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 164 
+slurmctld: 1641035599656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 823000000 sbatch --chdir=/home/user1 -J jobid_1152 --uid=user1 -t 00:24:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 823 
+slurmctld: 1641035948656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 254000000 sbatch --chdir=/home/user1 -J jobid_1153 --uid=user1 -t 00:07:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 254 
+slurmctld: 1641035961656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 957000000 sbatch --chdir=/home/user1 -J jobid_1154 --uid=user1 -t 00:45:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 957 
+slurmctld: 1641036005656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 603000000 sbatch --chdir=/home/user1 -J jobid_1155 --uid=user1 -t 00:22:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 603 
+slurmctld: 1641036084656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 479000000 sbatch --chdir=/home/user4 -J jobid_1156 --uid=user4 -t 00:12:00 -N 1 --gpus=4 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 479 
+slurmctld: 1641036131656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 697000000 sbatch --chdir=/home/user1 -J jobid_1157 --uid=user1 -t 00:24:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 697 
+slurmctld: 1641036146656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user1 -J jobid_1158 --uid=user1 -t 00:09:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641036199656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1757000000 sbatch --chdir=/home/user1 -J jobid_1159 --uid=user1 -t 00:45:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1757 
+slurmctld: 1641036327656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 264000000 sbatch --chdir=/home/user1 -J jobid_1160 --uid=user1 -t 00:13:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 264 
+slurmctld: 1641036581656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 2084000000 sbatch --chdir=/home/user1 -J jobid_1161 --uid=user1 -t 01:11:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 2084 
+slurmctld: 1641036650656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 248000000 sbatch --chdir=/home/user1 -J jobid_1162 --uid=user1 -t 00:09:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 248 
+slurmctld: 1641036694656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 801000000 sbatch --chdir=/home/user1 -J jobid_1163 --uid=user1 -t 00:29:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 801 
+slurmctld: 1641036995656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 339000000 sbatch --chdir=/home/user1 -J jobid_1164 --uid=user1 -t 00:09:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 339 
+slurmctld: 1641037086656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 269000000 sbatch --chdir=/home/user1 -J jobid_1165 --uid=user1 -t 00:14:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 269 
+slurmctld: 1641037165656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 426000000 sbatch --chdir=/home/user5 -J jobid_1166 --uid=user5 -t 00:10:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 426 
+slurmctld: 1641037341656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1010000000 sbatch --chdir=/home/user1 -J jobid_1167 --uid=user1 -t 00:26:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1010 
+slurmctld: 1641037366656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1939000000 sbatch --chdir=/home/user1 -J jobid_1168 --uid=user1 -t 01:32:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1939 
+slurmctld: 1641037477656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 327000000 sbatch --chdir=/home/user1 -J jobid_1169 --uid=user1 -t 00:08:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 327 
+slurmctld: 1641037537656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 3663000000 sbatch --chdir=/home/user1 -J jobid_1170 --uid=user1 -t 02:19:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 3663 
+slurmctld: 1641037587656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user1 -J jobid_1171 --uid=user1 -t 00:13:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641037587656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 180000000 sbatch --chdir=/home/user3 -J jobid_1172 --uid=user3 -t 00:07:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 180 
+slurmctld: 1641037618656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 920000000 sbatch --chdir=/home/user4 -J jobid_1173 --uid=user4 -t 00:39:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 920 
+slurmctld: 1641037747656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 268000000 sbatch --chdir=/home/user3 -J jobid_1174 --uid=user3 -t 00:10:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 268 
+slurmctld: 1641037802656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1168000000 sbatch --chdir=/home/user2 -J jobid_1175 --uid=user2 -t 00:43:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1168 
+slurmctld: 1641037851656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 886000000 sbatch --chdir=/home/user1 -J jobid_1176 --uid=user1 -t 00:22:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 886 
+slurmctld: 1641037880656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user1 -J jobid_1177 --uid=user1 -t 00:02:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641037946656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user1 -J jobid_1178 --uid=user1 -t 00:04:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641038240656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 569000000 sbatch --chdir=/home/user3 -J jobid_1179 --uid=user3 -t 00:14:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 569 
+slurmctld: 1641038325656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 170000000 sbatch --chdir=/home/user2 -J jobid_1180 --uid=user2 -t 00:07:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 170 
+slurmctld: 1641038385656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1601000000 sbatch --chdir=/home/user2 -J jobid_1181 --uid=user2 -t 01:06:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1601 
+slurmctld: 1641038511656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 287000000 sbatch --chdir=/home/user3 -J jobid_1182 --uid=user3 -t 00:11:00 -N 1 --gpus=4 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 287 
+slurmctld: 1641038593656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 258000000 sbatch --chdir=/home/user3 -J jobid_1183 --uid=user3 -t 00:13:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 258 
+slurmctld: 1641038731656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1070000000 sbatch --chdir=/home/user2 -J jobid_1184 --uid=user2 -t 00:38:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1070 
+slurmctld: 1641039146656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 212000000 sbatch --chdir=/home/user3 -J jobid_1185 --uid=user3 -t 00:11:00 -N 1 --gpus=8 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 212 
+slurmctld: 1641039199656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1131000000 sbatch --chdir=/home/user5 -J jobid_1186 --uid=user5 -t 00:52:00 -N 1 --gpus=2 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1131 
+slurmctld: 1641039287656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 656000000 sbatch --chdir=/home/user1 -J jobid_1187 --uid=user1 -t 00:32:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 656 
+slurmctld: 1641039293656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 388000000 sbatch --chdir=/home/user2 -J jobid_1188 --uid=user2 -t 00:18:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 388 
+slurmctld: 1641039403656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user1 -J jobid_1189 --uid=user1 -t 00:04:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641039452656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 460000000 sbatch --chdir=/home/user1 -J jobid_1190 --uid=user1 -t 00:14:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 460 
+slurmctld: 1641039468656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 228000000 sbatch --chdir=/home/user4 -J jobid_1191 --uid=user4 -t 00:10:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 228 
+slurmctld: 1641039518656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1539000000 sbatch --chdir=/home/user5 -J jobid_1192 --uid=user5 -t 00:31:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1539 
+slurmctld: 1641039682656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 357000000 sbatch --chdir=/home/user5 -J jobid_1193 --uid=user5 -t 00:17:00 -N 1 --gpus=8 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 357 
+slurmctld: 1641039788656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 486000000 sbatch --chdir=/home/user5 -J jobid_1194 --uid=user5 -t 00:17:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 486 
+slurmctld: 1641039872656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 327000000 sbatch --chdir=/home/user5 -J jobid_1195 --uid=user5 -t 00:08:00 -N 1 --gpus=4 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 327 
+slurmctld: 1641039999656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 983000000 sbatch --chdir=/home/user1 -J jobid_1196 --uid=user1 -t 00:31:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 983 
+slurmctld: 1641040015656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 861000000 sbatch --chdir=/home/user1 -J jobid_1197 --uid=user1 -t 00:24:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 861 
+slurmctld: 1641040046656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 2136000000 sbatch --chdir=/home/user1 -J jobid_1198 --uid=user1 -t 01:02:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 2136 
+slurmctld: 1641040333656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 205000000 sbatch --chdir=/home/user1 -J jobid_1199 --uid=user1 -t 00:10:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 205 
+slurmctld: 1641040368656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 273000000 sbatch --chdir=/home/user1 -J jobid_1200 --uid=user1 -t 00:13:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 273 
+slurmctld: 1641040567656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1582000000 sbatch --chdir=/home/user5 -J jobid_1201 --uid=user5 -t 01:14:00 -N 1 --gpus=8 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1582 
+slurmctld: 1641040618656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 266000000 sbatch --chdir=/home/user2 -J jobid_1202 --uid=user2 -t 00:11:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 266 
+slurmctld: 1641040623656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 335000000 sbatch --chdir=/home/user1 -J jobid_1203 --uid=user1 -t 00:12:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 335 
+slurmctld: 1641040693656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 301000000 sbatch --chdir=/home/user2 -J jobid_1204 --uid=user2 -t 00:13:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 301 
+slurmctld: 1641040777656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user5 -J jobid_1205 --uid=user5 -t 00:06:00 -N 1 --gpus=2 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641040833656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1284000000 sbatch --chdir=/home/user5 -J jobid_1206 --uid=user5 -t 00:33:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1284 
+slurmctld: 1641040839656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 808000000 sbatch --chdir=/home/user2 -J jobid_1207 --uid=user2 -t 00:24:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 808 
+slurmctld: 1641040930656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 301000000 sbatch --chdir=/home/user5 -J jobid_1208 --uid=user5 -t 00:10:00 -N 1 --gpus=4 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 301 
+slurmctld: 1641041057656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 860000000 sbatch --chdir=/home/user1 -J jobid_1209 --uid=user1 -t 00:28:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 860 
+slurmctld: 1641041209656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 866000000 sbatch --chdir=/home/user5 -J jobid_1210 --uid=user5 -t 00:29:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 866 
+slurmctld: 1641041366656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 213000000 sbatch --chdir=/home/user4 -J jobid_1211 --uid=user4 -t 00:09:00 -N 2 --gpus=16 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 213 
+slurmctld: 1641041489656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1138000000 sbatch --chdir=/home/user1 -J jobid_1212 --uid=user1 -t 00:44:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1138 
+slurmctld: 1641041529656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 903000000 sbatch --chdir=/home/user1 -J jobid_1213 --uid=user1 -t 00:34:00 -N 2 --gpus=16 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 903 
+slurmctld: 1641041540656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1856000000 sbatch --chdir=/home/user1 -J jobid_1214 --uid=user1 -t 01:33:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1856 
+slurmctld: 1641041623656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 675000000 sbatch --chdir=/home/user3 -J jobid_1215 --uid=user3 -t 00:33:00 -N 1 --gpus=4 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 675 
+slurmctld: 1641041726656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 977000000 sbatch --chdir=/home/user3 -J jobid_1216 --uid=user3 -t 00:24:00 -N 1 --gpus=4 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 977 
+slurmctld: 1641041914656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 945000000 sbatch --chdir=/home/user1 -J jobid_1217 --uid=user1 -t 00:38:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 945 
+slurmctld: 1641041915656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 150000000 sbatch --chdir=/home/user1 -J jobid_1218 --uid=user1 -t 00:05:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 150 
+slurmctld: 1641041949656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 2481000000 sbatch --chdir=/home/user2 -J jobid_1219 --uid=user2 -t 01:27:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 2481 
+slurmctld: 1641042017656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 511000000 sbatch --chdir=/home/user2 -J jobid_1220 --uid=user2 -t 00:13:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 511 
+slurmctld: 1641042156656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 416000000 sbatch --chdir=/home/user1 -J jobid_1221 --uid=user1 -t 00:18:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 416 
+slurmctld: 1641042444656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1209000000 sbatch --chdir=/home/user2 -J jobid_1222 --uid=user2 -t 00:37:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1209 
+slurmctld: 1641043051656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 118000000 sbatch --chdir=/home/user1 -J jobid_1223 --uid=user1 -t 00:03:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 118 
+slurmctld: 1641043079656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1024000000 sbatch --chdir=/home/user5 -J jobid_1224 --uid=user5 -t 00:28:00 -N 1 --gpus=2 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1024 
+slurmctld: 1641043107656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 841000000 sbatch --chdir=/home/user1 -J jobid_1225 --uid=user1 -t 00:36:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 841 
+slurmctld: 1641043139656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 695000000 sbatch --chdir=/home/user1 -J jobid_1226 --uid=user1 -t 00:19:00 -N 2 --gpus=16 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 695 
+slurmctld: 1641043139656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 594000000 sbatch --chdir=/home/user1 -J jobid_1227 --uid=user1 -t 00:22:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 594 
+slurmctld: 1641043253656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 801000000 sbatch --chdir=/home/user1 -J jobid_1228 --uid=user1 -t 00:30:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 801 
+slurmctld: 1641043269656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1695000000 sbatch --chdir=/home/user1 -J jobid_1229 --uid=user1 -t 01:10:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1695 
+slurmctld: 1641043457656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 366000000 sbatch --chdir=/home/user1 -J jobid_1230 --uid=user1 -t 00:18:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 366 
+slurmctld: 1641044017656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 129000000 sbatch --chdir=/home/user2 -J jobid_1231 --uid=user2 -t 00:05:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 129 
+slurmctld: 1641044059656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 259000000 sbatch --chdir=/home/user1 -J jobid_1232 --uid=user1 -t 00:09:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 259 
+slurmctld: 1641044382656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 272000000 sbatch --chdir=/home/user4 -J jobid_1233 --uid=user4 -t 00:14:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 272 
+slurmctld: 1641044871656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 536000000 sbatch --chdir=/home/user1 -J jobid_1234 --uid=user1 -t 00:15:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 536 
+slurmctld: 1641045020656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 405000000 sbatch --chdir=/home/user1 -J jobid_1235 --uid=user1 -t 00:10:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 405 
+slurmctld: 1641045116656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 65000000 sbatch --chdir=/home/user1 -J jobid_1236 --uid=user1 -t 00:04:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 65 
+slurmctld: 1641045461656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 539000000 sbatch --chdir=/home/user1 -J jobid_1237 --uid=user1 -t 00:15:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 539 
+slurmctld: 1641045742656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 249000000 sbatch --chdir=/home/user1 -J jobid_1238 --uid=user1 -t 00:09:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 249 
+slurmctld: 1641045743656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1143000000 sbatch --chdir=/home/user1 -J jobid_1239 --uid=user1 -t 00:58:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1143 
+slurmctld: 1641045832656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 729000000 sbatch --chdir=/home/user5 -J jobid_1240 --uid=user5 -t 00:30:00 -N 1 --gpus=4 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 729 
+slurmctld: 1641046892656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 168000000 sbatch --chdir=/home/user1 -J jobid_1241 --uid=user1 -t 00:07:00 -N 2 --gpus=16 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 168 
+slurmctld: 1641046929656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 910000000 sbatch --chdir=/home/user1 -J jobid_1242 --uid=user1 -t 00:23:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 910 
+slurmctld: 1641047163656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1897000000 sbatch --chdir=/home/user1 -J jobid_1243 --uid=user1 -t 00:54:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1897 
+slurmctld: 1641047228656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1824000000 sbatch --chdir=/home/user1 -J jobid_1244 --uid=user1 -t 00:42:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1824 
+slurmctld: 1641047431656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 439000000 sbatch --chdir=/home/user2 -J jobid_1245 --uid=user2 -t 00:15:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 439 
+slurmctld: 1641047474656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 279000000 sbatch --chdir=/home/user4 -J jobid_1246 --uid=user4 -t 00:07:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 279 
+slurmctld: 1641047772656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 722000000 sbatch --chdir=/home/user1 -J jobid_1247 --uid=user1 -t 00:19:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 722 
+slurmctld: 1641047801656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 801000000 sbatch --chdir=/home/user1 -J jobid_1248 --uid=user1 -t 00:22:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 801 
+slurmctld: 1641047847656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 2520000000 sbatch --chdir=/home/user1 -J jobid_1249 --uid=user1 -t 01:19:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 2520 
+slurmctld: 1641047991656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 839000000 sbatch --chdir=/home/user1 -J jobid_1250 --uid=user1 -t 00:30:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 839 
+slurmctld: 1641048016656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 482000000 sbatch --chdir=/home/user1 -J jobid_1251 --uid=user1 -t 00:21:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 482 
+slurmctld: 1641048176656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 2121000000 sbatch --chdir=/home/user1 -J jobid_1252 --uid=user1 -t 01:25:00 -N 2 --gpus=16 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 2121 
+slurmctld: 1641048335656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 748000000 sbatch --chdir=/home/user3 -J jobid_1253 --uid=user3 -t 00:31:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 748 
+slurmctld: 1641048499656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1932000000 sbatch --chdir=/home/user5 -J jobid_1254 --uid=user5 -t 00:43:00 -N 1 --gpus=4 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1932 
+slurmctld: 1641048661656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 109000000 sbatch --chdir=/home/user1 -J jobid_1255 --uid=user1 -t 00:04:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 109 
+slurmctld: 1641048848656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 497000000 sbatch --chdir=/home/user1 -J jobid_1256 --uid=user1 -t 00:16:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 497 
+slurmctld: 1641048931656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 131000000 sbatch --chdir=/home/user4 -J jobid_1257 --uid=user4 -t 00:06:00 -N 1 --gpus=8 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 131 
+slurmctld: 1641049299656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 441000000 sbatch --chdir=/home/user2 -J jobid_1258 --uid=user2 -t 00:17:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 441 
+slurmctld: 1641049585656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 500000000 sbatch --chdir=/home/user1 -J jobid_1259 --uid=user1 -t 00:23:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 500 
+slurmctld: 1641049877656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1614000000 sbatch --chdir=/home/user1 -J jobid_1260 --uid=user1 -t 00:59:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1614 
+slurmctld: 1641049976656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 217000000 sbatch --chdir=/home/user2 -J jobid_1261 --uid=user2 -t 00:09:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 217 
+slurmctld: 1641050038656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1130000000 sbatch --chdir=/home/user1 -J jobid_1262 --uid=user1 -t 00:29:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1130 
+slurmctld: 1641050309656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1135000000 sbatch --chdir=/home/user1 -J jobid_1263 --uid=user1 -t 00:34:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1135 
+slurmctld: 1641050340656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 175000000 sbatch --chdir=/home/user5 -J jobid_1264 --uid=user5 -t 00:06:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 175 
+slurmctld: 1641050485656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 109000000 sbatch --chdir=/home/user3 -J jobid_1265 --uid=user3 -t 00:04:00 -N 1 --gpus=4 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 109 
+slurmctld: 1641050643656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user1 -J jobid_1266 --uid=user1 -t 00:03:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641050719656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 269000000 sbatch --chdir=/home/user1 -J jobid_1267 --uid=user1 -t 00:10:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 269 
+slurmctld: 1641050777656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 300000000 sbatch --chdir=/home/user3 -J jobid_1268 --uid=user3 -t 00:14:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 300 
+slurmctld: 1641050959656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 373000000 sbatch --chdir=/home/user1 -J jobid_1269 --uid=user1 -t 00:16:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 373 
+slurmctld: 1641051022656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 388000000 sbatch --chdir=/home/user5 -J jobid_1270 --uid=user5 -t 00:13:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 388 
+slurmctld: 1641051132656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 575000000 sbatch --chdir=/home/user4 -J jobid_1271 --uid=user4 -t 00:14:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 575 
+slurmctld: 1641051248656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1562000000 sbatch --chdir=/home/user1 -J jobid_1272 --uid=user1 -t 01:07:00 -N 2 --gpus=16 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1562 
+slurmctld: 1641051300656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 588000000 sbatch --chdir=/home/user1 -J jobid_1273 --uid=user1 -t 00:23:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 588 
+slurmctld: 1641051605656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1803000000 sbatch --chdir=/home/user1 -J jobid_1274 --uid=user1 -t 00:47:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1803 
+slurmctld: 1641051635656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 525000000 sbatch --chdir=/home/user3 -J jobid_1275 --uid=user3 -t 00:14:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 525 
+slurmctld: 1641051692656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1619000000 sbatch --chdir=/home/user1 -J jobid_1276 --uid=user1 -t 01:11:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1619 
+slurmctld: 1641051692656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 791000000 sbatch --chdir=/home/user1 -J jobid_1277 --uid=user1 -t 00:37:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 791 
+slurmctld: 1641051757656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 809000000 sbatch --chdir=/home/user3 -J jobid_1278 --uid=user3 -t 00:34:00 -N 2 --gpus=16 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 809 
+slurmctld: 1641051864656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 996000000 sbatch --chdir=/home/user1 -J jobid_1279 --uid=user1 -t 00:42:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 996 
+slurmctld: 1641051919656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 211000000 sbatch --chdir=/home/user1 -J jobid_1280 --uid=user1 -t 00:06:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 211 
+slurmctld: 1641051936656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 529000000 sbatch --chdir=/home/user1 -J jobid_1281 --uid=user1 -t 00:18:00 -N 2 --gpus=16 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 529 
+slurmctld: 1641052038656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 3864000000 sbatch --chdir=/home/user5 -J jobid_1282 --uid=user5 -t 01:38:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 3864 
+slurmctld: 1641052088656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1290000000 sbatch --chdir=/home/user2 -J jobid_1283 --uid=user2 -t 00:52:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1290 
+slurmctld: 1641052116656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 557000000 sbatch --chdir=/home/user1 -J jobid_1284 --uid=user1 -t 00:28:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 557 
+slurmctld: 1641052334656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 826000000 sbatch --chdir=/home/user1 -J jobid_1285 --uid=user1 -t 00:22:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 826 
+slurmctld: 1641052338656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 613000000 sbatch --chdir=/home/user1 -J jobid_1286 --uid=user1 -t 00:21:00 -N 2 --gpus=16 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 613 
+slurmctld: 1641052406656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 927000000 sbatch --chdir=/home/user2 -J jobid_1287 --uid=user2 -t 00:39:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 927 
+slurmctld: 1641052434656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 476000000 sbatch --chdir=/home/user4 -J jobid_1288 --uid=user4 -t 00:22:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 476 
+slurmctld: 1641052878656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 322000000 sbatch --chdir=/home/user1 -J jobid_1289 --uid=user1 -t 00:08:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 322 
+slurmctld: 1641052913656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 658000000 sbatch --chdir=/home/user4 -J jobid_1290 --uid=user4 -t 00:24:00 -N 1 --gpus=4 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 658 
+slurmctld: 1641053170656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 576000000 sbatch --chdir=/home/user3 -J jobid_1291 --uid=user3 -t 00:23:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 576 
+slurmctld: 1641053404656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 260000000 sbatch --chdir=/home/user4 -J jobid_1292 --uid=user4 -t 00:11:00 -N 1 --gpus=4 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 260 
+slurmctld: 1641053487656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1423000000 sbatch --chdir=/home/user1 -J jobid_1293 --uid=user1 -t 01:01:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1423 
+slurmctld: 1641053602656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 574000000 sbatch --chdir=/home/user1 -J jobid_1294 --uid=user1 -t 00:20:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 574 
+slurmctld: 1641053797656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 305000000 sbatch --chdir=/home/user1 -J jobid_1295 --uid=user1 -t 00:12:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 305 
+slurmctld: 1641053824656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 492000000 sbatch --chdir=/home/user1 -J jobid_1296 --uid=user1 -t 00:23:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 492 
+slurmctld: 1641053851656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 390000000 sbatch --chdir=/home/user5 -J jobid_1297 --uid=user5 -t 00:16:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 390 
+slurmctld: 1641053967656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 179000000 sbatch --chdir=/home/user1 -J jobid_1298 --uid=user1 -t 00:09:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 179 
+slurmctld: 1641053983656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user1 -J jobid_1299 --uid=user1 -t 00:04:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641054023656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 402000000 sbatch --chdir=/home/user1 -J jobid_1300 --uid=user1 -t 00:15:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 402 
+slurmctld: 1641054042656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 648000000 sbatch --chdir=/home/user1 -J jobid_1301 --uid=user1 -t 00:31:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 648 
+slurmctld: 1641054055656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 680000000 sbatch --chdir=/home/user1 -J jobid_1302 --uid=user1 -t 00:22:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 680 
+slurmctld: 1641054282656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 123000000 sbatch --chdir=/home/user3 -J jobid_1303 --uid=user3 -t 00:04:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 123 
+slurmctld: 1641054328656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 847000000 sbatch --chdir=/home/user1 -J jobid_1304 --uid=user1 -t 00:26:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 847 
+slurmctld: 1641054396656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 2446000000 sbatch --chdir=/home/user1 -J jobid_1305 --uid=user1 -t 01:38:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 2446 
+slurmctld: 1641054405656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user3 -J jobid_1306 --uid=user3 -t 00:05:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 1641054415656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1808000000 sbatch --chdir=/home/user1 -J jobid_1307 --uid=user1 -t 00:44:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1808 
+slurmctld: 1641054610656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 193000000 sbatch --chdir=/home/user1 -J jobid_1308 --uid=user1 -t 00:07:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 193 
+slurmctld: 1641054683656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 695000000 sbatch --chdir=/home/user1 -J jobid_1309 --uid=user1 -t 00:21:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 695 
+slurmctld: 1641054779656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 330000000 sbatch --chdir=/home/user1 -J jobid_1310 --uid=user1 -t 00:08:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 330 
+slurmctld: 1641054813656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 431000000 sbatch --chdir=/home/user3 -J jobid_1311 --uid=user3 -t 00:14:00 -N 1 --gpus=8 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 431 
+slurmctld: 1641055117656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 601000000 sbatch --chdir=/home/user5 -J jobid_1312 --uid=user5 -t 00:25:00 -N 1 --gpus=2 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 601 
+slurmctld: 1641055348656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 312000000 sbatch --chdir=/home/user1 -J jobid_1313 --uid=user1 -t 00:08:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 312 
+slurmctld: 1641055374656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 949000000 sbatch --chdir=/home/user1 -J jobid_1314 --uid=user1 -t 00:44:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 949 
+slurmctld: 1641055484656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 577000000 sbatch --chdir=/home/user1 -J jobid_1315 --uid=user1 -t 00:14:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 577 
+slurmctld: 1641055804656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 951000000 sbatch --chdir=/home/user5 -J jobid_1316 --uid=user5 -t 00:29:00 -N 1 --gpus=8 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 951 
+slurmctld: 1641055843656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 145000000 sbatch --chdir=/home/user1 -J jobid_1317 --uid=user1 -t 00:07:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 145 
+slurmctld: 1641056142656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 2222000000 sbatch --chdir=/home/user4 -J jobid_1318 --uid=user4 -t 01:15:00 -N 1 --gpus=8 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 2222 
+slurmctld: 1641056175656588	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1170000000 sbatch --chdir=/home/user1 -J jobid_1319 --uid=user1 -t 00:43:00 -N 1 --gpus=4 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1170 
+slurmctld: 9223372036854775807	1002
+slurmctld: End Simulation Events:
+slurmctld: sim_slurmctld_main_start_time2: 1794114768110613
+slurmctld: simulator_start_time(corrected): 1641013213976588
+Submitted batch job 1001
+Submitted batch job 1002
+Submitted batch job 1003
+Submitted batch job 1004
+Submitted batch job 1005
+Submitted batch job 1006
+Submitted batch job 1007
+Submitted batch job 1008
+Submitted batch job 1009
+Submitted batch job 1010
+Submitted batch job 1011
+Submitted batch job 1012
+Submitted batch job 1013
+Submitted batch job 1014
+Submitted batch job 1015
+Submitted batch job 1016
+Submitted batch job 1017
+Submitted batch job 1018
+Submitted batch job 1019
+Submitted batch job 1020
+Submitted batch job 1021
+Submitted batch job 1022
+Submitted batch job 1023
+Submitted batch job 1024
+Submitted batch job 1025
+Submitted batch job 1026
+Submitted batch job 1027
+Submitted batch job 1028
+Submitted batch job 1029
+Submitted batch job 1030
+Submitted batch job 1031
+Submitted batch job 1032
+Submitted batch job 1033
+Submitted batch job 1034
+Submitted batch job 1035
+Submitted batch job 1036
+Submitted batch job 1037
+Submitted batch job 1038
+Submitted batch job 1039
+Submitted batch job 1040
+Submitted batch job 1041
+Submitted batch job 1042
+Submitted batch job 1043
+Submitted batch job 1044
+Submitted batch job 1045
+Submitted batch job 1046
+Submitted batch job 1047
+Submitted batch job 1048
+Submitted batch job 1049
+Submitted batch job 1050
+Submitted batch job 1051
+Submitted batch job 1052
+Submitted batch job 1053
+Submitted batch job 1054
+Submitted batch job 1055
+Submitted batch job 1056
+Submitted batch job 1057
+Submitted batch job 1058
+Submitted batch job 1059
+Submitted batch job 1060
+Submitted batch job 1061
+Submitted batch job 1062
+Submitted batch job 1063
+Submitted batch job 1064
+Submitted batch job 1065
+Submitted batch job 1066
+Submitted batch job 1067
+Submitted batch job 1068
+Submitted batch job 1069
+Submitted batch job 1070
+Submitted batch job 1071
+Submitted batch job 1072
+Submitted batch job 1073
+Submitted batch job 1074
+Submitted batch job 1075
+Submitted batch job 1076
+Submitted batch job 1077
+Submitted batch job 1078
+Submitted batch job 1079
+Submitted batch job 1080
+Submitted batch job 1081
+Submitted batch job 1082
+Submitted batch job 1083
+Submitted batch job 1084
+Submitted batch job 1085
+Submitted batch job 1086
+Submitted batch job 1087
+Submitted batch job 1088
+Submitted batch job 1089
+Submitted batch job 1090
+Submitted batch job 1091
+Submitted batch job 1092
+Submitted batch job 1093
+Submitted batch job 1094
+Submitted batch job 1095
+Submitted batch job 1096
+Submitted batch job 1097
+Submitted batch job 1098
+Submitted batch job 1099
+Submitted batch job 1100
+Submitted batch job 1101
+Submitted batch job 1102
+Submitted batch job 1103
+Submitted batch job 1104
+Submitted batch job 1105
+Submitted batch job 1106
+Submitted batch job 1107
+Submitted batch job 1108
+Submitted batch job 1109
+Submitted batch job 1110
+Submitted batch job 1111
+Submitted batch job 1112
+Submitted batch job 1113
+Submitted batch job 1114
+Submitted batch job 1115
+Submitted batch job 1116
+Submitted batch job 1117
+Submitted batch job 1118
+Submitted batch job 1119
+Submitted batch job 1120
+Submitted batch job 1121
+Submitted batch job 1122
+Submitted batch job 1123
+Submitted batch job 1124
+Submitted batch job 1125
+Submitted batch job 1126
+Submitted batch job 1127
+Submitted batch job 1128
+Submitted batch job 1129
+Submitted batch job 1130
+Submitted batch job 1131
+Submitted batch job 1132
+Submitted batch job 1133
+Submitted batch job 1134
+Submitted batch job 1135
+Submitted batch job 1136
+Submitted batch job 1137
+Submitted batch job 1138
+Submitted batch job 1139
+Submitted batch job 1140
+Submitted batch job 1141
+Submitted batch job 1142
+Submitted batch job 1143
+Submitted batch job 1144
+Submitted batch job 1145
+Submitted batch job 1146
+Submitted batch job 1147
+Submitted batch job 1148
+Submitted batch job 1149
+Submitted batch job 1150
+Submitted batch job 1151
+Submitted batch job 1152
+Submitted batch job 1153
+Submitted batch job 1154
+Submitted batch job 1155
+Submitted batch job 1156
+Submitted batch job 1157
+Submitted batch job 1158
+Submitted batch job 1159
+Submitted batch job 1160
+Submitted batch job 1161
+Submitted batch job 1162
+Submitted batch job 1163
+Submitted batch job 1164
+Submitted batch job 1165
+Submitted batch job 1166
+Submitted batch job 1167
+Submitted batch job 1168
+Submitted batch job 1169
+Submitted batch job 1170
+Submitted batch job 1171
+Submitted batch job 1172
+Submitted batch job 1173
+Submitted batch job 1174
+Submitted batch job 1175
+Submitted batch job 1176
+Submitted batch job 1177
+Submitted batch job 1178
+Submitted batch job 1179
+Submitted batch job 1180
+Submitted batch job 1181
+Submitted batch job 1182
+Submitted batch job 1183
+Submitted batch job 1184
+Submitted batch job 1185
+Submitted batch job 1186
+Submitted batch job 1187
+Submitted batch job 1188
+Submitted batch job 1189
+Submitted batch job 1190
+Submitted batch job 1191
+Submitted batch job 1192
+Submitted batch job 1193
+Submitted batch job 1194
+Submitted batch job 1195
+Submitted batch job 1196
+Submitted batch job 1197
+Submitted batch job 1198
+Submitted batch job 1199
+Submitted batch job 1200
+Submitted batch job 1201
+Submitted batch job 1202
+Submitted batch job 1203
+Submitted batch job 1204
+Submitted batch job 1205
+Submitted batch job 1206
+Submitted batch job 1207
+Submitted batch job 1208
+Submitted batch job 1209
+Submitted batch job 1210
+Submitted batch job 1211
+Submitted batch job 1212
+Submitted batch job 1213
+Submitted batch job 1214
+Submitted batch job 1215
+Submitted batch job 1216
+Submitted batch job 1217
+Submitted batch job 1218
+Submitted batch job 1219
+Submitted batch job 1220
+Submitted batch job 1221
+Submitted batch job 1222
+Submitted batch job 1223
+Submitted batch job 1224
+Submitted batch job 1225
+Submitted batch job 1226
+Submitted batch job 1227
+Submitted batch job 1228
+Submitted batch job 1229
+Submitted batch job 1230
+Submitted batch job 1231
+Submitted batch job 1232
+Submitted batch job 1233
+Submitted batch job 1234
+Submitted batch job 1235
+Submitted batch job 1236
+Submitted batch job 1237
+Submitted batch job 1238
+Submitted batch job 1239
+Submitted batch job 1240
+Submitted batch job 1241
+Submitted batch job 1242
+Submitted batch job 1243
+Submitted batch job 1244
+Submitted batch job 1245
+Submitted batch job 1246
+Submitted batch job 1247
+Submitted batch job 1248
+Submitted batch job 1249
+Submitted batch job 1250
+Submitted batch job 1251
+Submitted batch job 1252
+Submitted batch job 1253
+Submitted batch job 1254
+Submitted batch job 1255
+Submitted batch job 1256
+Submitted batch job 1257
+Submitted batch job 1258
+Submitted batch job 1259
+Submitted batch job 1260
+Submitted batch job 1261
+Submitted batch job 1262
+Submitted batch job 1263
+Submitted batch job 1264
+Submitted batch job 1265
+Submitted batch job 1266
+Submitted batch job 1267
+Submitted batch job 1268
+Submitted batch job 1269
+Submitted batch job 1270
+Submitted batch job 1271
+Submitted batch job 1272
+Submitted batch job 1273
+Submitted batch job 1274
+Submitted batch job 1275
+Submitted batch job 1276
+Submitted batch job 1277
+Submitted batch job 1278
+Submitted batch job 1279
+Submitted batch job 1280
+Submitted batch job 1281
+Submitted batch job 1282
+Submitted batch job 1283
+Submitted batch job 1284
+Submitted batch job 1285
+Submitted batch job 1286
+Submitted batch job 1287
+Submitted batch job 1288
+Submitted batch job 1289
+Submitted batch job 1290
+Submitted batch job 1291
+Submitted batch job 1292
+Submitted batch job 1293
+Submitted batch job 1294
+Submitted batch job 1295
+Submitted batch job 1296
+Submitted batch job 1297
+Submitted batch job 1298
+Submitted batch job 1299
+Submitted batch job 1300
+Submitted batch job 1301
+Submitted batch job 1302
+Submitted batch job 1303
+Submitted batch job 1304
+Submitted batch job 1305
+Submitted batch job 1306
+Submitted batch job 1307
+Submitted batch job 1308
+Submitted batch job 1309
+Submitted batch job 1310
+Submitted batch job 1311
+Submitted batch job 1312
+Submitted batch job 1313
+Submitted batch job 1314
+Submitted batch job 1315
+Submitted batch job 1316
+Submitted batch job 1317
+Submitted batch job 1318
+Submitted batch job 1319

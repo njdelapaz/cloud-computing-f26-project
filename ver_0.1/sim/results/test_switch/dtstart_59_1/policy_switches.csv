@@ -1,0 +1,6 @@
+sim_time,from_policy,to_policy,status
+start,,baseline,ok
+2022-01-01T05:02:52.646038,baseline,test_weight,ok
+2022-01-01T05:04:32.646053,test_weight,test_lln,ok
+2022-01-01T05:06:12.646088,test_lln,baseline,ok
+2022-01-01T06:31:42.646058,baseline,test_small_first,ok

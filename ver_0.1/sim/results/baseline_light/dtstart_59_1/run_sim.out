@@ -1,0 +1,167 @@
+Logger initialization
+[[1;92mINFO[1;0m] Note: NumExpr detected 32 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+[[1;92mINFO[1;0m] NumExpr defaulting to 8 threads.
+[[1;92mINFO[1;0m] Read from /home/slurm/project/sim/workloads/light.events 99 even ts
+[[1;92mINFO[1;0m] slurm.conf: /home/slurm/project/sim/etc/slurm.conf
+[[1;92mINFO[1;0m] slurmdbd: /opt/slurm_sim/sbin/slurmdbd
+[[1;92mINFO[1;0m] slurmd: /opt/slurm_sim/sbin/slurmd
+[[1;92mINFO[1;0m] slurmctld: /opt/slurm_sim/sbin/slurmctld
+[[1;92mINFO[1;0m] dropping db from previous runs
+DROP DATABASE IF EXISTS slurmdb_gpu24
+[[1;92mINFO[1;0m] deleting previous JobCompLoc file: /home/slurm/project/sim/log/jobcomp.log
+[[1;92mINFO[1;0m] deleting previous SlurmctldLogFile file: /home/slurm/project/sim/log/slurmctld.log
+[[1;92mINFO[1;0m] deleting previous SlurmdbdLogFile file: /home/slurm/project/sim/log/slurmdbd.log
+[[1;92mINFO[1;0m] deleting previous SlurmdLogFile file: /home/slurm/project/sim/log/slurmd.log
+[[1;92mINFO[1;0m] deleting previous SlurmdbdPidFile file: /home/slurm/project/sim/var/slurmdbd.pid
+[[1;92mINFO[1;0m] deleting previous SlurmSchedLogFile file: /home/slurm/project/sim/log/sched.log
+[[1;92mINFO[1;0m] deleting previous StateSaveLocation files from /home/slurm/project/sim/var/state
+[[1;92mINFO[1;0m] deleting previous results dir: /home/slurm/project/sim/results/baseline_light/dtstart_59_1
+[[1;37mDEBUG[1;0m] Set stdout/stderr for slurmctld to /home/slurm/project/sim/log/slurmctld_stdout.log
+[[1;37mDEBUG[1;0m] Set stdout/stderr for slurmdbd to /home/slurm/project/sim/log/slurmdbd_stdout.log
+[[1;92mINFO[1;0m] Launching slurmdbd
+[[1;92mINFO[1;0m] Running sacctmgr script from /home/slurm/project/sim/etc/sacctmgr.script
+sacctmgr: sacctmgr:  Modified qos...
+  normal
+sacctmgr: sacctmgr:  Adding Cluster(s)
+  Name           = gpu24
+ Setting
+  Default Limits:
+  Fairshare     = 1
+  QOS           = normal
+sacctmgr: sacctmgr:  Adding Account(s)
+  account0
+ Settings
+  Description     = Account Name
+  Organization    = Parent/Account Name
+ Associations
+  A = account0   C = gpu24     
+ Settings
+  Fairshare     = 100
+  Parent        = root
+sacctmgr:  Adding Account(s)
+  account1
+ Settings
+  Description     = Account Name
+  Organization    = Parent/Account Name
+ Associations
+  A = account1   C = gpu24     
+ Settings
+  Fairshare     = 100
+  Parent        = root
+sacctmgr:  Adding Account(s)
+  account2
+ Settings
+  Description     = Account Name
+  Organization    = Parent/Account Name
+ Associations
+  A = account2   C = gpu24     
+ Settings
+  Fairshare     = 100
+  Parent        = root
+sacctmgr:  Adding Account(s)
+  account3
+ Settings
+  Description     = Account Name
+  Organization    = Parent/Account Name
+ Associations
+  A = account3   C = gpu24     
+ Settings
+  Fairshare     = 100
+  Parent        = root
+sacctmgr: sacctmgr:  Adding User(s)
+  admin
+ Settings =
+  Default Account = account0
+  Admin Level     = Administrator
+ Associations =
+  U = admin     A = account0   C = gpu24     
+ Non Default Settings
+  MaxSubmitJobs = 10000
+sacctmgr: sacctmgr:  Adding User(s)
+  user1
+ Settings =
+  Default Account = account1
+ Associations =
+  U = user1     A = account1   C = gpu24     
+ Non Default Settings
+  MaxSubmitJobs = 10000
+sacctmgr:  Adding User(s)
+  user2
+ Settings =
+  Default Account = account1
+ Associations =
+  U = user2     A = account1   C = gpu24     
+ Non Default Settings
+  MaxSubmitJobs = 10000
+sacctmgr:  Adding User(s)
+  user3
+ Settings =
+  Default Account = account2
+ Associations =
+  U = user3     A = account2   C = gpu24     
+ Non Default Settings
+  MaxSubmitJobs = 10000
+sacctmgr:  Adding User(s)
+  user4
+ Settings =
+  Default Account = account2
+ Associations =
+  U = user4     A = account2   C = gpu24     
+ Non Default Settings
+  MaxSubmitJobs = 10000
+sacctmgr:  Adding User(s)
+  user5
+ Settings =
+  Default Account = account3
+ Associations =
+  U = user5     A = account3   C = gpu24     
+ Non Default Settings
+  MaxSubmitJobs = 10000
+sacctmgr:  Modified user associations...
+  C = gpu24      A = account3             U = user5    
+  C = gpu24      A = account2             U = user4    
+  C = gpu24      A = account2             U = user3    
+  C = gpu24      A = account1             U = user2    
+  C = gpu24      A = account1             U = user1    
+  C = gpu24      A = account0             U = admin    
+  C = gpu24      A = root                 U = root     
+sacctmgr: Account                 Cluster       User     Share 
+-------------------- ---------- ---------- --------- 
+root                      gpu24                    1 
+ root                     gpu24       root         1 
+ account0                 gpu24                  100 
+  account0                gpu24      admin         1 
+ account1                 gpu24                  100 
+  account1                gpu24      user1         1 
+  account1                gpu24      user2         1 
+ account2                 gpu24                  100 
+  account2                gpu24      user3         1 
+  account2                gpu24      user4         1 
+ account3                 gpu24                  100 
+  account3                gpu24      user5         1 
+sacctmgr: 
+[[1;92mINFO[1;0m] Launching slurmctld
+['/opt/slurm_sim/sbin/slurmctld', '-e', '/home/slurm/project/sim/workloads/light.events', '-dtstart', '59']
+[[1;92mINFO[1;0m] Current time 1794114906.883605
+[[1;92mINFO[1;0m] slurmdbd_create_time=1794114886.75
+[[1;92mINFO[1;0m] slurmctld_create_time=1794114901.32
+[[1;92mINFO[1;0m] slurmd_create_time=1794114900.32
+[[1;92mINFO[1;0m] Starting job submittion
+[[1;92mINFO[1;0m] Monitoring slurmctld until completion
+[[1;92mINFO[1;0m] All jobs submitted wrapping up
+[[1;92mINFO[1;0m] slurmctld took 64.20627975463867 seconds to run.
+first_line [2022-01-01T05:00:14.576785] error: Unable to open pidfile `/var/run/slurmctld.pid': Permission denied
+ 2022-01-01 05:00:14.576785 2022-01-01 05:00:14.576785
+last_line [2022-01-01T17:05:57.965081] All done.
+ 2022-01-01 17:05:57.965081 2022-01-01 17:05:57.965081
+[[1;92mINFO[1;0m] Copying results to :/home/slurm/project/sim/results/baseline_light/dtstart_59_1
+[[1;92mINFO[1;0m] copying resulting file /home/slurm/project/sim/log/jobcomp.log to /home/slurm/project/sim/results/baseline_light/dtstart_59_1
+[[1;92mINFO[1;0m] copying resulting file /home/slurm/project/sim/log/slurmctld.log to /home/slurm/project/sim/results/baseline_light/dtstart_59_1
+[[1;92mINFO[1;0m] copying resulting file /home/slurm/project/sim/log/sched.log to /home/slurm/project/sim/results/baseline_light/dtstart_59_1
+[[1;37mDEBUG[1;0m] Submit time for first job: 2022-01-01 05:01:12.686287
+[[1;92mINFO[1;0m] copying resulting file /home/slurm/project/sim/log/slurmctld_stdout.log to /home/slurm/project/sim/results/baseline_light/dtstart_59_1
+[[1;92mINFO[1;0m] copying resulting file /home/slurm/project/sim/log/slurmdbd_stdout.log to /home/slurm/project/sim/results/baseline_light/dtstart_59_1
+[[1;92mINFO[1;0m] Simulated time: 12:05:43.388296
+[[1;92mINFO[1;0m] Real time: 0:01:04.206803
+[[1;92mINFO[1;0m] Acceleration: 678.174060
+[[1;92mINFO[1;0m] Done

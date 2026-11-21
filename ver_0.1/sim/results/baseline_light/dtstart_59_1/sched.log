@@ -1,0 +1,1353 @@
+sched: [2022-01-01T05:00:15.097092] Backfill scheduler plugin loaded
+sched: [2022-01-01T05:00:18.229045] Running job scheduler for default depth.
+sched: [2022-01-01T05:01:12.686649] JobId=1001 allocated resources: NodeList=(null)
+sched: [2022-01-01T05:01:12.686674] Running job scheduler for default depth.
+sched: [2022-01-01T05:01:12.686760] JobId=1001 initiated
+sched: [2022-01-01T05:01:12.686773] Allocate JobId=1001 NodeList=gpu1 #CPUs=32 Partition=gpu
+sched: [2022-01-01T05:01:15.686723] Running job scheduler for full queue.
+sched: [2022-01-01T05:01:59.687058] JobId=1002 allocated resources: NodeList=(null)
+sched: [2022-01-01T05:01:59.687121] Running job scheduler for default depth.
+sched: [2022-01-01T05:01:59.687208] JobId=1002 initiated
+sched: [2022-01-01T05:01:59.687218] Allocate JobId=1002 NodeList=gpu2 #CPUs=64 Partition=gpu
+sched: [2022-01-01T05:02:15.687183] Running job scheduler for full queue.
+sched: [2022-01-01T05:03:15.687252] Running job scheduler for full queue.
+sched: [2022-01-01T05:04:03.687133] JobId=1003 allocated resources: NodeList=(null)
+sched: [2022-01-01T05:04:03.687200] Running job scheduler for default depth.
+sched: [2022-01-01T05:04:03.687357] JobId=1003 initiated
+sched: [2022-01-01T05:04:03.687388] Allocate JobId=1003 NodeList=gpu3 #CPUs=64 Partition=gpu
+sched: [2022-01-01T05:04:15.687259] Running job scheduler for full queue.
+sched: [2022-01-01T05:04:17.687179] JobId=1004 allocated resources: NodeList=(null)
+sched: [2022-01-01T05:04:18.687252] Running job scheduler for default depth.
+sched: [2022-01-01T05:04:18.687388] JobId=1004 initiated
+sched: [2022-01-01T05:04:18.687419] Allocate JobId=1004 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T05:05:15.775719] Running job scheduler for full queue.
+sched: [2022-01-01T05:06:15.775808] Running job scheduler for full queue.
+sched: [2022-01-01T05:06:20.775823] Running job scheduler for default depth.
+sched: [2022-01-01T05:07:00.687006] JobId=1005 allocated resources: NodeList=(null)
+sched: [2022-01-01T05:07:00.687064] Running job scheduler for default depth.
+sched: [2022-01-01T05:07:00.687161] JobId=1005. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T05:07:15.687179] Running job scheduler for full queue.
+sched: [2022-01-01T05:07:15.687310] JobId=1005. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T05:08:01.686984] JobId=1006 allocated resources: NodeList=(null)
+sched: [2022-01-01T05:08:01.687044] Running job scheduler for default depth.
+sched: [2022-01-01T05:08:01.687187] JobId=1005. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T05:08:01.687226] JobId=1006 unable to schedule in Partition=gpu (per _failed_partition()). State=PENDING. Previous-Reason=None. Previous-Desc=(null). New-Reason=Priority. Priority=1.
+sched: [2022-01-01T05:08:15.734109] Running job scheduler for full queue.
+sched: [2022-01-01T05:08:15.734258] JobId=1005. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T05:08:46.819416] Running job scheduler for default depth.
+sched: [2022-01-01T05:08:46.819656] JobId=1005 initiated
+sched: [2022-01-01T05:08:46.819679] Allocate JobId=1005 NodeList=gpu2 #CPUs=64 Partition=gpu
+sched: [2022-01-01T05:09:15.903731] Running job scheduler for full queue.
+sched: [2022-01-01T05:10:15.991203] Running job scheduler for full queue.
+sched: [2022-01-01T05:11:15.991289] Running job scheduler for full queue.
+sched: [2022-01-01T05:12:15.991375] Running job scheduler for full queue.
+sched: [2022-01-01T05:13:15.991451] Running job scheduler for full queue.
+sched: [2022-01-01T05:13:21.991463] Running job scheduler for default depth.
+sched: [2022-01-01T05:14:14.994845] Running job scheduler for default depth.
+sched: [2022-01-01T05:14:15.994879] Running job scheduler for full queue.
+sched: [2022-01-01T05:15:15.168266] Running job scheduler for full queue.
+sched: [2022-01-01T05:16:15.166982] Running job scheduler for full queue.
+sched: [2022-01-01T05:17:15.167058] Running job scheduler for full queue.
+sched: [2022-01-01T05:18:15.167149] Running job scheduler for full queue.
+sched: [2022-01-01T05:19:15.167239] Running job scheduler for full queue.
+sched: [2022-01-01T05:20:15.256853] Running job scheduler for full queue.
+sched: [2022-01-01T05:21:12.256935] Running job scheduler for default depth.
+sched: [2022-01-01T05:21:15.256953] Running job scheduler for full queue.
+sched: [2022-01-01T05:22:15.257060] Running job scheduler for full queue.
+sched: [2022-01-01T05:23:15.257126] Running job scheduler for full queue.
+sched: [2022-01-01T05:24:15.257189] Running job scheduler for full queue.
+sched: [2022-01-01T05:25:00.687020] JobId=1007 allocated resources: NodeList=(null)
+sched: [2022-01-01T05:25:00.687082] Running job scheduler for default depth.
+sched: [2022-01-01T05:25:00.687214] JobId=1007 initiated
+sched: [2022-01-01T05:25:00.687236] Allocate JobId=1007 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T05:25:15.775550] Running job scheduler for full queue.
+sched: [2022-01-01T05:26:15.775647] Running job scheduler for full queue.
+sched: [2022-01-01T05:26:31.686956] JobId=1008 allocated resources: NodeList=(null)
+sched: [2022-01-01T05:26:31.687010] Running job scheduler for default depth.
+sched: [2022-01-01T05:26:31.687141] JobId=1008 initiated
+sched: [2022-01-01T05:26:31.687163] Allocate JobId=1008 NodeList=gpu1 #CPUs=32 Partition=gpu
+sched: [2022-01-01T05:27:15.687102] Running job scheduler for full queue.
+sched: [2022-01-01T05:28:15.687182] Running job scheduler for full queue.
+sched: [2022-01-01T05:29:15.687260] Running job scheduler for full queue.
+sched: [2022-01-01T05:29:31.687282] Running job scheduler for default depth.
+sched: [2022-01-01T05:30:15.775753] Running job scheduler for full queue.
+sched: [2022-01-01T05:31:15.775833] Running job scheduler for full queue.
+sched: [2022-01-01T05:32:15.775908] Running job scheduler for full queue.
+sched: [2022-01-01T05:32:21.686983] JobId=1009 allocated resources: NodeList=(null)
+sched: [2022-01-01T05:32:21.687052] Running job scheduler for default depth.
+sched: [2022-01-01T05:32:21.687198] JobId=1009 initiated
+sched: [2022-01-01T05:32:21.687219] Allocate JobId=1009 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T05:33:15.687131] Running job scheduler for full queue.
+sched: [2022-01-01T05:34:15.687163] Running job scheduler for full queue.
+sched: [2022-01-01T05:35:15.776269] Running job scheduler for full queue.
+sched: [2022-01-01T05:36:15.776383] Running job scheduler for full queue.
+sched: [2022-01-01T05:36:21.776395] Running job scheduler for default depth.
+sched: [2022-01-01T05:37:15.776484] Running job scheduler for full queue.
+sched: [2022-01-01T05:38:15.776554] Running job scheduler for full queue.
+sched: [2022-01-01T05:39:15.776615] Running job scheduler for full queue.
+sched: [2022-01-01T05:40:15.864424] Running job scheduler for full queue.
+sched: [2022-01-01T05:41:11.864485] Running job scheduler for default depth.
+sched: [2022-01-01T05:41:15.864501] Running job scheduler for full queue.
+sched: [2022-01-01T05:42:15.864607] Running job scheduler for full queue.
+sched: [2022-01-01T05:43:15.864662] Running job scheduler for full queue.
+sched: [2022-01-01T05:44:02.686903] JobId=1010 allocated resources: NodeList=(null)
+sched: [2022-01-01T05:44:02.686950] Running job scheduler for default depth.
+sched: [2022-01-01T05:44:02.687083] JobId=1010 initiated
+sched: [2022-01-01T05:44:02.687102] Allocate JobId=1010 NodeList=gpu2 #CPUs=64 Partition=gpu
+sched: [2022-01-01T05:44:15.758892] Running job scheduler for full queue.
+sched: [2022-01-01T05:44:42.758919] Running job scheduler for default depth.
+sched: [2022-01-01T05:45:15.929650] Running job scheduler for full queue.
+sched: [2022-01-01T05:46:15.929765] Running job scheduler for full queue.
+sched: [2022-01-01T05:46:31.687139] JobId=1011 allocated resources: NodeList=(null)
+sched: [2022-01-01T05:46:31.687183] Running job scheduler for default depth.
+sched: [2022-01-01T05:46:31.687316] JobId=1011 initiated
+sched: [2022-01-01T05:46:31.687335] Allocate JobId=1011 NodeList=gpu[1,3] #CPUs=128 Partition=gpu
+sched: [2022-01-01T05:46:58.686631] JobId=1012 allocated resources: NodeList=(null)
+sched: [2022-01-01T05:46:58.686666] Running job scheduler for default depth.
+sched: [2022-01-01T05:46:58.686704] JobId=1012. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T05:47:15.686717] Running job scheduler for full queue.
+sched: [2022-01-01T05:47:15.686831] JobId=1012. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T05:48:15.686784] Running job scheduler for full queue.
+sched: [2022-01-01T05:48:15.686852] JobId=1012. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T05:48:45.686828] Running job scheduler for default depth.
+sched: [2022-01-01T05:49:15.686889] Running job scheduler for full queue.
+sched: [2022-01-01T05:50:15.775117] Running job scheduler for full queue.
+sched: [2022-01-01T05:51:15.775196] Running job scheduler for full queue.
+sched: [2022-01-01T05:52:15.775266] Running job scheduler for full queue.
+sched: [2022-01-01T05:53:06.686910] JobId=1013 allocated resources: NodeList=(null)
+sched: [2022-01-01T05:53:06.686954] Running job scheduler for default depth.
+sched: [2022-01-01T05:53:06.687076] JobId=1013 initiated
+sched: [2022-01-01T05:53:06.687095] Allocate JobId=1013 NodeList=gpu2 #CPUs=32 Partition=gpu
+sched: [2022-01-01T05:53:15.687109] Running job scheduler for full queue.
+sched: [2022-01-01T05:54:15.687225] Running job scheduler for full queue.
+sched: [2022-01-01T05:55:15.774808] Running job scheduler for full queue.
+sched: [2022-01-01T05:56:15.774848] Running job scheduler for full queue.
+sched: [2022-01-01T05:57:15.774881] Running job scheduler for full queue.
+sched: [2022-01-01T05:58:15.774925] Running job scheduler for full queue.
+sched: [2022-01-01T05:59:15.774969] Running job scheduler for full queue.
+sched: [2022-01-01T06:00:15.862946] Running job scheduler for full queue.
+sched: [2022-01-01T06:01:15.863020] Running job scheduler for full queue.
+sched: [2022-01-01T06:02:15.863084] Running job scheduler for full queue.
+sched: [2022-01-01T06:02:32.863103] Running job scheduler for default depth.
+sched: [2022-01-01T06:03:15.863180] Running job scheduler for full queue.
+sched: [2022-01-01T06:04:15.863242] Running job scheduler for full queue.
+sched: [2022-01-01T06:05:15.951245] Running job scheduler for full queue.
+sched: [2022-01-01T06:06:15.951368] Running job scheduler for full queue.
+sched: [2022-01-01T06:07:15.951433] Running job scheduler for full queue.
+sched: [2022-01-01T06:08:15.951511] Running job scheduler for full queue.
+sched: [2022-01-01T06:08:46.686973] JobId=1014 allocated resources: NodeList=(null)
+sched: [2022-01-01T06:08:46.687018] Running job scheduler for default depth.
+sched: [2022-01-01T06:08:46.687153] JobId=1014 initiated
+sched: [2022-01-01T06:08:46.687172] Allocate JobId=1014 NodeList=gpu2 #CPUs=32 Partition=gpu
+sched: [2022-01-01T06:08:54.686919] JobId=1015 allocated resources: NodeList=(null)
+sched: [2022-01-01T06:08:54.686972] Running job scheduler for default depth.
+sched: [2022-01-01T06:08:54.687091] JobId=1015 initiated
+sched: [2022-01-01T06:08:54.687109] Allocate JobId=1015 NodeList=gpu2 #CPUs=32 Partition=gpu
+sched: [2022-01-01T06:09:15.687021] Running job scheduler for full queue.
+sched: [2022-01-01T06:10:15.774656] Running job scheduler for full queue.
+sched: [2022-01-01T06:10:17.686949] JobId=1016 allocated resources: NodeList=(null)
+sched: [2022-01-01T06:10:18.687003] Running job scheduler for default depth.
+sched: [2022-01-01T06:10:18.687075] JobId=1016. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:10:28.686487] JobId=1017 allocated resources: NodeList=(null)
+sched: [2022-01-01T06:10:28.686518] Running job scheduler for default depth.
+sched: [2022-01-01T06:10:28.686577] JobId=1016. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:10:28.686590] JobId=1017 unable to schedule in Partition=gpu (per _failed_partition()). State=PENDING. Previous-Reason=None. Previous-Desc=(null). New-Reason=Priority. Priority=1.
+sched: [2022-01-01T06:11:15.686604] Running job scheduler for full queue.
+sched: [2022-01-01T06:11:15.686718] JobId=1016. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:11:15.686745] JobId=1017. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T06:12:15.686695] Running job scheduler for full queue.
+sched: [2022-01-01T06:12:15.686778] JobId=1016. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:12:15.686798] JobId=1017. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T06:13:15.686801] Running job scheduler for full queue.
+sched: [2022-01-01T06:13:15.686876] JobId=1016. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:13:15.686895] JobId=1017. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T06:14:15.686883] Running job scheduler for full queue.
+sched: [2022-01-01T06:14:15.686954] JobId=1016. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:14:15.686973] JobId=1017. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T06:15:15.775177] Running job scheduler for full queue.
+sched: [2022-01-01T06:15:15.775296] JobId=1016. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:15:15.775309] JobId=1017. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T06:15:42.775186] Running job scheduler for default depth.
+sched: [2022-01-01T06:15:42.775254] JobId=1016 initiated
+sched: [2022-01-01T06:15:42.775265] Allocate JobId=1016 NodeList=gpu2 #CPUs=8 Partition=gpu
+sched: [2022-01-01T06:15:42.775569] JobId=1017 initiated
+sched: [2022-01-01T06:15:42.775582] Allocate JobId=1017 NodeList=gpu2 #CPUs=16 Partition=gpu
+sched: [2022-01-01T06:16:15.775263] Running job scheduler for full queue.
+sched: [2022-01-01T06:17:15.775334] Running job scheduler for full queue.
+sched: [2022-01-01T06:17:51.686875] JobId=1018 allocated resources: NodeList=(null)
+sched: [2022-01-01T06:17:51.686920] Running job scheduler for default depth.
+sched: [2022-01-01T06:17:51.687033] JobId=1018 initiated
+sched: [2022-01-01T06:17:51.687053] Allocate JobId=1018 NodeList=gpu2 #CPUs=8 Partition=gpu
+sched: [2022-01-01T06:18:15.686998] Running job scheduler for full queue.
+sched: [2022-01-01T06:19:07.687054] Running job scheduler for default depth.
+sched: [2022-01-01T06:19:15.687104] Running job scheduler for full queue.
+sched: [2022-01-01T06:19:50.686914] JobId=1019 allocated resources: NodeList=(null)
+sched: [2022-01-01T06:19:50.686958] Running job scheduler for default depth.
+sched: [2022-01-01T06:19:50.687043] JobId=1019. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:20:15.776196] Running job scheduler for full queue.
+sched: [2022-01-01T06:20:15.776388] JobId=1019. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:21:15.776358] Running job scheduler for full queue.
+sched: [2022-01-01T06:21:15.776468] JobId=1019. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:21:53.776389] Running job scheduler for default depth.
+sched: [2022-01-01T06:21:53.776442] JobId=1019. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:22:15.776432] Running job scheduler for full queue.
+sched: [2022-01-01T06:22:15.776550] JobId=1019. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:22:54.686571] JobId=1020 allocated resources: NodeList=(null)
+sched: [2022-01-01T06:22:54.686602] Running job scheduler for default depth.
+sched: [2022-01-01T06:22:54.686699] JobId=1019. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:22:54.686734] JobId=1020 unable to schedule in Partition=gpu (per _failed_partition()). State=PENDING. Previous-Reason=None. Previous-Desc=(null). New-Reason=Priority. Priority=1.
+sched: [2022-01-01T06:23:15.686665] Running job scheduler for full queue.
+sched: [2022-01-01T06:23:15.686820] JobId=1019. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:23:15.686843] JobId=1020. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T06:24:15.686821] Running job scheduler for full queue.
+sched: [2022-01-01T06:24:15.686957] JobId=1019. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:24:15.686990] JobId=1020. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T06:25:15.777024] Running job scheduler for full queue.
+sched: [2022-01-01T06:25:15.777146] JobId=1019. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:25:15.777158] JobId=1020. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T06:26:15.777060] Running job scheduler for full queue.
+sched: [2022-01-01T06:26:15.777103] JobId=1019. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T06:26:15.777114] JobId=1020. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T06:26:41.777077] Running job scheduler for default depth.
+sched: [2022-01-01T06:26:41.777143] JobId=1019 initiated
+sched: [2022-01-01T06:26:41.777154] Allocate JobId=1019 NodeList=gpu2 #CPUs=32 Partition=gpu
+sched: [2022-01-01T06:26:41.777371] JobId=1020 initiated
+sched: [2022-01-01T06:26:41.777383] Allocate JobId=1020 NodeList=gpu2 #CPUs=8 Partition=gpu
+sched: [2022-01-01T06:27:15.792975] Running job scheduler for full queue.
+sched: [2022-01-01T06:28:15.793029] Running job scheduler for full queue.
+sched: [2022-01-01T06:29:15.793081] Running job scheduler for full queue.
+sched: [2022-01-01T06:30:15.880203] Running job scheduler for full queue.
+sched: [2022-01-01T06:31:15.880246] Running job scheduler for full queue.
+sched: [2022-01-01T06:32:09.880275] Running job scheduler for default depth.
+sched: [2022-01-01T06:32:15.880297] Running job scheduler for full queue.
+sched: [2022-01-01T06:33:15.882591] Running job scheduler for full queue.
+sched: [2022-01-01T06:33:42.686511] JobId=1021 allocated resources: NodeList=(null)
+sched: [2022-01-01T06:33:42.686536] Running job scheduler for default depth.
+sched: [2022-01-01T06:33:42.686623] JobId=1021 initiated
+sched: [2022-01-01T06:33:42.686635] Allocate JobId=1021 NodeList=gpu2 #CPUs=8 Partition=gpu
+sched: [2022-01-01T06:34:15.686616] Running job scheduler for full queue.
+sched: [2022-01-01T06:35:15.774120] Running job scheduler for full queue.
+sched: [2022-01-01T06:36:15.774237] Running job scheduler for full queue.
+sched: [2022-01-01T06:37:00.774283] Running job scheduler for default depth.
+sched: [2022-01-01T06:37:15.774349] Running job scheduler for full queue.
+sched: [2022-01-01T06:38:12.686935] JobId=1022 allocated resources: NodeList=(null)
+sched: [2022-01-01T06:38:12.686980] Running job scheduler for default depth.
+sched: [2022-01-01T06:38:12.687102] JobId=1022 initiated
+sched: [2022-01-01T06:38:12.687121] Allocate JobId=1022 NodeList=gpu2 #CPUs=8 Partition=gpu
+sched: [2022-01-01T06:38:15.687045] Running job scheduler for full queue.
+sched: [2022-01-01T06:39:15.687140] Running job scheduler for full queue.
+sched: [2022-01-01T06:40:15.776506] Running job scheduler for full queue.
+sched: [2022-01-01T06:41:15.776599] Running job scheduler for full queue.
+sched: [2022-01-01T06:42:15.776682] Running job scheduler for full queue.
+sched: [2022-01-01T06:42:53.776729] Running job scheduler for default depth.
+sched: [2022-01-01T06:43:15.776789] Running job scheduler for full queue.
+sched: [2022-01-01T06:43:54.776829] Running job scheduler for default depth.
+sched: [2022-01-01T06:44:15.776883] Running job scheduler for full queue.
+sched: [2022-01-01T06:45:15.866179] Running job scheduler for full queue.
+sched: [2022-01-01T06:46:15.866250] Running job scheduler for full queue.
+sched: [2022-01-01T06:47:15.866309] Running job scheduler for full queue.
+sched: [2022-01-01T06:47:42.866338] Running job scheduler for default depth.
+sched: [2022-01-01T06:48:15.866414] Running job scheduler for full queue.
+sched: [2022-01-01T06:49:15.866493] Running job scheduler for full queue.
+sched: [2022-01-01T06:50:15.954590] Running job scheduler for full queue.
+sched: [2022-01-01T06:51:15.954630] Running job scheduler for full queue.
+sched: [2022-01-01T06:52:01.954660] Running job scheduler for default depth.
+sched: [2022-01-01T06:52:15.954688] Running job scheduler for full queue.
+sched: [2022-01-01T06:53:15.954729] Running job scheduler for full queue.
+sched: [2022-01-01T06:54:15.954759] Running job scheduler for full queue.
+sched: [2022-01-01T06:55:16.042040] Running job scheduler for full queue.
+sched: [2022-01-01T06:56:15.042076] Running job scheduler for full queue.
+sched: [2022-01-01T06:56:27.686511] JobId=1023 allocated resources: NodeList=(null)
+sched: [2022-01-01T06:56:27.686536] Running job scheduler for default depth.
+sched: [2022-01-01T06:56:27.686619] JobId=1023 initiated
+sched: [2022-01-01T06:56:27.686645] Allocate JobId=1023 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T06:57:15.686633] Running job scheduler for full queue.
+sched: [2022-01-01T06:58:15.686721] Running job scheduler for full queue.
+sched: [2022-01-01T06:59:15.686787] Running job scheduler for full queue.
+sched: [2022-01-01T07:00:15.776655] Running job scheduler for full queue.
+sched: [2022-01-01T07:01:15.776694] Running job scheduler for full queue.
+sched: [2022-01-01T07:02:15.776733] Running job scheduler for full queue.
+sched: [2022-01-01T07:03:15.776780] Running job scheduler for full queue.
+sched: [2022-01-01T07:04:15.776831] Running job scheduler for full queue.
+sched: [2022-01-01T07:05:15.865097] Running job scheduler for full queue.
+sched: [2022-01-01T07:06:15.865161] Running job scheduler for full queue.
+sched: [2022-01-01T07:07:15.865232] Running job scheduler for full queue.
+sched: [2022-01-01T07:08:15.865296] Running job scheduler for full queue.
+sched: [2022-01-01T07:09:15.865374] Running job scheduler for full queue.
+sched: [2022-01-01T07:10:15.953176] Running job scheduler for full queue.
+sched: [2022-01-01T07:11:15.953242] Running job scheduler for full queue.
+sched: [2022-01-01T07:12:15.953322] Running job scheduler for full queue.
+sched: [2022-01-01T07:13:15.953386] Running job scheduler for full queue.
+sched: [2022-01-01T07:14:15.953449] Running job scheduler for full queue.
+sched: [2022-01-01T07:14:26.953464] Running job scheduler for default depth.
+sched: [2022-01-01T07:15:16.041878] Running job scheduler for full queue.
+sched: [2022-01-01T07:16:15.041961] Running job scheduler for full queue.
+sched: [2022-01-01T07:17:15.042028] Running job scheduler for full queue.
+sched: [2022-01-01T07:17:48.686911] JobId=1024 allocated resources: NodeList=(null)
+sched: [2022-01-01T07:17:48.686957] Running job scheduler for default depth.
+sched: [2022-01-01T07:17:48.687089] JobId=1024 initiated
+sched: [2022-01-01T07:17:48.687107] Allocate JobId=1024 NodeList=gpu1 #CPUs=64 Partition=gpu
+sched: [2022-01-01T07:18:15.748577] Running job scheduler for full queue.
+sched: [2022-01-01T07:18:30.686917] JobId=1025 allocated resources: NodeList=(null)
+sched: [2022-01-01T07:18:30.686978] Running job scheduler for default depth.
+sched: [2022-01-01T07:18:30.687110] JobId=1025 initiated
+sched: [2022-01-01T07:18:30.687130] Allocate JobId=1025 NodeList=gpu2 #CPUs=64 Partition=gpu
+sched: [2022-01-01T07:19:15.687084] Running job scheduler for full queue.
+sched: [2022-01-01T07:20:15.776319] Running job scheduler for full queue.
+sched: [2022-01-01T07:20:27.776328] Running job scheduler for default depth.
+sched: [2022-01-01T07:21:15.776441] Running job scheduler for full queue.
+sched: [2022-01-01T07:21:48.687272] JobId=1026 allocated resources: NodeList=(null)
+sched: [2022-01-01T07:21:48.687332] Running job scheduler for default depth.
+sched: [2022-01-01T07:21:48.687515] JobId=1026 initiated
+sched: [2022-01-01T07:21:48.687544] Allocate JobId=1026 NodeList=gpu2 #CPUs=64 Partition=gpu
+sched: [2022-01-01T07:22:15.687402] Running job scheduler for full queue.
+sched: [2022-01-01T07:23:15.687476] Running job scheduler for full queue.
+sched: [2022-01-01T07:24:15.687545] Running job scheduler for full queue.
+sched: [2022-01-01T07:25:15.776384] Running job scheduler for full queue.
+sched: [2022-01-01T07:26:15.776465] Running job scheduler for full queue.
+sched: [2022-01-01T07:27:15.776546] Running job scheduler for full queue.
+sched: [2022-01-01T07:28:15.776619] Running job scheduler for full queue.
+sched: [2022-01-01T07:29:15.776682] Running job scheduler for full queue.
+sched: [2022-01-01T07:30:15.869562] Running job scheduler for full queue.
+sched: [2022-01-01T07:31:15.869626] Running job scheduler for full queue.
+sched: [2022-01-01T07:32:15.869697] Running job scheduler for full queue.
+sched: [2022-01-01T07:32:37.869723] Running job scheduler for default depth.
+sched: [2022-01-01T07:33:15.869792] Running job scheduler for full queue.
+sched: [2022-01-01T07:34:07.686947] JobId=1027 allocated resources: NodeList=(null)
+sched: [2022-01-01T07:34:07.687007] Running job scheduler for default depth.
+sched: [2022-01-01T07:34:07.687158] JobId=1027 initiated
+sched: [2022-01-01T07:34:07.687180] Allocate JobId=1027 NodeList=gpu2 #CPUs=8 Partition=gpu
+sched: [2022-01-01T07:34:15.687069] Running job scheduler for full queue.
+sched: [2022-01-01T07:34:18.687074] Running job scheduler for default depth.
+sched: [2022-01-01T07:34:47.686944] JobId=1028 allocated resources: NodeList=(null)
+sched: [2022-01-01T07:34:47.686993] Running job scheduler for default depth.
+sched: [2022-01-01T07:34:47.687130] JobId=1028 initiated
+sched: [2022-01-01T07:34:47.687154] Allocate JobId=1028 NodeList=gpu1 #CPUs=64 Partition=gpu
+sched: [2022-01-01T07:35:15.775400] Running job scheduler for full queue.
+sched: [2022-01-01T07:36:15.775476] Running job scheduler for full queue.
+sched: [2022-01-01T07:37:15.775544] Running job scheduler for full queue.
+sched: [2022-01-01T07:38:15.775617] Running job scheduler for full queue.
+sched: [2022-01-01T07:39:15.775692] Running job scheduler for full queue.
+sched: [2022-01-01T07:40:15.863576] Running job scheduler for full queue.
+sched: [2022-01-01T07:41:15.863644] Running job scheduler for full queue.
+sched: [2022-01-01T07:42:15.863709] Running job scheduler for full queue.
+sched: [2022-01-01T07:43:15.863771] Running job scheduler for full queue.
+sched: [2022-01-01T07:44:15.863847] Running job scheduler for full queue.
+sched: [2022-01-01T07:45:15.952733] Running job scheduler for full queue.
+sched: [2022-01-01T07:46:15.952802] Running job scheduler for full queue.
+sched: [2022-01-01T07:47:15.952878] Running job scheduler for full queue.
+sched: [2022-01-01T07:48:15.952936] Running job scheduler for full queue.
+sched: [2022-01-01T07:48:44.686886] JobId=1029 allocated resources: NodeList=(null)
+sched: [2022-01-01T07:48:44.686931] Running job scheduler for default depth.
+sched: [2022-01-01T07:48:44.687058] JobId=1029 initiated
+sched: [2022-01-01T07:48:44.687093] Allocate JobId=1029 NodeList=gpu2 #CPUs=32 Partition=gpu
+sched: [2022-01-01T07:49:15.687049] Running job scheduler for full queue.
+sched: [2022-01-01T07:49:36.686878] JobId=1030 allocated resources: NodeList=(null)
+sched: [2022-01-01T07:49:36.686924] Running job scheduler for default depth.
+sched: [2022-01-01T07:49:36.687051] JobId=1030 initiated
+sched: [2022-01-01T07:49:36.687070] Allocate JobId=1030 NodeList=gpu2 #CPUs=16 Partition=gpu
+sched: [2022-01-01T07:49:55.686940] JobId=1031 allocated resources: NodeList=(null)
+sched: [2022-01-01T07:49:55.686991] Running job scheduler for default depth.
+sched: [2022-01-01T07:49:55.687070] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T07:50:15.775392] Running job scheduler for full queue.
+sched: [2022-01-01T07:50:15.775534] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T07:51:15.775472] Running job scheduler for full queue.
+sched: [2022-01-01T07:51:15.775543] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T07:52:15.775546] Running job scheduler for full queue.
+sched: [2022-01-01T07:52:15.775617] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T07:53:15.775622] Running job scheduler for full queue.
+sched: [2022-01-01T07:53:15.775688] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T07:54:15.775700] Running job scheduler for full queue.
+sched: [2022-01-01T07:54:15.775768] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T07:54:46.775742] Running job scheduler for default depth.
+sched: [2022-01-01T07:54:46.775821] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T07:55:15.863122] Running job scheduler for full queue.
+sched: [2022-01-01T07:55:15.863224] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T07:56:15.863198] Running job scheduler for full queue.
+sched: [2022-01-01T07:56:15.863267] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T07:56:27.863214] Running job scheduler for default depth.
+sched: [2022-01-01T07:56:27.863295] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T07:57:15.863318] Running job scheduler for full queue.
+sched: [2022-01-01T07:57:15.863385] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T07:57:35.863339] Running job scheduler for default depth.
+sched: [2022-01-01T07:57:35.863413] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T07:58:15.863400] Running job scheduler for full queue.
+sched: [2022-01-01T07:58:15.863479] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T07:59:15.863496] Running job scheduler for full queue.
+sched: [2022-01-01T07:59:15.863574] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T08:00:15.951845] Running job scheduler for full queue.
+sched: [2022-01-01T08:00:15.952011] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T08:01:15.951897] Running job scheduler for full queue.
+sched: [2022-01-01T08:01:15.951975] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T08:02:15.952015] Running job scheduler for full queue.
+sched: [2022-01-01T08:02:15.952084] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T08:03:15.952096] Running job scheduler for full queue.
+sched: [2022-01-01T08:03:15.952165] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T08:04:15.952163] Running job scheduler for full queue.
+sched: [2022-01-01T08:04:15.952249] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T08:05:16.040891] Running job scheduler for full queue.
+sched: [2022-01-01T08:05:16.041096] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T08:06:15.040965] Running job scheduler for full queue.
+sched: [2022-01-01T08:06:15.041072] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T08:07:15.041046] Running job scheduler for full queue.
+sched: [2022-01-01T08:07:15.041136] JobId=1031. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T08:07:21.041093] Running job scheduler for default depth.
+sched: [2022-01-01T08:07:21.041369] JobId=1031 initiated
+sched: [2022-01-01T08:07:21.041392] Allocate JobId=1031 NodeList=gpu[1-3] #CPUs=192 Partition=gpu
+sched: [2022-01-01T08:08:15.041182] Running job scheduler for full queue.
+sched: [2022-01-01T08:09:15.041268] Running job scheduler for full queue.
+sched: [2022-01-01T08:09:20.687064] JobId=1032 allocated resources: NodeList=(null)
+sched: [2022-01-01T08:09:20.687126] Running job scheduler for default depth.
+sched: [2022-01-01T08:09:20.687221] JobId=1032. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T08:10:15.775455] Running job scheduler for full queue.
+sched: [2022-01-01T08:10:15.775589] JobId=1032. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T08:11:15.775518] Running job scheduler for full queue.
+sched: [2022-01-01T08:11:15.775584] JobId=1032. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T08:12:15.775575] Running job scheduler for full queue.
+sched: [2022-01-01T08:12:15.775642] JobId=1032. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T08:12:20.775586] Running job scheduler for default depth.
+sched: [2022-01-01T08:13:15.775664] Running job scheduler for full queue.
+sched: [2022-01-01T08:14:15.775727] Running job scheduler for full queue.
+sched: [2022-01-01T08:15:15.864941] Running job scheduler for full queue.
+sched: [2022-01-01T08:16:15.865023] Running job scheduler for full queue.
+sched: [2022-01-01T08:17:15.865108] Running job scheduler for full queue.
+sched: [2022-01-01T08:17:24.865124] Running job scheduler for default depth.
+sched: [2022-01-01T08:18:15.865217] Running job scheduler for full queue.
+sched: [2022-01-01T08:18:35.687119] JobId=1033 allocated resources: NodeList=(null)
+sched: [2022-01-01T08:18:35.687172] Running job scheduler for default depth.
+sched: [2022-01-01T08:18:35.687334] JobId=1033 initiated
+sched: [2022-01-01T08:18:35.687363] Allocate JobId=1033 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T08:19:15.687237] Running job scheduler for full queue.
+sched: [2022-01-01T08:20:15.775519] Running job scheduler for full queue.
+sched: [2022-01-01T08:21:15.775625] Running job scheduler for full queue.
+sched: [2022-01-01T08:22:15.775720] Running job scheduler for full queue.
+sched: [2022-01-01T08:23:15.775829] Running job scheduler for full queue.
+sched: [2022-01-01T08:24:15.775924] Running job scheduler for full queue.
+sched: [2022-01-01T08:25:15.863264] Running job scheduler for full queue.
+sched: [2022-01-01T08:26:15.863377] Running job scheduler for full queue.
+sched: [2022-01-01T08:27:15.863446] Running job scheduler for full queue.
+sched: [2022-01-01T08:28:15.863509] Running job scheduler for full queue.
+sched: [2022-01-01T08:29:15.863567] Running job scheduler for full queue.
+sched: [2022-01-01T08:29:27.863584] Running job scheduler for default depth.
+sched: [2022-01-01T08:30:15.951101] Running job scheduler for full queue.
+sched: [2022-01-01T08:31:15.951169] Running job scheduler for full queue.
+sched: [2022-01-01T08:32:15.951225] Running job scheduler for full queue.
+sched: [2022-01-01T08:33:15.951282] Running job scheduler for full queue.
+sched: [2022-01-01T08:34:15.951341] Running job scheduler for full queue.
+sched: [2022-01-01T08:35:16.038479] Running job scheduler for full queue.
+sched: [2022-01-01T08:36:15.038544] Running job scheduler for full queue.
+sched: [2022-01-01T08:37:15.038615] Running job scheduler for full queue.
+sched: [2022-01-01T08:38:15.038673] Running job scheduler for full queue.
+sched: [2022-01-01T08:39:15.038720] Running job scheduler for full queue.
+sched: [2022-01-01T08:40:15.127986] Running job scheduler for full queue.
+sched: [2022-01-01T08:41:15.126839] Running job scheduler for full queue.
+sched: [2022-01-01T08:42:15.126895] Running job scheduler for full queue.
+sched: [2022-01-01T08:43:15.126954] Running job scheduler for full queue.
+sched: [2022-01-01T08:44:15.127016] Running job scheduler for full queue.
+sched: [2022-01-01T08:45:15.214918] Running job scheduler for full queue.
+sched: [2022-01-01T08:46:15.214971] Running job scheduler for full queue.
+sched: [2022-01-01T08:47:15.215031] Running job scheduler for full queue.
+sched: [2022-01-01T08:48:15.215088] Running job scheduler for full queue.
+sched: [2022-01-01T08:49:15.215147] Running job scheduler for full queue.
+sched: [2022-01-01T08:50:15.302267] Running job scheduler for full queue.
+sched: [2022-01-01T08:51:05.686884] JobId=1034 allocated resources: NodeList=(null)
+sched: [2022-01-01T08:51:05.686931] Running job scheduler for default depth.
+sched: [2022-01-01T08:51:05.687062] JobId=1034 initiated
+sched: [2022-01-01T08:51:05.687081] Allocate JobId=1034 NodeList=gpu1 #CPUs=32 Partition=gpu
+sched: [2022-01-01T08:51:15.686966] Running job scheduler for full queue.
+sched: [2022-01-01T08:52:15.687047] Running job scheduler for full queue.
+sched: [2022-01-01T08:53:15.687111] Running job scheduler for full queue.
+sched: [2022-01-01T08:54:15.687172] Running job scheduler for full queue.
+sched: [2022-01-01T08:55:15.775267] Running job scheduler for full queue.
+sched: [2022-01-01T08:56:15.775334] Running job scheduler for full queue.
+sched: [2022-01-01T08:57:15.775400] Running job scheduler for full queue.
+sched: [2022-01-01T08:58:15.775463] Running job scheduler for full queue.
+sched: [2022-01-01T08:59:08.775518] Running job scheduler for default depth.
+sched: [2022-01-01T08:59:15.775540] Running job scheduler for full queue.
+sched: [2022-01-01T09:00:15.863347] Running job scheduler for full queue.
+sched: [2022-01-01T09:01:15.863413] Running job scheduler for full queue.
+sched: [2022-01-01T09:02:15.863494] Running job scheduler for full queue.
+sched: [2022-01-01T09:03:15.863560] Running job scheduler for full queue.
+sched: [2022-01-01T09:04:15.863627] Running job scheduler for full queue.
+sched: [2022-01-01T09:05:15.951248] Running job scheduler for full queue.
+sched: [2022-01-01T09:06:15.951311] Running job scheduler for full queue.
+sched: [2022-01-01T09:07:15.951376] Running job scheduler for full queue.
+sched: [2022-01-01T09:08:15.951439] Running job scheduler for full queue.
+sched: [2022-01-01T09:08:51.686854] JobId=1035 allocated resources: NodeList=(null)
+sched: [2022-01-01T09:08:51.686899] Running job scheduler for default depth.
+sched: [2022-01-01T09:08:51.687029] JobId=1035 initiated
+sched: [2022-01-01T09:08:51.687049] Allocate JobId=1035 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T09:09:15.686942] Running job scheduler for full queue.
+sched: [2022-01-01T09:10:15.774514] Running job scheduler for full queue.
+sched: [2022-01-01T09:11:04.687103] JobId=1036 allocated resources: NodeList=(null)
+sched: [2022-01-01T09:11:04.687150] Running job scheduler for default depth.
+sched: [2022-01-01T09:11:04.687283] JobId=1036 initiated
+sched: [2022-01-01T09:11:04.687302] Allocate JobId=1036 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T09:11:15.687193] Running job scheduler for full queue.
+sched: [2022-01-01T09:12:15.687265] Running job scheduler for full queue.
+sched: [2022-01-01T09:12:24.686808] JobId=1037 allocated resources: NodeList=(null)
+sched: [2022-01-01T09:12:24.686853] Running job scheduler for default depth.
+sched: [2022-01-01T09:12:24.686982] JobId=1037 initiated
+sched: [2022-01-01T09:12:24.687000] Allocate JobId=1037 NodeList=gpu1 #CPUs=32 Partition=gpu
+sched: [2022-01-01T09:13:15.717176] Running job scheduler for full queue.
+sched: [2022-01-01T09:14:15.717236] Running job scheduler for full queue.
+sched: [2022-01-01T09:15:15.805421] Running job scheduler for full queue.
+sched: [2022-01-01T09:16:15.805497] Running job scheduler for full queue.
+sched: [2022-01-01T09:17:15.805562] Running job scheduler for full queue.
+sched: [2022-01-01T09:18:15.805625] Running job scheduler for full queue.
+sched: [2022-01-01T09:19:15.805690] Running job scheduler for full queue.
+sched: [2022-01-01T09:19:59.805741] Running job scheduler for default depth.
+sched: [2022-01-01T09:20:15.895977] Running job scheduler for full queue.
+sched: [2022-01-01T09:20:24.895987] Running job scheduler for default depth.
+sched: [2022-01-01T09:21:15.896057] Running job scheduler for full queue.
+sched: [2022-01-01T09:22:15.896122] Running job scheduler for full queue.
+sched: [2022-01-01T09:23:15.896183] Running job scheduler for full queue.
+sched: [2022-01-01T09:24:04.896238] Running job scheduler for default depth.
+sched: [2022-01-01T09:24:15.975685] Running job scheduler for full queue.
+sched: [2022-01-01T09:25:16.063342] Running job scheduler for full queue.
+sched: [2022-01-01T09:26:15.063409] Running job scheduler for full queue.
+sched: [2022-01-01T09:27:15.063477] Running job scheduler for full queue.
+sched: [2022-01-01T09:28:15.063537] Running job scheduler for full queue.
+sched: [2022-01-01T09:29:15.063610] Running job scheduler for full queue.
+sched: [2022-01-01T09:30:11.686906] JobId=1038 allocated resources: NodeList=(null)
+sched: [2022-01-01T09:30:11.686963] Running job scheduler for default depth.
+sched: [2022-01-01T09:30:11.687101] JobId=1038 initiated
+sched: [2022-01-01T09:30:11.687122] Allocate JobId=1038 NodeList=gpu1 #CPUs=64 Partition=gpu
+sched: [2022-01-01T09:30:15.775483] Running job scheduler for full queue.
+sched: [2022-01-01T09:31:15.775560] Running job scheduler for full queue.
+sched: [2022-01-01T09:32:15.775624] Running job scheduler for full queue.
+sched: [2022-01-01T09:33:15.775683] Running job scheduler for full queue.
+sched: [2022-01-01T09:34:05.775738] Running job scheduler for default depth.
+sched: [2022-01-01T09:34:15.775772] Running job scheduler for full queue.
+sched: [2022-01-01T09:35:15.864295] Running job scheduler for full queue.
+sched: [2022-01-01T09:36:15.864359] Running job scheduler for full queue.
+sched: [2022-01-01T09:37:15.864418] Running job scheduler for full queue.
+sched: [2022-01-01T09:38:15.864485] Running job scheduler for full queue.
+sched: [2022-01-01T09:39:15.864598] Running job scheduler for full queue.
+sched: [2022-01-01T09:40:15.952356] Running job scheduler for full queue.
+sched: [2022-01-01T09:41:15.952416] Running job scheduler for full queue.
+sched: [2022-01-01T09:42:15.952471] Running job scheduler for full queue.
+sched: [2022-01-01T09:43:15.952535] Running job scheduler for full queue.
+sched: [2022-01-01T09:44:15.952602] Running job scheduler for full queue.
+sched: [2022-01-01T09:44:45.686850] JobId=1039 allocated resources: NodeList=(null)
+sched: [2022-01-01T09:44:45.686904] Running job scheduler for default depth.
+sched: [2022-01-01T09:44:45.687056] JobId=1039 initiated
+sched: [2022-01-01T09:44:45.687077] Allocate JobId=1039 NodeList=gpu1 #CPUs=32 Partition=gpu
+sched: [2022-01-01T09:45:15.775599] Running job scheduler for full queue.
+sched: [2022-01-01T09:46:15.775678] Running job scheduler for full queue.
+sched: [2022-01-01T09:47:04.686892] JobId=1040 allocated resources: NodeList=(null)
+sched: [2022-01-01T09:47:04.686942] Running job scheduler for default depth.
+sched: [2022-01-01T09:47:04.687100] JobId=1040 initiated
+sched: [2022-01-01T09:47:04.687120] Allocate JobId=1040 NodeList=gpu[2-3] #CPUs=128 Partition=gpu
+sched: [2022-01-01T09:47:15.686992] Running job scheduler for full queue.
+sched: [2022-01-01T09:48:15.687066] Running job scheduler for full queue.
+sched: [2022-01-01T09:49:15.687129] Running job scheduler for full queue.
+sched: [2022-01-01T09:49:21.687141] Running job scheduler for default depth.
+sched: [2022-01-01T09:50:15.775631] Running job scheduler for full queue.
+sched: [2022-01-01T09:51:04.686952] JobId=1041 allocated resources: NodeList=(null)
+sched: [2022-01-01T09:51:04.687005] Running job scheduler for default depth.
+sched: [2022-01-01T09:51:04.687132] JobId=1041 initiated
+sched: [2022-01-01T09:51:04.687153] Allocate JobId=1041 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T09:51:15.687055] Running job scheduler for full queue.
+sched: [2022-01-01T09:52:07.686920] JobId=1042 allocated resources: NodeList=(null)
+sched: [2022-01-01T09:52:07.686980] Running job scheduler for default depth.
+sched: [2022-01-01T09:52:07.687071] JobId=1042. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T09:52:15.687011] Running job scheduler for full queue.
+sched: [2022-01-01T09:52:15.687122] JobId=1042. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T09:53:15.687110] Running job scheduler for full queue.
+sched: [2022-01-01T09:53:15.687207] JobId=1042. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T09:54:15.687184] Running job scheduler for full queue.
+sched: [2022-01-01T09:54:15.687268] JobId=1042. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T09:55:15.775746] Running job scheduler for full queue.
+sched: [2022-01-01T09:55:15.775867] JobId=1042. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T09:56:15.775824] Running job scheduler for full queue.
+sched: [2022-01-01T09:56:15.775921] JobId=1042. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T09:57:15.775904] Running job scheduler for full queue.
+sched: [2022-01-01T09:57:15.775991] JobId=1042. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T09:58:05.686771] JobId=1043 allocated resources: NodeList=(null)
+sched: [2022-01-01T09:58:05.686830] Running job scheduler for default depth.
+sched: [2022-01-01T09:58:05.686942] JobId=1042. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T09:58:05.686967] JobId=1043 unable to schedule in Partition=gpu (per _failed_partition()). State=PENDING. Previous-Reason=None. Previous-Desc=(null). New-Reason=Priority. Priority=1.
+sched: [2022-01-01T09:58:15.686864] Running job scheduler for full queue.
+sched: [2022-01-01T09:58:15.686976] JobId=1042. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T09:58:15.687008] JobId=1043. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T09:58:45.686908] Running job scheduler for default depth.
+sched: [2022-01-01T09:58:45.687032] JobId=1042 initiated
+sched: [2022-01-01T09:58:45.687054] Allocate JobId=1042 NodeList=gpu1 #CPUs=64 Partition=gpu
+sched: [2022-01-01T09:58:45.687217] JobId=1043. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T09:59:15.686956] Running job scheduler for full queue.
+sched: [2022-01-01T09:59:15.687046] JobId=1043. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T10:00:15.775029] Running job scheduler for full queue.
+sched: [2022-01-01T10:00:15.775178] JobId=1043. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T10:01:15.775105] Running job scheduler for full queue.
+sched: [2022-01-01T10:01:15.775185] JobId=1043. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T10:02:15.775172] Running job scheduler for full queue.
+sched: [2022-01-01T10:02:15.775246] JobId=1043. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T10:03:15.686911] JobId=1044 allocated resources: NodeList=(null)
+sched: [2022-01-01T10:03:15.686976] Running job scheduler for full queue.
+sched: [2022-01-01T10:03:15.687053] JobId=1043. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T10:03:15.687076] JobId=1044 unable to schedule in Partition=gpu (per _failed_partition()). State=PENDING. Previous-Reason=None. Previous-Desc=(null). New-Reason=Priority. Priority=1.
+sched: [2022-01-01T10:03:39.686816] JobId=1045 allocated resources: NodeList=(null)
+sched: [2022-01-01T10:03:39.686869] Running job scheduler for default depth.
+sched: [2022-01-01T10:03:39.686947] JobId=1043. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T10:03:39.686970] JobId=1044. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T10:03:39.686993] JobId=1045 unable to schedule in Partition=gpu (per _failed_partition()). State=PENDING. Previous-Reason=None. Previous-Desc=(null). New-Reason=Priority. Priority=1.
+sched: [2022-01-01T10:04:15.686948] Running job scheduler for full queue.
+sched: [2022-01-01T10:04:15.687051] JobId=1043. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T10:04:15.687084] JobId=1044. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T10:04:15.687112] JobId=1045. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T10:05:15.775702] Running job scheduler for full queue.
+sched: [2022-01-01T10:05:15.775816] JobId=1043. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T10:05:15.775854] JobId=1044. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T10:05:15.775870] JobId=1045. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T10:06:15.775806] Running job scheduler for full queue.
+sched: [2022-01-01T10:06:15.775884] JobId=1043. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T10:06:15.775905] JobId=1044. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T10:06:15.775926] JobId=1045. unable to schedule in Partition=gpu (per _failed_partition()). Retaining previous scheduling Reason=Priority. Desc=(null). Priority=1.
+sched: [2022-01-01T10:06:40.775835] Running job scheduler for default depth.
+sched: [2022-01-01T10:06:40.775968] JobId=1043 initiated
+sched: [2022-01-01T10:06:40.775990] Allocate JobId=1043 NodeList=gpu1 #CPUs=32 Partition=gpu
+sched: [2022-01-01T10:06:40.776379] JobId=1044 initiated
+sched: [2022-01-01T10:06:40.776403] Allocate JobId=1044 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T10:06:40.776789] JobId=1045 initiated
+sched: [2022-01-01T10:06:40.776813] Allocate JobId=1045 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T10:07:15.775915] Running job scheduler for full queue.
+sched: [2022-01-01T10:08:15.775993] Running job scheduler for full queue.
+sched: [2022-01-01T10:09:15.776068] Running job scheduler for full queue.
+sched: [2022-01-01T10:10:15.868869] Running job scheduler for full queue.
+sched: [2022-01-01T10:11:15.868955] Running job scheduler for full queue.
+sched: [2022-01-01T10:12:15.869070] Running job scheduler for full queue.
+sched: [2022-01-01T10:12:38.869094] Running job scheduler for default depth.
+sched: [2022-01-01T10:13:00.686845] JobId=1046 allocated resources: NodeList=(null)
+sched: [2022-01-01T10:13:00.686890] Running job scheduler for default depth.
+sched: [2022-01-01T10:13:00.687011] JobId=1046 initiated
+sched: [2022-01-01T10:13:00.687029] Allocate JobId=1046 NodeList=gpu2 #CPUs=16 Partition=gpu
+sched: [2022-01-01T10:13:15.686932] Running job scheduler for full queue.
+sched: [2022-01-01T10:14:15.687010] Running job scheduler for full queue.
+sched: [2022-01-01T10:14:19.687018] Running job scheduler for default depth.
+sched: [2022-01-01T10:15:15.774593] Running job scheduler for full queue.
+sched: [2022-01-01T10:16:15.774668] Running job scheduler for full queue.
+sched: [2022-01-01T10:17:15.774732] Running job scheduler for full queue.
+sched: [2022-01-01T10:18:15.774814] Running job scheduler for full queue.
+sched: [2022-01-01T10:19:15.774884] Running job scheduler for full queue.
+sched: [2022-01-01T10:20:15.862906] Running job scheduler for full queue.
+sched: [2022-01-01T10:21:15.862986] Running job scheduler for full queue.
+sched: [2022-01-01T10:22:15.863058] Running job scheduler for full queue.
+sched: [2022-01-01T10:23:15.863134] Running job scheduler for full queue.
+sched: [2022-01-01T10:24:15.863255] Running job scheduler for full queue.
+sched: [2022-01-01T10:25:11.863341] Running job scheduler for default depth.
+sched: [2022-01-01T10:25:15.950871] Running job scheduler for full queue.
+sched: [2022-01-01T10:26:15.950949] Running job scheduler for full queue.
+sched: [2022-01-01T10:27:15.951023] Running job scheduler for full queue.
+sched: [2022-01-01T10:28:15.951093] Running job scheduler for full queue.
+sched: [2022-01-01T10:29:15.951159] Running job scheduler for full queue.
+sched: [2022-01-01T10:30:16.038945] Running job scheduler for full queue.
+sched: [2022-01-01T10:31:03.085358] Running job scheduler for default depth.
+sched: [2022-01-01T10:31:15.085389] Running job scheduler for full queue.
+sched: [2022-01-01T10:32:15.085453] Running job scheduler for full queue.
+sched: [2022-01-01T10:33:15.085500] Running job scheduler for full queue.
+sched: [2022-01-01T10:34:15.085569] Running job scheduler for full queue.
+sched: [2022-01-01T10:35:15.175226] Running job scheduler for full queue.
+sched: [2022-01-01T10:36:15.173859] Running job scheduler for full queue.
+sched: [2022-01-01T10:37:15.173925] Running job scheduler for full queue.
+sched: [2022-01-01T10:38:15.173986] Running job scheduler for full queue.
+sched: [2022-01-01T10:38:34.686868] JobId=1047 allocated resources: NodeList=(null)
+sched: [2022-01-01T10:38:34.686911] Running job scheduler for default depth.
+sched: [2022-01-01T10:38:34.687049] JobId=1047 initiated
+sched: [2022-01-01T10:38:34.687068] Allocate JobId=1047 NodeList=gpu2 #CPUs=8 Partition=gpu
+sched: [2022-01-01T10:39:15.687002] Running job scheduler for full queue.
+sched: [2022-01-01T10:40:15.775469] Running job scheduler for full queue.
+sched: [2022-01-01T10:41:15.775548] Running job scheduler for full queue.
+sched: [2022-01-01T10:41:31.775571] Running job scheduler for default depth.
+sched: [2022-01-01T10:42:15.775620] Running job scheduler for full queue.
+sched: [2022-01-01T10:43:15.775655] Running job scheduler for full queue.
+sched: [2022-01-01T10:44:15.775689] Running job scheduler for full queue.
+sched: [2022-01-01T10:45:01.775718] Running job scheduler for default depth.
+sched: [2022-01-01T10:45:15.865181] Running job scheduler for full queue.
+sched: [2022-01-01T10:46:15.865215] Running job scheduler for full queue.
+sched: [2022-01-01T10:47:15.865255] Running job scheduler for full queue.
+sched: [2022-01-01T10:47:38.686508] JobId=1048 allocated resources: NodeList=(null)
+sched: [2022-01-01T10:47:38.686538] Running job scheduler for default depth.
+sched: [2022-01-01T10:47:38.686616] JobId=1048 initiated
+sched: [2022-01-01T10:47:38.686627] Allocate JobId=1048 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T10:48:15.686614] Running job scheduler for full queue.
+sched: [2022-01-01T10:49:15.686679] Running job scheduler for full queue.
+sched: [2022-01-01T10:50:15.776049] Running job scheduler for full queue.
+sched: [2022-01-01T10:51:15.776089] Running job scheduler for full queue.
+sched: [2022-01-01T10:52:15.776119] Running job scheduler for full queue.
+sched: [2022-01-01T10:53:15.776158] Running job scheduler for full queue.
+sched: [2022-01-01T10:54:15.776210] Running job scheduler for full queue.
+sched: [2022-01-01T10:55:15.865421] Running job scheduler for full queue.
+sched: [2022-01-01T10:55:30.686903] JobId=1049 allocated resources: NodeList=(null)
+sched: [2022-01-01T10:55:30.686948] Running job scheduler for default depth.
+sched: [2022-01-01T10:55:30.687083] JobId=1049 initiated
+sched: [2022-01-01T10:55:30.687102] Allocate JobId=1049 NodeList=gpu2 #CPUs=64 Partition=gpu
+sched: [2022-01-01T10:56:15.687038] Running job scheduler for full queue.
+sched: [2022-01-01T10:57:15.687099] Running job scheduler for full queue.
+sched: [2022-01-01T10:57:45.687273] Running job scheduler for default depth.
+sched: [2022-01-01T10:58:15.687422] Running job scheduler for full queue.
+sched: [2022-01-01T10:59:15.687477] Running job scheduler for full queue.
+sched: [2022-01-01T10:59:19.686887] JobId=1050 allocated resources: NodeList=(null)
+sched: [2022-01-01T10:59:19.686931] Running job scheduler for default depth.
+sched: [2022-01-01T10:59:19.687083] JobId=1050 initiated
+sched: [2022-01-01T10:59:19.687103] Allocate JobId=1050 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T11:00:15.776558] Running job scheduler for full queue.
+sched: [2022-01-01T11:00:19.686788] JobId=1051 allocated resources: NodeList=(null)
+sched: [2022-01-01T11:00:19.686827] Running job scheduler for default depth.
+sched: [2022-01-01T11:00:19.686903] JobId=1051 initiated
+sched: [2022-01-01T11:00:19.686914] Allocate JobId=1051 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T11:01:15.766692] Running job scheduler for full queue.
+sched: [2022-01-01T11:02:00.686764] JobId=1052 allocated resources: NodeList=(null)
+sched: [2022-01-01T11:02:00.686814] Running job scheduler for default depth.
+sched: [2022-01-01T11:02:00.686946] JobId=1052 initiated
+sched: [2022-01-01T11:02:00.686965] Allocate JobId=1052 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T11:02:15.686872] Running job scheduler for full queue.
+sched: [2022-01-01T11:03:15.686963] Running job scheduler for full queue.
+sched: [2022-01-01T11:04:15.687045] Running job scheduler for full queue.
+sched: [2022-01-01T11:04:23.687059] Running job scheduler for default depth.
+sched: [2022-01-01T11:05:04.687278] Running job scheduler for default depth.
+sched: [2022-01-01T11:05:15.776891] Running job scheduler for full queue.
+sched: [2022-01-01T11:06:15.776968] Running job scheduler for full queue.
+sched: [2022-01-01T11:07:15.777037] Running job scheduler for full queue.
+sched: [2022-01-01T11:08:12.686887] JobId=1053 allocated resources: NodeList=(null)
+sched: [2022-01-01T11:08:12.686939] Running job scheduler for default depth.
+sched: [2022-01-01T11:08:12.687094] JobId=1053 initiated
+sched: [2022-01-01T11:08:12.687123] Allocate JobId=1053 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T11:08:15.687016] Running job scheduler for full queue.
+sched: [2022-01-01T11:09:15.687118] Running job scheduler for full queue.
+sched: [2022-01-01T11:10:15.776226] Running job scheduler for full queue.
+sched: [2022-01-01T11:11:15.776333] Running job scheduler for full queue.
+sched: [2022-01-01T11:11:36.776358] Running job scheduler for default depth.
+sched: [2022-01-01T11:12:15.776436] Running job scheduler for full queue.
+sched: [2022-01-01T11:13:15.776489] Running job scheduler for full queue.
+sched: [2022-01-01T11:14:15.776550] Running job scheduler for full queue.
+sched: [2022-01-01T11:14:27.686913] JobId=1054 allocated resources: NodeList=(null)
+sched: [2022-01-01T11:14:27.686972] Running job scheduler for default depth.
+sched: [2022-01-01T11:14:27.687116] JobId=1054 initiated
+sched: [2022-01-01T11:14:27.687148] Allocate JobId=1054 NodeList=gpu3 #CPUs=64 Partition=gpu
+sched: [2022-01-01T11:15:15.775439] Running job scheduler for full queue.
+sched: [2022-01-01T11:16:15.775521] Running job scheduler for full queue.
+sched: [2022-01-01T11:16:18.775561] Running job scheduler for default depth.
+sched: [2022-01-01T11:17:15.775652] Running job scheduler for full queue.
+sched: [2022-01-01T11:17:35.775677] Running job scheduler for default depth.
+sched: [2022-01-01T11:18:15.775738] Running job scheduler for full queue.
+sched: [2022-01-01T11:19:15.775818] Running job scheduler for full queue.
+sched: [2022-01-01T11:20:15.864004] Running job scheduler for full queue.
+sched: [2022-01-01T11:21:15.864080] Running job scheduler for full queue.
+sched: [2022-01-01T11:22:15.864158] Running job scheduler for full queue.
+sched: [2022-01-01T11:23:15.864239] Running job scheduler for full queue.
+sched: [2022-01-01T11:24:15.864312] Running job scheduler for full queue.
+sched: [2022-01-01T11:25:15.952123] Running job scheduler for full queue.
+sched: [2022-01-01T11:26:15.952202] Running job scheduler for full queue.
+sched: [2022-01-01T11:27:15.952251] Running job scheduler for full queue.
+sched: [2022-01-01T11:27:31.686910] JobId=1055 allocated resources: NodeList=(null)
+sched: [2022-01-01T11:27:31.686952] Running job scheduler for default depth.
+sched: [2022-01-01T11:27:31.687078] JobId=1055 initiated
+sched: [2022-01-01T11:27:31.687096] Allocate JobId=1055 NodeList=gpu1 #CPUs=32 Partition=gpu
+sched: [2022-01-01T11:28:15.687026] Running job scheduler for full queue.
+sched: [2022-01-01T11:29:15.687115] Running job scheduler for full queue.
+sched: [2022-01-01T11:30:15.779397] Running job scheduler for full queue.
+sched: [2022-01-01T11:31:15.779458] Running job scheduler for full queue.
+sched: [2022-01-01T11:32:15.779530] Running job scheduler for full queue.
+sched: [2022-01-01T11:33:02.686926] JobId=1056 allocated resources: NodeList=(null)
+sched: [2022-01-01T11:33:02.686984] Running job scheduler for default depth.
+sched: [2022-01-01T11:33:02.687118] JobId=1056 initiated
+sched: [2022-01-01T11:33:02.687140] Allocate JobId=1056 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T11:33:15.704704] Running job scheduler for full queue.
+sched: [2022-01-01T11:34:15.704793] Running job scheduler for full queue.
+sched: [2022-01-01T11:35:15.792069] Running job scheduler for full queue.
+sched: [2022-01-01T11:35:55.686921] JobId=1057 allocated resources: NodeList=(null)
+sched: [2022-01-01T11:35:55.686976] Running job scheduler for default depth.
+sched: [2022-01-01T11:35:55.687110] JobId=1057 initiated
+sched: [2022-01-01T11:35:55.687131] Allocate JobId=1057 NodeList=gpu2 #CPUs=32 Partition=gpu
+sched: [2022-01-01T11:35:57.686771] JobId=1058 allocated resources: NodeList=(null)
+sched: [2022-01-01T11:35:58.686822] Running job scheduler for default depth.
+sched: [2022-01-01T11:35:58.686963] JobId=1058 initiated
+sched: [2022-01-01T11:35:58.686985] Allocate JobId=1058 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T11:36:15.706612] Running job scheduler for full queue.
+sched: [2022-01-01T11:37:15.706680] Running job scheduler for full queue.
+sched: [2022-01-01T11:38:05.706745] Running job scheduler for default depth.
+sched: [2022-01-01T11:38:15.789741] Running job scheduler for full queue.
+sched: [2022-01-01T11:39:15.789823] Running job scheduler for full queue.
+sched: [2022-01-01T11:40:15.878095] Running job scheduler for full queue.
+sched: [2022-01-01T11:41:15.878152] Running job scheduler for full queue.
+sched: [2022-01-01T11:42:15.878229] Running job scheduler for full queue.
+sched: [2022-01-01T11:43:15.878354] Running job scheduler for full queue.
+sched: [2022-01-01T11:44:15.878433] Running job scheduler for full queue.
+sched: [2022-01-01T11:45:15.966010] Running job scheduler for full queue.
+sched: [2022-01-01T11:46:15.966047] Running job scheduler for full queue.
+sched: [2022-01-01T11:46:46.686486] JobId=1059 allocated resources: NodeList=(null)
+sched: [2022-01-01T11:46:46.686516] Running job scheduler for default depth.
+sched: [2022-01-01T11:46:46.686598] JobId=1059 initiated
+sched: [2022-01-01T11:46:46.686609] Allocate JobId=1059 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T11:47:15.686587] Running job scheduler for full queue.
+sched: [2022-01-01T11:48:15.686671] Running job scheduler for full queue.
+sched: [2022-01-01T11:49:15.686749] Running job scheduler for full queue.
+sched: [2022-01-01T11:49:48.687102] Running job scheduler for default depth.
+sched: [2022-01-01T11:50:15.774774] Running job scheduler for full queue.
+sched: [2022-01-01T11:50:41.686940] JobId=1060 allocated resources: NodeList=(null)
+sched: [2022-01-01T11:50:41.686991] Running job scheduler for default depth.
+sched: [2022-01-01T11:50:41.687132] JobId=1060 initiated
+sched: [2022-01-01T11:50:41.687154] Allocate JobId=1060 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T11:51:15.687089] Running job scheduler for full queue.
+sched: [2022-01-01T11:52:15.687177] Running job scheduler for full queue.
+sched: [2022-01-01T11:52:21.687191] Running job scheduler for default depth.
+sched: [2022-01-01T11:53:15.687296] Running job scheduler for full queue.
+sched: [2022-01-01T11:54:15.687376] Running job scheduler for full queue.
+sched: [2022-01-01T11:55:15.775399] Running job scheduler for full queue.
+sched: [2022-01-01T11:56:04.687001] JobId=1061 allocated resources: NodeList=(null)
+sched: [2022-01-01T11:56:04.687047] Running job scheduler for default depth.
+sched: [2022-01-01T11:56:04.687171] JobId=1061 initiated
+sched: [2022-01-01T11:56:04.687190] Allocate JobId=1061 NodeList=gpu2 #CPUs=32 Partition=gpu
+sched: [2022-01-01T11:56:15.687109] Running job scheduler for full queue.
+sched: [2022-01-01T11:57:15.687192] Running job scheduler for full queue.
+sched: [2022-01-01T11:58:15.687285] Running job scheduler for full queue.
+sched: [2022-01-01T11:59:15.687362] Running job scheduler for full queue.
+sched: [2022-01-01T12:00:15.775069] Running job scheduler for full queue.
+sched: [2022-01-01T12:01:15.775186] Running job scheduler for full queue.
+sched: [2022-01-01T12:02:15.775258] Running job scheduler for full queue.
+sched: [2022-01-01T12:03:15.775337] Running job scheduler for full queue.
+sched: [2022-01-01T12:04:15.775407] Running job scheduler for full queue.
+sched: [2022-01-01T12:05:15.865185] Running job scheduler for full queue.
+sched: [2022-01-01T12:06:15.865266] Running job scheduler for full queue.
+sched: [2022-01-01T12:07:15.865344] Running job scheduler for full queue.
+sched: [2022-01-01T12:07:49.865387] Running job scheduler for default depth.
+sched: [2022-01-01T12:08:15.865456] Running job scheduler for full queue.
+sched: [2022-01-01T12:09:15.865529] Running job scheduler for full queue.
+sched: [2022-01-01T12:10:15.953373] Running job scheduler for full queue.
+sched: [2022-01-01T12:11:15.953445] Running job scheduler for full queue.
+sched: [2022-01-01T12:12:15.953511] Running job scheduler for full queue.
+sched: [2022-01-01T12:13:15.953594] Running job scheduler for full queue.
+sched: [2022-01-01T12:13:25.953608] Running job scheduler for default depth.
+sched: [2022-01-01T12:14:15.953678] Running job scheduler for full queue.
+sched: [2022-01-01T12:15:16.042163] Running job scheduler for full queue.
+sched: [2022-01-01T12:16:15.042243] Running job scheduler for full queue.
+sched: [2022-01-01T12:17:15.042313] Running job scheduler for full queue.
+sched: [2022-01-01T12:18:01.686909] JobId=1062 allocated resources: NodeList=(null)
+sched: [2022-01-01T12:18:01.686981] Running job scheduler for default depth.
+sched: [2022-01-01T12:18:01.687118] JobId=1062 initiated
+sched: [2022-01-01T12:18:01.687138] Allocate JobId=1062 NodeList=gpu2 #CPUs=64 Partition=gpu
+sched: [2022-01-01T12:18:15.687048] Running job scheduler for full queue.
+sched: [2022-01-01T12:19:15.687135] Running job scheduler for full queue.
+sched: [2022-01-01T12:20:15.775455] Running job scheduler for full queue.
+sched: [2022-01-01T12:21:15.775530] Running job scheduler for full queue.
+sched: [2022-01-01T12:22:15.775605] Running job scheduler for full queue.
+sched: [2022-01-01T12:23:15.775672] Running job scheduler for full queue.
+sched: [2022-01-01T12:23:39.775692] Running job scheduler for default depth.
+sched: [2022-01-01T12:24:15.775809] Running job scheduler for full queue.
+sched: [2022-01-01T12:25:15.864068] Running job scheduler for full queue.
+sched: [2022-01-01T12:26:15.864151] Running job scheduler for full queue.
+sched: [2022-01-01T12:26:24.864169] Running job scheduler for default depth.
+sched: [2022-01-01T12:27:15.864251] Running job scheduler for full queue.
+sched: [2022-01-01T12:27:47.686907] JobId=1063 allocated resources: NodeList=(null)
+sched: [2022-01-01T12:27:47.686951] Running job scheduler for default depth.
+sched: [2022-01-01T12:27:47.687072] JobId=1063 initiated
+sched: [2022-01-01T12:27:47.687090] Allocate JobId=1063 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T12:28:15.687022] Running job scheduler for full queue.
+sched: [2022-01-01T12:29:15.687128] Running job scheduler for full queue.
+sched: [2022-01-01T12:30:15.776670] Running job scheduler for full queue.
+sched: [2022-01-01T12:31:15.776753] Running job scheduler for full queue.
+sched: [2022-01-01T12:32:08.686903] JobId=1064 allocated resources: NodeList=(null)
+sched: [2022-01-01T12:32:08.686946] Running job scheduler for default depth.
+sched: [2022-01-01T12:32:08.687073] JobId=1064 initiated
+sched: [2022-01-01T12:32:08.687091] Allocate JobId=1064 NodeList=gpu1 #CPUs=32 Partition=gpu
+sched: [2022-01-01T12:32:15.687010] Running job scheduler for full queue.
+sched: [2022-01-01T12:33:15.687115] Running job scheduler for full queue.
+sched: [2022-01-01T12:34:15.687199] Running job scheduler for full queue.
+sched: [2022-01-01T12:34:47.687231] Running job scheduler for default depth.
+sched: [2022-01-01T12:35:15.776756] Running job scheduler for full queue.
+sched: [2022-01-01T12:36:15.776835] Running job scheduler for full queue.
+sched: [2022-01-01T12:37:15.776915] Running job scheduler for full queue.
+sched: [2022-01-01T12:37:24.776928] Running job scheduler for default depth.
+sched: [2022-01-01T12:38:15.777017] Running job scheduler for full queue.
+sched: [2022-01-01T12:39:15.777086] Running job scheduler for full queue.
+sched: [2022-01-01T12:40:15.865248] Running job scheduler for full queue.
+sched: [2022-01-01T12:41:15.865318] Running job scheduler for full queue.
+sched: [2022-01-01T12:41:24.686899] JobId=1065 allocated resources: NodeList=(null)
+sched: [2022-01-01T12:41:24.686964] Running job scheduler for default depth.
+sched: [2022-01-01T12:41:24.687095] JobId=1065 initiated
+sched: [2022-01-01T12:41:24.687115] Allocate JobId=1065 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T12:42:15.687098] Running job scheduler for full queue.
+sched: [2022-01-01T12:43:15.687219] Running job scheduler for full queue.
+sched: [2022-01-01T12:44:15.687312] Running job scheduler for full queue.
+sched: [2022-01-01T12:45:15.775749] Running job scheduler for full queue.
+sched: [2022-01-01T12:46:15.775825] Running job scheduler for full queue.
+sched: [2022-01-01T12:47:05.686925] JobId=1066 allocated resources: NodeList=(null)
+sched: [2022-01-01T12:47:05.686973] Running job scheduler for default depth.
+sched: [2022-01-01T12:47:05.687099] JobId=1066 initiated
+sched: [2022-01-01T12:47:05.687118] Allocate JobId=1066 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T12:47:15.687041] Running job scheduler for full queue.
+sched: [2022-01-01T12:48:15.687148] Running job scheduler for full queue.
+sched: [2022-01-01T12:48:31.687175] Running job scheduler for default depth.
+sched: [2022-01-01T12:49:11.686944] JobId=1067 allocated resources: NodeList=(null)
+sched: [2022-01-01T12:49:11.686995] Running job scheduler for default depth.
+sched: [2022-01-01T12:49:11.687129] JobId=1067 initiated
+sched: [2022-01-01T12:49:11.687148] Allocate JobId=1067 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T12:49:15.687146] Running job scheduler for full queue.
+sched: [2022-01-01T12:49:26.686915] JobId=1068 allocated resources: NodeList=(null)
+sched: [2022-01-01T12:49:26.686965] Running job scheduler for default depth.
+sched: [2022-01-01T12:49:26.687106] JobId=1068 initiated
+sched: [2022-01-01T12:49:26.687126] Allocate JobId=1068 NodeList=gpu1 #CPUs=32 Partition=gpu
+sched: [2022-01-01T12:50:15.775314] Running job scheduler for full queue.
+sched: [2022-01-01T12:51:15.775409] Running job scheduler for full queue.
+sched: [2022-01-01T12:52:15.775489] Running job scheduler for full queue.
+sched: [2022-01-01T12:53:15.775564] Running job scheduler for full queue.
+sched: [2022-01-01T12:54:15.775654] Running job scheduler for full queue.
+sched: [2022-01-01T12:55:15.864447] Running job scheduler for full queue.
+sched: [2022-01-01T12:55:51.864499] Running job scheduler for default depth.
+sched: [2022-01-01T12:56:15.864553] Running job scheduler for full queue.
+sched: [2022-01-01T12:56:35.864574] Running job scheduler for default depth.
+sched: [2022-01-01T12:57:14.686514] JobId=1069 allocated resources: NodeList=(null)
+sched: [2022-01-01T12:57:14.686543] Running job scheduler for default depth.
+sched: [2022-01-01T12:57:14.686580] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T12:57:15.686554] Running job scheduler for full queue.
+sched: [2022-01-01T12:57:15.686598] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T12:58:15.686644] Running job scheduler for full queue.
+sched: [2022-01-01T12:58:15.686726] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T12:59:15.686727] Running job scheduler for full queue.
+sched: [2022-01-01T12:59:15.686803] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:00:15.775120] Running job scheduler for full queue.
+sched: [2022-01-01T13:00:15.775282] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:01:15.775195] Running job scheduler for full queue.
+sched: [2022-01-01T13:01:15.775288] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:02:15.775301] Running job scheduler for full queue.
+sched: [2022-01-01T13:02:15.775399] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:03:10.687162] JobId=1070 allocated resources: NodeList=(null)
+sched: [2022-01-01T13:03:10.687214] Running job scheduler for default depth.
+sched: [2022-01-01T13:03:10.687287] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:03:10.687306] JobId=1070 unable to schedule in Partition=gpu (per _failed_partition()). State=PENDING. Previous-Reason=None. Previous-Desc=(null). New-Reason=Priority. Priority=1.
+sched: [2022-01-01T13:03:15.687254] Running job scheduler for full queue.
+sched: [2022-01-01T13:03:15.687357] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:04:15.747532] Running job scheduler for full queue.
+sched: [2022-01-01T13:04:15.747636] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:05:15.835754] Running job scheduler for full queue.
+sched: [2022-01-01T13:05:15.835910] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:06:15.835831] Running job scheduler for full queue.
+sched: [2022-01-01T13:06:15.835914] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:07:15.835915] Running job scheduler for full queue.
+sched: [2022-01-01T13:07:15.835996] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:07:54.835968] Running job scheduler for default depth.
+sched: [2022-01-01T13:07:54.836051] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:08:15.837423] Running job scheduler for full queue.
+sched: [2022-01-01T13:08:15.837518] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:09:15.837522] Running job scheduler for full queue.
+sched: [2022-01-01T13:09:15.837602] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:10:15.926455] Running job scheduler for full queue.
+sched: [2022-01-01T13:10:15.926619] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:11:15.926534] Running job scheduler for full queue.
+sched: [2022-01-01T13:11:15.926616] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:12:15.926608] Running job scheduler for full queue.
+sched: [2022-01-01T13:12:15.926685] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:13:13.686888] JobId=1071 allocated resources: NodeList=(null)
+sched: [2022-01-01T13:13:13.686940] Running job scheduler for default depth.
+sched: [2022-01-01T13:13:13.687033] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:13:13.687054] JobId=1071 unable to schedule in Partition=gpu (per _failed_partition()). State=PENDING. Previous-Reason=None. Previous-Desc=(null). New-Reason=Priority. Priority=1.
+sched: [2022-01-01T13:13:15.686984] Running job scheduler for full queue.
+sched: [2022-01-01T13:13:15.687076] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:14:15.687067] Running job scheduler for full queue.
+sched: [2022-01-01T13:14:15.687150] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:15:15.780318] Running job scheduler for full queue.
+sched: [2022-01-01T13:15:15.780461] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:16:15.780398] Running job scheduler for full queue.
+sched: [2022-01-01T13:16:15.780487] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:17:15.780476] Running job scheduler for full queue.
+sched: [2022-01-01T13:17:15.780553] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:18:15.780560] Running job scheduler for full queue.
+sched: [2022-01-01T13:18:15.780640] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:19:09.780625] Running job scheduler for default depth.
+sched: [2022-01-01T13:19:09.780713] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:19:15.780651] Running job scheduler for full queue.
+sched: [2022-01-01T13:19:15.780731] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:20:15.868712] Running job scheduler for full queue.
+sched: [2022-01-01T13:20:15.868866] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:20:26.686850] JobId=1072 allocated resources: NodeList=(null)
+sched: [2022-01-01T13:20:26.686894] Running job scheduler for default depth.
+sched: [2022-01-01T13:20:26.686962] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:20:26.686980] JobId=1072 unable to schedule in Partition=gpu (per _failed_partition()). State=PENDING. Previous-Reason=None. Previous-Desc=(null). New-Reason=Priority. Priority=1.
+sched: [2022-01-01T13:20:49.686951] Running job scheduler for default depth.
+sched: [2022-01-01T13:20:49.687052] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:21:14.686901] JobId=1073 allocated resources: NodeList=(null)
+sched: [2022-01-01T13:21:14.686947] Running job scheduler for default depth.
+sched: [2022-01-01T13:21:14.687019] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:21:14.687038] JobId=1073 unable to schedule in Partition=gpu (per _failed_partition()). State=PENDING. Previous-Reason=None. Previous-Desc=(null). New-Reason=Priority. Priority=1.
+sched: [2022-01-01T13:21:15.686972] Running job scheduler for full queue.
+sched: [2022-01-01T13:21:15.687062] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:22:15.687162] Running job scheduler for full queue.
+sched: [2022-01-01T13:22:15.687289] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:23:15.687260] Running job scheduler for full queue.
+sched: [2022-01-01T13:23:15.687352] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:24:15.687367] Running job scheduler for full queue.
+sched: [2022-01-01T13:24:15.687457] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:25:15.776157] Running job scheduler for full queue.
+sched: [2022-01-01T13:25:15.776322] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:26:15.776242] Running job scheduler for full queue.
+sched: [2022-01-01T13:26:15.776334] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:27:15.776358] Running job scheduler for full queue.
+sched: [2022-01-01T13:27:15.776425] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:28:07.686948] JobId=1074 allocated resources: NodeList=(null)
+sched: [2022-01-01T13:28:07.687008] Running job scheduler for default depth.
+sched: [2022-01-01T13:28:07.687110] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:28:07.687141] JobId=1074 unable to schedule in Partition=gpu (per _failed_partition()). State=PENDING. Previous-Reason=None. Previous-Desc=(null). New-Reason=Priority. Priority=1.
+sched: [2022-01-01T13:28:15.687071] Running job scheduler for full queue.
+sched: [2022-01-01T13:28:15.687212] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:29:15.687163] Running job scheduler for full queue.
+sched: [2022-01-01T13:29:15.687291] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:29:25.687176] Running job scheduler for default depth.
+sched: [2022-01-01T13:29:25.687262] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:30:15.774967] Running job scheduler for full queue.
+sched: [2022-01-01T13:30:15.775134] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:31:01.775020] Running job scheduler for default depth.
+sched: [2022-01-01T13:31:01.775119] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:31:15.775064] Running job scheduler for full queue.
+sched: [2022-01-01T13:31:15.775187] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:32:15.775166] Running job scheduler for full queue.
+sched: [2022-01-01T13:32:15.775296] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:33:15.775291] Running job scheduler for full queue.
+sched: [2022-01-01T13:33:15.775435] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:33:25.775315] Running job scheduler for default depth.
+sched: [2022-01-01T13:33:25.775458] JobId=1069. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T13:33:53.775372] Running job scheduler for default depth.
+sched: [2022-01-01T13:33:53.775531] JobId=1069 initiated
+sched: [2022-01-01T13:33:53.775552] Allocate JobId=1069 NodeList=gpu[1-3] #CPUs=192 Partition=gpu
+sched: [2022-01-01T13:34:15.775410] Running job scheduler for full queue.
+sched: [2022-01-01T13:35:15.864023] Running job scheduler for full queue.
+sched: [2022-01-01T13:36:15.864123] Running job scheduler for full queue.
+sched: [2022-01-01T13:37:15.864192] Running job scheduler for full queue.
+sched: [2022-01-01T13:37:59.864242] Running job scheduler for default depth.
+sched: [2022-01-01T13:38:15.864288] Running job scheduler for full queue.
+sched: [2022-01-01T13:39:15.864362] Running job scheduler for full queue.
+sched: [2022-01-01T13:40:15.952452] Running job scheduler for full queue.
+sched: [2022-01-01T13:40:47.686908] JobId=1075 allocated resources: NodeList=(null)
+sched: [2022-01-01T13:40:47.686955] Running job scheduler for default depth.
+sched: [2022-01-01T13:40:47.687094] JobId=1075 initiated
+sched: [2022-01-01T13:40:47.687112] Allocate JobId=1075 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T13:41:15.687018] Running job scheduler for full queue.
+sched: [2022-01-01T13:42:15.687048] Running job scheduler for full queue.
+sched: [2022-01-01T13:43:15.687094] Running job scheduler for full queue.
+sched: [2022-01-01T13:44:15.687131] Running job scheduler for full queue.
+sched: [2022-01-01T13:45:15.775318] Running job scheduler for full queue.
+sched: [2022-01-01T13:46:15.775379] Running job scheduler for full queue.
+sched: [2022-01-01T13:47:15.775473] Running job scheduler for full queue.
+sched: [2022-01-01T13:47:36.775498] Running job scheduler for default depth.
+sched: [2022-01-01T13:48:15.775564] Running job scheduler for full queue.
+sched: [2022-01-01T13:49:15.775625] Running job scheduler for full queue.
+sched: [2022-01-01T13:50:15.863584] Running job scheduler for full queue.
+sched: [2022-01-01T13:51:15.863629] Running job scheduler for full queue.
+sched: [2022-01-01T13:52:03.686692] JobId=1076 allocated resources: NodeList=(null)
+sched: [2022-01-01T13:52:03.686736] Running job scheduler for default depth.
+sched: [2022-01-01T13:52:03.686866] JobId=1076 initiated
+sched: [2022-01-01T13:52:03.686886] Allocate JobId=1076 NodeList=gpu1 #CPUs=64 Partition=gpu
+sched: [2022-01-01T13:52:15.686783] Running job scheduler for full queue.
+sched: [2022-01-01T13:53:15.686825] Running job scheduler for full queue.
+sched: [2022-01-01T13:54:15.686856] Running job scheduler for full queue.
+sched: [2022-01-01T13:55:15.775189] Running job scheduler for full queue.
+sched: [2022-01-01T13:56:15.775260] Running job scheduler for full queue.
+sched: [2022-01-01T13:57:15.775324] Running job scheduler for full queue.
+sched: [2022-01-01T13:58:15.775425] Running job scheduler for full queue.
+sched: [2022-01-01T13:59:15.775490] Running job scheduler for full queue.
+sched: [2022-01-01T14:00:15.863270] Running job scheduler for full queue.
+sched: [2022-01-01T14:01:15.863343] Running job scheduler for full queue.
+sched: [2022-01-01T14:02:15.863449] Running job scheduler for full queue.
+sched: [2022-01-01T14:03:15.863508] Running job scheduler for full queue.
+sched: [2022-01-01T14:04:15.863575] Running job scheduler for full queue.
+sched: [2022-01-01T14:04:46.863624] Running job scheduler for default depth.
+sched: [2022-01-01T14:05:15.952094] Running job scheduler for full queue.
+sched: [2022-01-01T14:06:15.952158] Running job scheduler for full queue.
+sched: [2022-01-01T14:06:36.686934] JobId=1077 allocated resources: NodeList=(null)
+sched: [2022-01-01T14:06:36.686986] Running job scheduler for default depth.
+sched: [2022-01-01T14:06:36.687133] JobId=1077 initiated
+sched: [2022-01-01T14:06:36.687155] Allocate JobId=1077 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T14:07:15.687069] Running job scheduler for full queue.
+sched: [2022-01-01T14:08:15.687135] Running job scheduler for full queue.
+sched: [2022-01-01T14:09:15.687202] Running job scheduler for full queue.
+sched: [2022-01-01T14:10:15.776182] Running job scheduler for full queue.
+sched: [2022-01-01T14:10:49.776207] Running job scheduler for default depth.
+sched: [2022-01-01T14:11:15.776266] Running job scheduler for full queue.
+sched: [2022-01-01T14:12:15.776291] Running job scheduler for full queue.
+sched: [2022-01-01T14:13:15.776314] Running job scheduler for full queue.
+sched: [2022-01-01T14:14:15.776349] Running job scheduler for full queue.
+sched: [2022-01-01T14:14:39.686956] JobId=1078 allocated resources: NodeList=(null)
+sched: [2022-01-01T14:14:39.687005] Running job scheduler for default depth.
+sched: [2022-01-01T14:14:39.687137] JobId=1078 initiated
+sched: [2022-01-01T14:14:39.687158] Allocate JobId=1078 NodeList=gpu1 #CPUs=32 Partition=gpu
+sched: [2022-01-01T14:15:15.777051] Running job scheduler for full queue.
+sched: [2022-01-01T14:16:15.777098] Running job scheduler for full queue.
+sched: [2022-01-01T14:17:15.777131] Running job scheduler for full queue.
+sched: [2022-01-01T14:18:15.777163] Running job scheduler for full queue.
+sched: [2022-01-01T14:19:15.777196] Running job scheduler for full queue.
+sched: [2022-01-01T14:20:15.865088] Running job scheduler for full queue.
+sched: [2022-01-01T14:21:15.865123] Running job scheduler for full queue.
+sched: [2022-01-01T14:22:15.865160] Running job scheduler for full queue.
+sched: [2022-01-01T14:22:47.686487] JobId=1079 allocated resources: NodeList=(null)
+sched: [2022-01-01T14:22:47.686517] Running job scheduler for default depth.
+sched: [2022-01-01T14:22:47.686610] JobId=1079 initiated
+sched: [2022-01-01T14:22:47.686623] Allocate JobId=1079 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T14:23:15.686584] Running job scheduler for full queue.
+sched: [2022-01-01T14:24:15.686728] Running job scheduler for full queue.
+sched: [2022-01-01T14:25:15.775755] Running job scheduler for full queue.
+sched: [2022-01-01T14:26:15.775825] Running job scheduler for full queue.
+sched: [2022-01-01T14:27:15.775883] Running job scheduler for full queue.
+sched: [2022-01-01T14:28:15.775949] Running job scheduler for full queue.
+sched: [2022-01-01T14:28:39.686871] JobId=1080 allocated resources: NodeList=(null)
+sched: [2022-01-01T14:28:39.686914] Running job scheduler for default depth.
+sched: [2022-01-01T14:28:39.687045] JobId=1080 initiated
+sched: [2022-01-01T14:28:39.687064] Allocate JobId=1080 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T14:29:15.687012] Running job scheduler for full queue.
+sched: [2022-01-01T14:30:15.775514] Running job scheduler for full queue.
+sched: [2022-01-01T14:31:15.775629] Running job scheduler for full queue.
+sched: [2022-01-01T14:32:15.775706] Running job scheduler for full queue.
+sched: [2022-01-01T14:33:15.775770] Running job scheduler for full queue.
+sched: [2022-01-01T14:34:15.775844] Running job scheduler for full queue.
+sched: [2022-01-01T14:35:15.863386] Running job scheduler for full queue.
+sched: [2022-01-01T14:36:15.863485] Running job scheduler for full queue.
+sched: [2022-01-01T14:37:15.863593] Running job scheduler for full queue.
+sched: [2022-01-01T14:37:18.863615] Running job scheduler for default depth.
+sched: [2022-01-01T14:38:15.863685] Running job scheduler for full queue.
+sched: [2022-01-01T14:38:34.686915] JobId=1081 allocated resources: NodeList=(null)
+sched: [2022-01-01T14:38:34.686960] Running job scheduler for default depth.
+sched: [2022-01-01T14:38:34.687101] JobId=1081 initiated
+sched: [2022-01-01T14:38:34.687120] Allocate JobId=1081 NodeList=gpu2 #CPUs=32 Partition=gpu
+sched: [2022-01-01T14:39:15.725331] Running job scheduler for full queue.
+sched: [2022-01-01T14:40:15.813734] Running job scheduler for full queue.
+sched: [2022-01-01T14:41:15.813815] Running job scheduler for full queue.
+sched: [2022-01-01T14:42:15.813892] Running job scheduler for full queue.
+sched: [2022-01-01T14:43:15.813978] Running job scheduler for full queue.
+sched: [2022-01-01T14:44:15.814058] Running job scheduler for full queue.
+sched: [2022-01-01T14:45:15.901795] Running job scheduler for full queue.
+sched: [2022-01-01T14:46:15.901881] Running job scheduler for full queue.
+sched: [2022-01-01T14:47:15.901947] Running job scheduler for full queue.
+sched: [2022-01-01T14:48:15.902012] Running job scheduler for full queue.
+sched: [2022-01-01T14:49:15.902080] Running job scheduler for full queue.
+sched: [2022-01-01T14:50:15.989814] Running job scheduler for full queue.
+sched: [2022-01-01T14:51:15.989945] Running job scheduler for full queue.
+sched: [2022-01-01T14:52:15.990062] Running job scheduler for full queue.
+sched: [2022-01-01T14:53:15.990171] Running job scheduler for full queue.
+sched: [2022-01-01T14:53:51.686917] JobId=1082 allocated resources: NodeList=(null)
+sched: [2022-01-01T14:53:51.686964] Running job scheduler for default depth.
+sched: [2022-01-01T14:53:51.687105] JobId=1082 initiated
+sched: [2022-01-01T14:53:51.687129] Allocate JobId=1082 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T14:54:15.687038] Running job scheduler for full queue.
+sched: [2022-01-01T14:54:28.687054] Running job scheduler for default depth.
+sched: [2022-01-01T14:54:57.686887] JobId=1083 allocated resources: NodeList=(null)
+sched: [2022-01-01T14:54:57.686936] Running job scheduler for default depth.
+sched: [2022-01-01T14:54:57.687073] JobId=1083 initiated
+sched: [2022-01-01T14:54:57.687093] Allocate JobId=1083 NodeList=gpu2 #CPUs=32 Partition=gpu
+sched: [2022-01-01T14:55:15.774544] Running job scheduler for full queue.
+sched: [2022-01-01T14:55:31.774562] Running job scheduler for default depth.
+sched: [2022-01-01T14:56:15.774648] Running job scheduler for full queue.
+sched: [2022-01-01T14:57:15.774722] Running job scheduler for full queue.
+sched: [2022-01-01T14:58:15.774788] Running job scheduler for full queue.
+sched: [2022-01-01T14:58:48.686900] JobId=1084 allocated resources: NodeList=(null)
+sched: [2022-01-01T14:58:48.686956] Running job scheduler for default depth.
+sched: [2022-01-01T14:58:48.687108] JobId=1084 initiated
+sched: [2022-01-01T14:58:48.687129] Allocate JobId=1084 NodeList=gpu2 #CPUs=8 Partition=gpu
+sched: [2022-01-01T14:59:15.687021] Running job scheduler for full queue.
+sched: [2022-01-01T15:00:15.774202] Running job scheduler for full queue.
+sched: [2022-01-01T15:01:15.774419] Running job scheduler for full queue.
+sched: [2022-01-01T15:02:04.686907] JobId=1085 allocated resources: NodeList=(null)
+sched: [2022-01-01T15:02:04.686960] Running job scheduler for default depth.
+sched: [2022-01-01T15:02:04.687061] JobId=1085. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T15:02:15.687010] Running job scheduler for full queue.
+sched: [2022-01-01T15:02:15.687163] JobId=1085. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T15:03:15.687087] Running job scheduler for full queue.
+sched: [2022-01-01T15:03:15.687185] JobId=1085. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T15:04:15.687164] Running job scheduler for full queue.
+sched: [2022-01-01T15:04:15.687280] JobId=1085. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T15:05:05.687222] Running job scheduler for default depth.
+sched: [2022-01-01T15:05:05.687316] JobId=1085. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T15:05:15.775688] Running job scheduler for full queue.
+sched: [2022-01-01T15:05:15.775875] JobId=1085. State=PENDING. Reason=Resources. Priority=1. Partition=gpu.
+sched: [2022-01-01T15:05:20.775691] Running job scheduler for default depth.
+sched: [2022-01-01T15:05:20.775852] JobId=1085 initiated
+sched: [2022-01-01T15:05:20.775872] Allocate JobId=1085 NodeList=gpu[2-3] #CPUs=128 Partition=gpu
+sched: [2022-01-01T15:05:47.775746] Running job scheduler for default depth.
+sched: [2022-01-01T15:06:15.775839] Running job scheduler for full queue.
+sched: [2022-01-01T15:07:15.775939] Running job scheduler for full queue.
+sched: [2022-01-01T15:08:15.776034] Running job scheduler for full queue.
+sched: [2022-01-01T15:09:15.776131] Running job scheduler for full queue.
+sched: [2022-01-01T15:10:15.866470] Running job scheduler for full queue.
+sched: [2022-01-01T15:11:15.866565] Running job scheduler for full queue.
+sched: [2022-01-01T15:12:09.686934] JobId=1086 allocated resources: NodeList=(null)
+sched: [2022-01-01T15:12:09.686998] Running job scheduler for default depth.
+sched: [2022-01-01T15:12:09.687121] JobId=1086 initiated
+sched: [2022-01-01T15:12:09.687140] Allocate JobId=1086 NodeList=gpu1 #CPUs=32 Partition=gpu
+sched: [2022-01-01T15:12:15.687049] Running job scheduler for full queue.
+sched: [2022-01-01T15:13:15.687151] Running job scheduler for full queue.
+sched: [2022-01-01T15:14:15.687221] Running job scheduler for full queue.
+sched: [2022-01-01T15:15:15.775268] Running job scheduler for full queue.
+sched: [2022-01-01T15:15:49.686961] JobId=1087 allocated resources: NodeList=(null)
+sched: [2022-01-01T15:15:49.687005] Running job scheduler for default depth.
+sched: [2022-01-01T15:15:49.687123] JobId=1087 initiated
+sched: [2022-01-01T15:15:49.687142] Allocate JobId=1087 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T15:16:15.687081] Running job scheduler for full queue.
+sched: [2022-01-01T15:16:44.687108] Running job scheduler for default depth.
+sched: [2022-01-01T15:17:15.744572] Running job scheduler for full queue.
+sched: [2022-01-01T15:18:15.744651] Running job scheduler for full queue.
+sched: [2022-01-01T15:18:49.686876] JobId=1088 allocated resources: NodeList=(null)
+sched: [2022-01-01T15:18:49.686918] Running job scheduler for default depth.
+sched: [2022-01-01T15:18:49.687052] JobId=1088 initiated
+sched: [2022-01-01T15:18:49.687073] Allocate JobId=1088 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T15:19:15.686987] Running job scheduler for full queue.
+sched: [2022-01-01T15:20:15.776293] Running job scheduler for full queue.
+sched: [2022-01-01T15:21:15.776359] Running job scheduler for full queue.
+sched: [2022-01-01T15:21:53.776405] Running job scheduler for default depth.
+sched: [2022-01-01T15:22:15.776474] Running job scheduler for full queue.
+sched: [2022-01-01T15:22:40.776500] Running job scheduler for default depth.
+sched: [2022-01-01T15:23:15.776566] Running job scheduler for full queue.
+sched: [2022-01-01T15:24:15.776630] Running job scheduler for full queue.
+sched: [2022-01-01T15:25:15.866738] Running job scheduler for full queue.
+sched: [2022-01-01T15:26:15.866807] Running job scheduler for full queue.
+sched: [2022-01-01T15:27:15.866884] Running job scheduler for full queue.
+sched: [2022-01-01T15:28:13.866943] Running job scheduler for default depth.
+sched: [2022-01-01T15:28:15.866960] Running job scheduler for full queue.
+sched: [2022-01-01T15:29:15.867057] Running job scheduler for full queue.
+sched: [2022-01-01T15:30:15.956281] Running job scheduler for full queue.
+sched: [2022-01-01T15:31:15.956337] Running job scheduler for full queue.
+sched: [2022-01-01T15:32:15.956397] Running job scheduler for full queue.
+sched: [2022-01-01T15:33:15.956481] Running job scheduler for full queue.
+sched: [2022-01-01T15:34:15.956539] Running job scheduler for full queue.
+sched: [2022-01-01T15:35:16.044400] Running job scheduler for full queue.
+sched: [2022-01-01T15:36:15.044455] Running job scheduler for full queue.
+sched: [2022-01-01T15:37:15.044523] Running job scheduler for full queue.
+sched: [2022-01-01T15:38:15.044573] Running job scheduler for full queue.
+sched: [2022-01-01T15:38:19.687044] JobId=1089 allocated resources: NodeList=(null)
+sched: [2022-01-01T15:38:19.687110] Running job scheduler for default depth.
+sched: [2022-01-01T15:38:19.687261] JobId=1089 initiated
+sched: [2022-01-01T15:38:19.687280] Allocate JobId=1089 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T15:39:15.687209] Running job scheduler for full queue.
+sched: [2022-01-01T15:40:15.775610] Running job scheduler for full queue.
+sched: [2022-01-01T15:41:15.775695] Running job scheduler for full queue.
+sched: [2022-01-01T15:42:15.775753] Running job scheduler for full queue.
+sched: [2022-01-01T15:43:15.775809] Running job scheduler for full queue.
+sched: [2022-01-01T15:44:15.775839] Running job scheduler for full queue.
+sched: [2022-01-01T15:45:15.863993] Running job scheduler for full queue.
+sched: [2022-01-01T15:45:35.864011] Running job scheduler for default depth.
+sched: [2022-01-01T15:46:15.864052] Running job scheduler for full queue.
+sched: [2022-01-01T15:47:15.864076] Running job scheduler for full queue.
+sched: [2022-01-01T15:48:15.864113] Running job scheduler for full queue.
+sched: [2022-01-01T15:49:15.864138] Running job scheduler for full queue.
+sched: [2022-01-01T15:50:15.952479] Running job scheduler for full queue.
+sched: [2022-01-01T15:51:15.952557] Running job scheduler for full queue.
+sched: [2022-01-01T15:52:15.952604] Running job scheduler for full queue.
+sched: [2022-01-01T15:53:15.952673] Running job scheduler for full queue.
+sched: [2022-01-01T15:54:15.952742] Running job scheduler for full queue.
+sched: [2022-01-01T15:55:16.041553] Running job scheduler for full queue.
+sched: [2022-01-01T15:56:15.041618] Running job scheduler for full queue.
+sched: [2022-01-01T15:57:15.041679] Running job scheduler for full queue.
+sched: [2022-01-01T15:58:15.041738] Running job scheduler for full queue.
+sched: [2022-01-01T15:58:55.687034] JobId=1090 allocated resources: NodeList=(null)
+sched: [2022-01-01T15:58:55.687090] Running job scheduler for default depth.
+sched: [2022-01-01T15:58:55.687245] JobId=1090 initiated
+sched: [2022-01-01T15:58:55.687268] Allocate JobId=1090 NodeList=gpu1 #CPUs=64 Partition=gpu
+sched: [2022-01-01T15:59:15.687152] Running job scheduler for full queue.
+sched: [2022-01-01T16:00:15.775557] Running job scheduler for full queue.
+sched: [2022-01-01T16:01:15.775638] Running job scheduler for full queue.
+sched: [2022-01-01T16:02:15.775703] Running job scheduler for full queue.
+sched: [2022-01-01T16:02:24.775718] Running job scheduler for default depth.
+sched: [2022-01-01T16:03:15.775818] Running job scheduler for full queue.
+sched: [2022-01-01T16:04:15.775921] Running job scheduler for full queue.
+sched: [2022-01-01T16:05:15.864571] Running job scheduler for full queue.
+sched: [2022-01-01T16:06:15.864626] Running job scheduler for full queue.
+sched: [2022-01-01T16:07:15.864683] Running job scheduler for full queue.
+sched: [2022-01-01T16:08:15.864766] Running job scheduler for full queue.
+sched: [2022-01-01T16:08:32.686933] JobId=1091 allocated resources: NodeList=(null)
+sched: [2022-01-01T16:08:32.686980] Running job scheduler for default depth.
+sched: [2022-01-01T16:08:32.687110] JobId=1091 initiated
+sched: [2022-01-01T16:08:32.687129] Allocate JobId=1091 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T16:09:15.687072] Running job scheduler for full queue.
+sched: [2022-01-01T16:09:49.686927] JobId=1092 allocated resources: NodeList=(null)
+sched: [2022-01-01T16:09:49.686976] Running job scheduler for default depth.
+sched: [2022-01-01T16:09:49.687110] JobId=1092 initiated
+sched: [2022-01-01T16:09:49.687131] Allocate JobId=1092 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T16:10:15.775147] Running job scheduler for full queue.
+sched: [2022-01-01T16:10:39.687190] JobId=1093 allocated resources: NodeList=(null)
+sched: [2022-01-01T16:10:39.687271] Running job scheduler for default depth.
+sched: [2022-01-01T16:10:39.687483] JobId=1093 initiated
+sched: [2022-01-01T16:10:39.687509] Allocate JobId=1093 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T16:11:15.686524] JobId=1094 allocated resources: NodeList=(null)
+sched: [2022-01-01T16:11:15.686562] Running job scheduler for full queue.
+sched: [2022-01-01T16:11:15.686640] JobId=1094 initiated
+sched: [2022-01-01T16:11:15.686651] Allocate JobId=1094 NodeList=gpu2 #CPUs=32 Partition=gpu
+sched: [2022-01-01T16:12:15.686677] Running job scheduler for full queue.
+sched: [2022-01-01T16:13:15.686780] Running job scheduler for full queue.
+sched: [2022-01-01T16:14:15.686853] Running job scheduler for full queue.
+sched: [2022-01-01T16:14:47.687001] Running job scheduler for default depth.
+sched: [2022-01-01T16:15:15.774336] Running job scheduler for full queue.
+sched: [2022-01-01T16:15:28.774348] Running job scheduler for default depth.
+sched: [2022-01-01T16:16:15.774434] Running job scheduler for full queue.
+sched: [2022-01-01T16:16:19.774443] Running job scheduler for default depth.
+sched: [2022-01-01T16:17:15.774528] Running job scheduler for full queue.
+sched: [2022-01-01T16:18:15.774592] Running job scheduler for full queue.
+sched: [2022-01-01T16:19:15.774666] Running job scheduler for full queue.
+sched: [2022-01-01T16:20:15.863741] Running job scheduler for full queue.
+sched: [2022-01-01T16:21:15.863823] Running job scheduler for full queue.
+sched: [2022-01-01T16:22:15.863901] Running job scheduler for full queue.
+sched: [2022-01-01T16:23:15.863988] Running job scheduler for full queue.
+sched: [2022-01-01T16:24:15.864053] Running job scheduler for full queue.
+sched: [2022-01-01T16:25:15.951864] Running job scheduler for full queue.
+sched: [2022-01-01T16:26:15.951933] Running job scheduler for full queue.
+sched: [2022-01-01T16:27:15.952034] Running job scheduler for full queue.
+sched: [2022-01-01T16:28:15.952093] Running job scheduler for full queue.
+sched: [2022-01-01T16:28:51.686959] JobId=1095 allocated resources: NodeList=(null)
+sched: [2022-01-01T16:28:51.687008] Running job scheduler for default depth.
+sched: [2022-01-01T16:28:51.687162] JobId=1095 initiated
+sched: [2022-01-01T16:28:51.687184] Allocate JobId=1095 NodeList=gpu2 #CPUs=64 Partition=gpu
+sched: [2022-01-01T16:29:15.687077] Running job scheduler for full queue.
+sched: [2022-01-01T16:29:40.687103] Running job scheduler for default depth.
+sched: [2022-01-01T16:30:15.775674] Running job scheduler for full queue.
+sched: [2022-01-01T16:31:15.775750] Running job scheduler for full queue.
+sched: [2022-01-01T16:32:15.775817] Running job scheduler for full queue.
+sched: [2022-01-01T16:33:15.775883] Running job scheduler for full queue.
+sched: [2022-01-01T16:34:15.775949] Running job scheduler for full queue.
+sched: [2022-01-01T16:35:15.863844] Running job scheduler for full queue.
+sched: [2022-01-01T16:36:15.863921] Running job scheduler for full queue.
+sched: [2022-01-01T16:37:15.863988] Running job scheduler for full queue.
+sched: [2022-01-01T16:38:15.864054] Running job scheduler for full queue.
+sched: [2022-01-01T16:39:15.864114] Running job scheduler for full queue.
+sched: [2022-01-01T16:40:15.953044] Running job scheduler for full queue.
+sched: [2022-01-01T16:41:15.953116] Running job scheduler for full queue.
+sched: [2022-01-01T16:41:33.686872] JobId=1096 allocated resources: NodeList=(null)
+sched: [2022-01-01T16:41:33.686916] Running job scheduler for default depth.
+sched: [2022-01-01T16:41:33.687040] JobId=1096 initiated
+sched: [2022-01-01T16:41:33.687059] Allocate JobId=1096 NodeList=gpu1 #CPUs=64 Partition=gpu
+sched: [2022-01-01T16:42:15.686997] Running job scheduler for full queue.
+sched: [2022-01-01T16:43:15.687060] Running job scheduler for full queue.
+sched: [2022-01-01T16:43:33.687078] Running job scheduler for default depth.
+sched: [2022-01-01T16:44:15.687153] Running job scheduler for full queue.
+sched: [2022-01-01T16:45:15.775463] Running job scheduler for full queue.
+sched: [2022-01-01T16:45:39.686880] JobId=1097 allocated resources: NodeList=(null)
+sched: [2022-01-01T16:45:39.686956] Running job scheduler for default depth.
+sched: [2022-01-01T16:45:39.687084] JobId=1097 initiated
+sched: [2022-01-01T16:45:39.687103] Allocate JobId=1097 NodeList=gpu1 #CPUs=32 Partition=gpu
+sched: [2022-01-01T16:46:15.687042] Running job scheduler for full queue.
+sched: [2022-01-01T16:47:15.687099] Running job scheduler for full queue.
+sched: [2022-01-01T16:48:15.687163] Running job scheduler for full queue.
+sched: [2022-01-01T16:48:28.686923] JobId=1098 allocated resources: NodeList=(null)
+sched: [2022-01-01T16:48:28.686968] Running job scheduler for default depth.
+sched: [2022-01-01T16:48:28.687093] JobId=1098 initiated
+sched: [2022-01-01T16:48:28.687112] Allocate JobId=1098 NodeList=gpu1 #CPUs=8 Partition=gpu
+sched: [2022-01-01T16:49:15.687073] Running job scheduler for full queue.
+sched: [2022-01-01T16:50:15.775413] Running job scheduler for full queue.
+sched: [2022-01-01T16:51:15.775486] Running job scheduler for full queue.
+sched: [2022-01-01T16:52:15.775554] Running job scheduler for full queue.
+sched: [2022-01-01T16:53:12.775614] Running job scheduler for default depth.
+sched: [2022-01-01T16:53:15.775629] Running job scheduler for full queue.
+sched: [2022-01-01T16:54:15.775765] Running job scheduler for full queue.
+sched: [2022-01-01T16:54:24.775775] Running job scheduler for default depth.
+sched: [2022-01-01T16:54:41.686907] JobId=1099 allocated resources: NodeList=(null)
+sched: [2022-01-01T16:54:41.686959] Running job scheduler for default depth.
+sched: [2022-01-01T16:54:41.687107] JobId=1099 initiated
+sched: [2022-01-01T16:54:41.687128] Allocate JobId=1099 NodeList=gpu1 #CPUs=16 Partition=gpu
+sched: [2022-01-01T16:55:15.775630] Running job scheduler for full queue.
+sched: [2022-01-01T16:56:15.775709] Running job scheduler for full queue.
+sched: [2022-01-01T16:56:56.775747] Running job scheduler for default depth.
+sched: [2022-01-01T16:57:15.775796] Running job scheduler for full queue.
+sched: [2022-01-01T16:58:15.775874] Running job scheduler for full queue.
+sched: [2022-01-01T16:59:15.775937] Running job scheduler for full queue.
+sched: [2022-01-01T17:00:15.864191] Running job scheduler for full queue.
+sched: [2022-01-01T17:01:15.864265] Running job scheduler for full queue.
+sched: [2022-01-01T17:02:15.864343] Running job scheduler for full queue.
+sched: [2022-01-01T17:03:15.864412] Running job scheduler for full queue.
+sched: [2022-01-01T17:04:15.864476] Running job scheduler for full queue.
+sched: [2022-01-01T17:05:15.952206] Running job scheduler for full queue.
+sched: [2022-01-01T17:05:29.952223] Running job scheduler for default depth.

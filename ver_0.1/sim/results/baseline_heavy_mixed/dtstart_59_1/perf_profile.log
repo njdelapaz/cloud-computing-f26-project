@@ -1,0 +1,127 @@
+[
+{
+ "time": 1794114536.8654816,
+ "slurmdbd": {
+  "cpu_times": {
+   "user": 1.28,
+   "system": 0.27,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 0.0,
+  "memory_info": {
+   "rss": 9326592,
+   "vms": 287219712,
+   "shared": 7811072,
+   "text": 65536,
+   "lib": 0,
+   "data": 7602176,
+   "dirty": 0
+  },
+  "io_counters": {
+   "read_count": 319,
+   "write_count": 283,
+   "read_bytes": 0,
+   "write_bytes": 8192,
+   "read_chars": 65655,
+   "write_chars": 15305
+  },
+  "num_threads": 6,
+  "threads": [
+   {
+    "id": 186,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 187,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 188,
+    "user_time": 0.6,
+    "system_time": 0.15
+   },
+   {
+    "id": 189,
+    "user_time": 0.0,
+    "system_time": 0.0
+   },
+   {
+    "id": 190,
+    "user_time": 0.68,
+    "system_time": 0.06
+   },
+   {
+    "id": 224,
+    "user_time": 0.0,
+    "system_time": 0.0
+   }
+  ]
+ },
+ "slurmd": {
+  "cpu_times": {
+   "user": 0.0,
+   "system": 0.0,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 0.0,
+  "memory_info": {
+   "rss": 0,
+   "vms": 0,
+   "shared": 0,
+   "text": 0,
+   "lib": 0,
+   "data": 0,
+   "dirty": 0
+  },
+  "io_counters": null,
+  "num_threads": 1,
+  "threads": [
+   {
+    "id": 222,
+    "user_time": 0.0,
+    "system_time": 0.0
+   }
+  ]
+ },
+ "slurmctld": {
+  "cpu_times": {
+   "user": 1.03,
+   "system": 0.03,
+   "children_user": 0.0,
+   "children_system": 0.0,
+   "iowait": 0.0
+  },
+  "cpu_percent": 0.0,
+  "memory_info": {
+   "rss": 10162176,
+   "vms": 11509760,
+   "shared": 7200768,
+   "text": 999424,
+   "lib": 0,
+   "data": 2990080,
+   "dirty": 0
+  },
+  "io_counters": {
+   "read_count": 426,
+   "write_count": 647,
+   "read_bytes": 0,
+   "write_bytes": 606208,
+   "read_chars": 194351,
+   "write_chars": 250148
+  },
+  "num_threads": 1,
+  "threads": [
+   {
+    "id": 223,
+    "user_time": 1.03,
+    "system_time": 0.03
+   }
+  ]
+ }
+}

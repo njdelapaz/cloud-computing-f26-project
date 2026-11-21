@@ -1,0 +1,71 @@
+slurmctld: Starting Slurm Simulator
+slurmctld: error: _find_node_record: lookup failure for node "localhost"
+slurmctld: error: _find_node_record: lookup failure for node "localhost", alias "localhost"
+slurmctld: warning: Ignoring file-less GPU gpu:(null) from final GRES list
+slurmctld: process_create_time_real: 1794111777810000
+slurmctld: sim_constructor_start_time: 1794111778367149
+slurmctld: sim_slurmctld_main_start_time: 1794111778367678
+slurmctld: will read events file from /home/slurm/project/sim/workloads/test20.events
+slurmctld: microseconds_before_first_job (dtstart) reset to 59000000 usec
+slurmctld: Sim: Slurm simulator configuration:
+slurmctld: TimeStart=1641013200000000
+slurmctld: TimeStop=0
+slurmctld:     i.e. Slurm Simulator spins forever
+slurmctld: SecondsBeforeFirstJob=59.000000
+slurmctld: ClockScaling=1.000000
+slurmctld: SharedMemoryName=/slurm_sim.shm
+slurmctld: EventsFile=/home/slurm/project/sim/workloads/test20.events
+slurmctld: TimeAfterAllEventsDone=10000000
+slurmctld: FirstJobDelay=-320000
+slurmctld: CompJobDelay=0
+slurmctld: TimeLimitDelay=0
+Users (from user.sim):
+    0            admin    1000            admin    1000
+    1            user1    1001           group1    1001
+    2            user2    1002           group1    1001
+    3            user3    1003           group2    1002
+    4            user4    1004           group2    1002
+    5            user5    1005           group3    1003
+Users (passwd sim):
+    0            admin hashed passphrase    1000    1000            admin       /home/user        /bin/bash
+    1            user1 hashed passphrase    1001    1001            user1       /home/user        /bin/bash
+    2            user2 hashed passphrase    1002    1001            user2       /home/user        /bin/bash
+    3            user3 hashed passphrase    1003    1002            user3       /home/user        /bin/bash
+    4            user4 hashed passphrase    1004    1002            user4       /home/user        /bin/bash
+    5            user5 hashed passphrase    1005    1003            user5       /home/user        /bin/bash
+Groups (passwd sim):
+    0            admin         password    1000
+    admin 
+    1           group1         password    1001
+    user1 user2 
+    2           group2         password    1002
+    user3 user4 
+    3           group3         password    1003
+    user5 
+slurmctld: Simulation Events:
+slurmctld: 0	1001
+slurmctld: 1641013214548234	 SIM_NODE_REGISTRATION
+slurmctld: 1641013272666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 600000000 sbatch --chdir=/home/user1 -J jobid_1001 --uid=user1 -t 00:15:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 600 
+slurmctld: 1641013277666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 900000000 sbatch --chdir=/home/user2 -J jobid_1002 --uid=user2 -t 00:20:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 900 
+slurmctld: 1641013282666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1200000000 sbatch --chdir=/home/user3 -J jobid_1003 --uid=user3 -t 00:30:00 -N 1 --gpus=4 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1200 
+slurmctld: 1641013287666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1800000000 sbatch --chdir=/home/user4 -J jobid_1004 --uid=user4 -t 00:40:00 -N 1 --gpus=8 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1800 
+slurmctld: 1641013292666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 300000000 sbatch --chdir=/home/user5 -J jobid_1005 --uid=user5 -t 00:10:00 -N 1 --gpus=1 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 300 
+slurmctld: 1641013302666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1500000000 sbatch --chdir=/home/user1 -J jobid_1006 --uid=user1 -t 00:30:00 -N 2 --gpus=12 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1500 
+slurmctld: 1641013312666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 600000000 sbatch --chdir=/home/user2 -J jobid_1007 --uid=user2 -t 00:15:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 600 
+slurmctld: 1641013322666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1200000000 sbatch --chdir=/home/user3 -J jobid_1008 --uid=user3 -t 00:30:00 -N 2 --gpus=16 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1200 
+slurmctld: 1641013332666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 900000000 sbatch --chdir=/home/user4 -J jobid_1009 --uid=user4 -t 00:20:00 -N 1 --gpus=4 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 900 
+slurmctld: 1641013342666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1200000000 sbatch --chdir=/home/user5 -J jobid_1010 --uid=user5 -t 00:30:00 -N 1 --gpus=8 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1200 
+slurmctld: 1641013352666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 120000000 sbatch --chdir=/home/user1 -J jobid_1011 --uid=user1 -t 00:05:00 -N 1 --gpus=1 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 120 
+slurmctld: 1641013362666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 900000000 sbatch --chdir=/home/user2 -J jobid_1012 --uid=user2 -t 00:20:00 -N 3 --gpus=24 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 900 
+slurmctld: 1641013372666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 300000000 sbatch --chdir=/home/user3 -J jobid_1013 --uid=user3 -t 00:10:00 -N 1 --gpus=2 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 300 
+slurmctld: 1641013382666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 600000000 sbatch --chdir=/home/user4 -J jobid_1014 --uid=user4 -t 00:15:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 600 
+slurmctld: 1641013392666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1500000000 sbatch --chdir=/home/user5 -J jobid_1015 --uid=user5 -t 00:30:00 -N 1 --gpus=4 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1500 
+slurmctld: 1641013402666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 600000000 sbatch --chdir=/home/user1 -J jobid_1016 --uid=user1 -t 00:15:00 -N 1 --gpus=8 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 600 
+slurmctld: 1641013412666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 1800000000 sbatch --chdir=/home/user2 -J jobid_1017 --uid=user2 -t 00:40:00 -N 1 --gpus=2 -A account1 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 1800 
+slurmctld: 1641013422666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 900000000 sbatch --chdir=/home/user3 -J jobid_1018 --uid=user3 -t 00:20:00 -N 1 --gpus=1 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 900 
+slurmctld: 1641013432666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 600000000 sbatch --chdir=/home/user4 -J jobid_1019 --uid=user4 -t 00:15:00 -N 2 --gpus=12 -A account2 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep 600 
+slurmctld: 1641013442666375	SIM_SUBMIT_BATCH_JOB --jid 0 --sim-walltime 9223372036854775807 sbatch --chdir=/home/user5 -J jobid_1020 --uid=user5 -t 00:10:00 -N 1 --gpus=4 -A account3 -p gpu -q normal /opt/cluster/microapps/pseudo.job -sleep -1 
+slurmctld: 9223372036854775807	1002
+slurmctld: End Simulation Events:
+slurmctld: sim_slurmctld_main_start_time2: 1794111778372282
+slurmctld: simulator_start_time(corrected): 1641013213986375

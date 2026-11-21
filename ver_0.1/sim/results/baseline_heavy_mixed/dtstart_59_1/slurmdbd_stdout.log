@@ -1,0 +1,17 @@
+slurmdbd: debug:  Log file re-opened
+slurmdbd: Not running as root. Can't drop supplementary groups
+slurmdbd: debug:  auth/none: init: Null authentication plugin loaded
+slurmdbd: debug:  hash/k12: init: init: KangarooTwelve hash plugin loaded
+slurmdbd: debug:  Database slurmdb_gpu24 not created.  Creating
+slurmdbd: accounting_storage/as_mysql: _check_mysql_concat_is_sane: MySQL server version is: 10.6.16-MariaDB-0ubuntu0.22.04.1
+slurmdbd: error: Database settings not recommended values: innodb_buffer_pool_size innodb_lock_wait_timeout
+slurmdbd: accounting_storage/as_mysql: init: Accounting storage MYSQL plugin loaded
+slurmdbd: slurmdbd version 23.11.0-0rc1 started
+slurmdbd: debug:  REQUEST_PERSIST_INIT: CLUSTER:gpu24 VERSION:10240 UID:1000 IP:127.0.0.1 CONN:8
+slurmdbd: debug:  REQUEST_PERSIST_INIT: CLUSTER:gpu24 VERSION:10240 UID:1000 IP:127.0.0.1 CONN:9
+slurmdbd: debug:  accounting_storage/as_mysql: as_mysql_cluster_tres: We don't have an entry for this machine gpu24 most likely a first time running.
+slurmdbd: Warning: Note very large processing time from hourly_rollup for gpu24: usec=7984775 began=14:00:07.057
+slurmdbd: Warning: Note very large processing time from hourly_rollup for gpu24: usec=7821252 began=15:00:01.915
+slurmdbd: Warning: Note very large processing time from hourly_rollup for gpu24: usec=5281757 began=20:00:09.743
+slurmdbd: debug:  cluster gpu24 has disconnected
+slurmdbd: debug:  REQUEST_PERSIST_INIT: CLUSTER:gpu24 VERSION:10240 UID:1000 IP:127.0.0.1 CONN:8
