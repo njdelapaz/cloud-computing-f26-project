@@ -1,8 +1,7 @@
 # Specification: [Project Name]
 
-**Author(s):** [Names]
-**Date:** [YYYY-MM-DD]
-**Status:** [Draft / Under review / Approved]
+## DO NOT
+Look at code outside this folder: ver_0.2
 
 ---
 
