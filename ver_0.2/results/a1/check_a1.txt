@@ -1,0 +1,5 @@
+PASS  smoke: adaptive BASE == stock multifactor                  7 jobs, 0 differ; plugin loaded BASE with Fairshare/Age/JobSize 70000/20000/10000 while slurm.conf said Age=0 Fairshare=0 JobSize=1000000; order 1003 1007 1004 1006 1005 1002 vs 1003 1005 1007 1004 1006 1002 under slurm.conf's weights
+FAIL  probe day: adaptive BASE == stock multifactor              not run (SKIP_PROBE=1)
+PASS  policy weights used: FixedPolicy=U gives submission order  plugin loaded U (FIXED) over DefaultPolicy=BASE; order 1002 1003 1004 1005 1006 1007 with slurm.conf Age=0 Fairshare=0 JobSize=1000000
+PASS  malformed policies.conf is fatal                           bad policy configuration: /work/results/a1/smoke_adaptive_bad/etc/policies.conf line 5: F: Fairshare+Age+JobSize = 100001, must be 100000; 0 jobs ran
+PASS  parser unit tests                                          47 tests, OK
