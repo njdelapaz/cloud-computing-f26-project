@@ -7,10 +7,10 @@
 - Don't save to Claude's auto-memory, which lives outside this folder. Put lasting project rules in this file instead.
 
 ## Project files
-- `SPEC.md`: the spec (what and why). Change it only after an explicit decision.
-- `SPEC.proposed.md`: the expanded draft spec, waiting to be merged into `SPEC.md`.
+- `SPEC.md`: the spec (what and why). Change it only after an explicit decision, logged in `PROGRESS.md` first.
 - `WORKFLOW.md`: the phased plan with a gate check at the end of each phase.
-- `PROGRESS.md`: the progress tracker (create it in phase P0).
+- `PROGRESS.md`: the progress tracker.
+- `dataset/`: the source job trace. Read-only, and git-ignored.
 
 ## Progress tracking
 - Keep `PROGRESS.md` up to date: status, phase tracker, decisions log, results, change log.

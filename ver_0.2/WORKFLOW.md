@@ -1,4 +1,4 @@
-# Workflow (proposed)
+# Workflow
 
 How to get from `SPEC.md` to results. Phases are **gated**: each ends with an artifact plus a command that reproduces it, and the next phase starts only once that gate passes.
 
@@ -24,7 +24,7 @@ Tracks A and B touch disjoint folders (`plugin/` vs `workloads/`, `analysis/`, `
 
 | Phase | Work | Gate |
 |---|---|---|
-| **P0 Spec** | Answer SPEC §11 open questions; merge `SPEC.proposed.md` into `SPEC.md`; create `PROGRESS.md` | No open question left that blocks P1–P2 |
+| **P0 Spec** | Answer SPEC §11 open questions; merge the draft spec into `SPEC.md`; create `PROGRESS.md` | No open question left that blocks P1–P2 |
 | **P1 Simulator env** | Docker build of the newer UB simulator (Slurm 23.x) in `docker/`; record the exact Slurm release. Tiny cluster config and a hand-written ~10-job trace. Run the same trace 3× to check determinism. Find which clocks the simulator virtualizes, and confirm it tracks memory as a consumable resource (`CR_Core_Memory`) | One script runs the smoke trace. A hand edit to `PriorityWeight*` in `slurm.conf` changes start order exactly as predicted. No-op forks of both plugins build and run. Clock and memory-tracking findings recorded |
 | **P2 Interfaces** | Example `policies.conf`, `schedule.conf`, `adaptive.conf`, neutral trace schema, decision-log and placement-log CSV schemas, metric definitions | Python validators accept every example file. Schemas are recorded in SPEC |
 | **A1 Ordering plugin: static** | Fork `priority/multifactor` → `priority/adaptive` that loads one policy's ordering weights from `policies.conf` | **Identical** start order to stock multifactor on the smoke trace and on a W0 trace with `BASE` loaded (G1) |
