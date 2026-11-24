@@ -1,0 +1,341 @@
+episode_id,workload,signal,onset,end,detail
+1,W1,fairness,1704150000,1704153600,split=calibration user=user0296 bins=1 jobs=299 share=0.85 total_x_median=3.50
+2,W1,fairness,1704711600,1704715200,split=calibration user=user0186 bins=1 jobs=495 share=0.59 total_x_median=1.58
+3,W1,fairness,1705060800,1705064400,split=calibration user=user0186 bins=1 jobs=433 share=0.55 total_x_median=6.54
+4,W1,fairness,1705438800,1705442400,split=calibration user=user0200 bins=1 jobs=3308 share=0.73 total_x_median=4.51
+5,W1,fairness,1705474800,1705478400,split=calibration user=user0940 bins=1 jobs=437 share=0.78 total_x_median=3.41
+6,W1,fairness,1705492800,1705496400,split=calibration user=user0186 bins=1 jobs=888 share=0.58 total_x_median=2.24
+7,W1,fairness,1705654800,1705658400,split=calibration user=user0940 bins=1 jobs=494 share=0.79 total_x_median=4.18
+8,W1,fairness,1705694400,1705698000,split=calibration user=user0836 bins=1 jobs=21248 share=0.62 total_x_median=2.93
+9,W1,fairness,1705964400,1705975200,split=calibration user=user0940 bins=2 jobs=1131 share=0.86 total_x_median=2.94
+10,W1,fairness,1706022000,1706032800,split=calibration user=user0619 bins=1 jobs=71 share=0.74 total_x_median=3.56
+11,W1,fairness,1706115600,1706122800,split=calibration user=user0619 bins=2 jobs=90 share=0.72 total_x_median=3.85
+12,W1,fairness,1707426000,1707429600,split=calibration user=user0296 bins=1 jobs=200 share=0.72 total_x_median=2.43
+13,W1,fairness,1707480000,1707487200,split=calibration user=user0940 bins=1 jobs=216 share=0.57 total_x_median=2.52
+14,W1,fairness,1708106400,1708124400,split=calibration user=user0112 bins=1 jobs=5010 share=0.93 total_x_median=3.32
+15,W1,fairness,1708329600,1708336800,split=calibration user=user0112 bins=1 jobs=5026 share=0.55 total_x_median=3.25
+16,W1,fairness,1708426800,1708444800,split=calibration user=user0112 bins=2 jobs=6896 share=0.63 total_x_median=2.31
+17,W1,fairness,1708758000,1708768800,split=calibration user=user0234 bins=1 jobs=6453 share=0.72 total_x_median=2.34
+18,W1,fairness,1708891200,1708894800,split=calibration user=user0940 bins=1 jobs=307 share=0.66 total_x_median=2.45
+19,W1,fairness,1709413200,1709416800,split=evaluation user=user0833 bins=1 jobs=499 share=0.80 total_x_median=1.66
+20,W1,fairness,1709942400,1709946000,split=evaluation user=user0296 bins=1 jobs=159 share=0.61 total_x_median=2.03
+21,W1,fairness,1710367200,1710374400,split=evaluation user=user0112 bins=1 jobs=625 share=0.51 total_x_median=1.78
+22,W1,fairness,1711742400,1711746000,split=evaluation user=user0896 bins=1 jobs=604 share=0.91 total_x_median=2.69
+23,W1,fairness,1711803600,1711807200,split=evaluation user=user0353 bins=1 jobs=550 share=0.57 total_x_median=2.45
+24,W1,fairness,1712232000,1712235600,split=evaluation user=user0429 bins=1 jobs=100 share=0.60 total_x_median=3.91
+25,W1,fairness,1712775600,1712779200,split=evaluation user=user0746 bins=1 jobs=1562 share=0.64 total_x_median=2.44
+26,W1,fairness,1712815200,1712826000,split=evaluation user=user0746 bins=1 jobs=1848 share=0.62 total_x_median=2.37
+27,W1,fairness,1712937600,1712941200,split=evaluation user=user0746 bins=1 jobs=1566 share=0.74 total_x_median=5.50
+28,W1,fairness,1712995200,1712998800,split=evaluation user=user0296 bins=1 jobs=100 share=0.52 total_x_median=2.58
+29,W1,fairness,1713078000,1713081600,split=evaluation user=user0746 bins=1 jobs=687 share=0.70 total_x_median=3.12
+30,W1,fairness,1713214800,1713218400,split=evaluation user=user0306 bins=1 jobs=144 share=0.58 total_x_median=1.53
+31,W1,fairness,1713621600,1713625200,split=evaluation user=user0746 bins=1 jobs=972 share=0.83 total_x_median=3.64
+32,W1,fairness,1713790800,1713794400,split=evaluation user=user0746 bins=1 jobs=532 share=0.66 total_x_median=3.50
+33,W1,fairness,1713884400,1713891600,split=evaluation user=user0112 bins=1 jobs=545 share=0.76 total_x_median=1.82
+34,W1,fairness,1714294800,1714298400,split=evaluation user=user0746 bins=1 jobs=1044 share=0.95 total_x_median=6.80
+35,W1,fairness,1714410000,1714413600,split=evaluation user=user0686 bins=1 jobs=1392 share=0.53 total_x_median=4.06
+36,W1,fairness,1714464000,1714467600,split=evaluation user=user0198 bins=1 jobs=1002 share=0.59 total_x_median=1.75
+37,W1,fairness,1714665600,1714669200,split=evaluation user=user0746 bins=1 jobs=356 share=0.50 total_x_median=5.99
+38,W1,fairness,1715169600,1715173200,split=evaluation user=user0492 bins=1 jobs=5057 share=0.81 total_x_median=5.79
+39,W1,fairness,1715432400,1715443200,split=evaluation user=user0291 bins=1 jobs=192 share=0.72 total_x_median=2.38
+40,W1,fairness,1715612400,1715616000,split=evaluation user=user0186 bins=1 jobs=1469 share=0.53 total_x_median=3.29
+41,W1,fairness,1715810400,1715814000,split=evaluation user=user0296 bins=1 jobs=100 share=0.56 total_x_median=1.75
+42,W1,fairness,1717070400,1717081200,split=evaluation user=user0125 bins=1 jobs=2009 share=0.58 total_x_median=2.50
+43,W1,fairness,1717250400,1717254000,split=evaluation user=user0686 bins=1 jobs=4995 share=0.60 total_x_median=9.40
+44,W1,fairness,1717390800,1717394400,split=evaluation user=user0836 bins=1 jobs=1728 share=0.69 total_x_median=2.45
+45,W1,fairness,1717776000,1717779600,split=evaluation user=user0686 bins=1 jobs=3560 share=0.54 total_x_median=8.26
+46,W1,fairness,1717959600,1717963200,split=evaluation user=user0388 bins=1 jobs=2847 share=0.74 total_x_median=2.78
+47,W1,fairness,1718020800,1718031600,split=evaluation user=user0802 bins=1 jobs=4843 share=0.76 total_x_median=2.59
+48,W1,fairness,1718096400,1718100000,split=evaluation user=user0940 bins=1 jobs=801 share=0.79 total_x_median=6.69
+49,W1,fairness,1718139600,1718146800,split=evaluation user=user0388 bins=1 jobs=3909 share=0.74 total_x_median=3.94
+50,W1,fairness,1718226000,1718233200,split=evaluation user=user0802 bins=1 jobs=2536 share=0.74 total_x_median=2.23
+51,W1,fairness,1718398800,1718406000,split=evaluation user=user0388 bins=1 jobs=1981 share=0.64 total_x_median=2.38
+52,W1,fairness,1718647200,1718658000,split=evaluation user=user0388 bins=1 jobs=1501 share=0.71 total_x_median=1.57
+53,W1,fairness,1718996400,1719003600,split=evaluation user=user0388 bins=1 jobs=2751 share=0.73 total_x_median=2.96
+54,W1,fairness,1719475200,1719478800,split=evaluation coverage=partial user=user0836 bins=1 jobs=2579 share=0.61 total_x_median=2.76
+55,W1,fairness,1719561600,1719565200,split=evaluation coverage=partial user=user0568 bins=1 jobs=4863 share=0.54 total_x_median=1.51
+56,W2,util,1704139200,1704153600,split=calibration bins=1 mem_heavy_share=0.88 x_median_share=9.8 heavy_x_median=32.7 total_x_median=3.50
+57,W2,util,1704326400,1704337200,split=calibration bins=1 mem_heavy_share=0.33 x_median_share=3.6 heavy_x_median=2.1 total_x_median=0.60
+58,W2,util,1704495600,1704502800,split=calibration bins=2 mem_heavy_share=0.31 x_median_share=3.5 heavy_x_median=2.4 total_x_median=0.73
+59,W2,util,1704787200,1704801600,split=calibration bins=1 mem_heavy_share=0.34 x_median_share=3.8 heavy_x_median=4.5 total_x_median=1.25
+60,W2,util,1704967200,1704970800,split=calibration bins=1 mem_heavy_share=0.31 x_median_share=3.5 heavy_x_median=8.1 total_x_median=2.45
+61,W2,util,1704999600,1705053600,split=calibration bins=3 mem_heavy_share=0.44 x_median_share=4.9 heavy_x_median=8.8 total_x_median=1.89
+62,W2,util,1705158000,1705179600,split=calibration bins=2 mem_heavy_share=0.33 x_median_share=3.7 heavy_x_median=4.8 total_x_median=1.37
+63,W2,util,1705258800,1705284000,split=calibration bins=1 mem_heavy_share=0.32 x_median_share=3.6 heavy_x_median=1.5 total_x_median=0.45
+64,W2,util,1705327200,1705420800,split=calibration bins=4 mem_heavy_share=0.51 x_median_share=5.7 heavy_x_median=5.7 total_x_median=1.05
+65,W2,util,1705428000,1705474800,split=calibration bins=2 mem_heavy_share=0.74 x_median_share=8.3 heavy_x_median=19.1 total_x_median=2.43
+66,W2,util,1705510800,1705654800,split=calibration bins=6 mem_heavy_share=0.42 x_median_share=4.7 heavy_x_median=3.2 total_x_median=0.72
+67,W2,util,1705708800,1705856400,split=calibration bins=7 mem_heavy_share=0.68 x_median_share=7.6 heavy_x_median=4.1 total_x_median=0.58
+68,W2,util,1705881600,1705910400,split=calibration bins=1 mem_heavy_share=0.55 x_median_share=6.2 heavy_x_median=1.1 total_x_median=0.18
+69,W2,util,1706259600,1706270400,split=calibration bins=1 mem_heavy_share=0.36 x_median_share=4.0 heavy_x_median=3.4 total_x_median=0.89
+70,W2,util,1706295600,1706457600,split=calibration bins=7 mem_heavy_share=0.40 x_median_share=4.5 heavy_x_median=2.8 total_x_median=0.67
+71,W2,util,1706464800,1706486400,split=calibration bins=1 mem_heavy_share=0.65 x_median_share=7.2 heavy_x_median=3.5 total_x_median=0.52
+72,W2,util,1706540400,1706562000,split=calibration bins=2 mem_heavy_share=0.41 x_median_share=4.5 heavy_x_median=10.9 total_x_median=2.54
+73,W2,util,1706788800,1706796000,split=calibration bins=1 mem_heavy_share=0.34 x_median_share=3.8 heavy_x_median=5.6 total_x_median=1.55
+74,W2,util,1706961600,1706997600,split=calibration bins=2 mem_heavy_share=0.43 x_median_share=4.8 heavy_x_median=7.1 total_x_median=1.55
+75,W2,util,1707030000,1707051600,split=calibration bins=1 mem_heavy_share=0.36 x_median_share=4.1 heavy_x_median=4.7 total_x_median=1.23
+76,W2,util,1707084000,1707087600,split=calibration bins=1 mem_heavy_share=0.50 x_median_share=5.5 heavy_x_median=8.6 total_x_median=1.63
+77,W2,util,1707328800,1707361200,split=calibration bins=2 mem_heavy_share=0.29 x_median_share=3.2 heavy_x_median=2.9 total_x_median=0.94
+78,W2,util,1707422400,1707429600,split=calibration bins=1 mem_heavy_share=0.78 x_median_share=8.7 heavy_x_median=20.0 total_x_median=2.43
+79,W2,util,1707523200,1707552000,split=calibration bins=1 mem_heavy_share=0.34 x_median_share=3.8 heavy_x_median=1.9 total_x_median=0.52
+80,W2,util,1707573600,1707588000,split=calibration bins=1 mem_heavy_share=0.47 x_median_share=5.2 heavy_x_median=4.8 total_x_median=0.96
+81,W2,util,1707732000,1707735600,split=calibration bins=1 mem_heavy_share=0.38 x_median_share=4.2 heavy_x_median=13.0 total_x_median=3.29
+82,W2,util,1707782400,1707793200,split=calibration bins=1 mem_heavy_share=0.39 x_median_share=4.3 heavy_x_median=3.4 total_x_median=0.82
+83,W2,util,1707994800,1708002000,split=calibration bins=1 mem_heavy_share=0.30 x_median_share=3.3 heavy_x_median=3.2 total_x_median=1.01
+84,W2,util,1708034400,1708038000,split=calibration bins=1 mem_heavy_share=0.32 x_median_share=3.6 heavy_x_median=4.8 total_x_median=1.41
+85,W2,util,1708088400,1708106400,split=calibration bins=1 mem_heavy_share=0.45 x_median_share=5.1 heavy_x_median=16.8 total_x_median=3.49
+86,W2,util,1708189200,1708243200,split=calibration bins=2 mem_heavy_share=0.40 x_median_share=4.5 heavy_x_median=1.6 total_x_median=0.37
+87,W2,util,1708344000,1708369200,split=calibration bins=1 mem_heavy_share=0.36 x_median_share=4.1 heavy_x_median=1.8 total_x_median=0.46
+88,W2,util,1708444800,1708491600,split=calibration bins=2 mem_heavy_share=0.84 x_median_share=9.4 heavy_x_median=1.6 total_x_median=0.18
+89,W2,util,1708563600,1708581600,split=calibration bins=1 mem_heavy_share=0.78 x_median_share=8.7 heavy_x_median=1.2 total_x_median=0.15
+90,W2,util,1708610400,1708614000,split=calibration bins=1 mem_heavy_share=0.44 x_median_share=4.9 heavy_x_median=18.3 total_x_median=3.94
+91,W2,util,1708714800,1708758000,split=calibration bins=2 mem_heavy_share=0.29 x_median_share=3.2 heavy_x_median=2.2 total_x_median=0.71
+92,W2,util,1708772400,1708826400,split=calibration bins=3 mem_heavy_share=0.33 x_median_share=3.7 heavy_x_median=1.9 total_x_median=0.55
+93,W2,util,1709078400,1709110800,split=calibration bins=2 mem_heavy_share=0.54 x_median_share=6.0 heavy_x_median=8.6 total_x_median=1.52
+94,W2,util,1709251200,1709269200,split=evaluation bins=1 mem_heavy_share=0.29 x_median_share=3.3 heavy_x_median=1.3 total_x_median=0.43
+95,W2,util,1709362800,1709413200,split=evaluation bins=2 mem_heavy_share=0.28 x_median_share=3.1 heavy_x_median=3.1 total_x_median=1.07
+96,W2,util,1709463600,1709521200,split=evaluation bins=3 mem_heavy_share=0.38 x_median_share=4.2 heavy_x_median=2.8 total_x_median=0.69
+97,W2,util,1709596800,1709622000,split=evaluation bins=1 mem_heavy_share=0.76 x_median_share=8.5 heavy_x_median=2.1 total_x_median=0.26
+98,W2,util,1709942400,1709946000,split=evaluation bins=1 mem_heavy_share=0.61 x_median_share=6.8 heavy_x_median=13.1 total_x_median=2.03
+99,W2,util,1710183600,1710187200,split=evaluation bins=1 mem_heavy_share=0.93 x_median_share=10.3 heavy_x_median=12.7 total_x_median=1.29
+100,W2,util,1710226800,1710230400,split=evaluation bins=1 mem_heavy_share=0.29 x_median_share=3.2 heavy_x_median=5.6 total_x_median=1.85
+101,W2,util,1710943200,1710946800,split=evaluation bins=1 mem_heavy_share=0.30 x_median_share=3.3 heavy_x_median=12.7 total_x_median=4.00
+102,W2,util,1711004400,1711022400,split=evaluation bins=1 mem_heavy_share=0.52 x_median_share=5.8 heavy_x_median=13.4 total_x_median=2.42
+103,W2,util,1711195200,1711198800,split=evaluation bins=1 mem_heavy_share=0.41 x_median_share=4.5 heavy_x_median=14.3 total_x_median=3.33
+104,W2,util,1711540800,1711551600,split=evaluation bins=1 mem_heavy_share=0.46 x_median_share=5.1 heavy_x_median=18.4 total_x_median=3.77
+105,W2,util,1711872000,1711875600,split=evaluation bins=1 mem_heavy_share=0.79 x_median_share=8.8 heavy_x_median=11.7 total_x_median=1.40
+106,W2,util,1711998000,1712001600,split=evaluation bins=1 mem_heavy_share=0.40 x_median_share=4.5 heavy_x_median=10.1 total_x_median=2.38
+107,W2,util,1712048400,1712052000,split=evaluation bins=1 mem_heavy_share=0.44 x_median_share=4.9 heavy_x_median=24.4 total_x_median=5.26
+108,W2,util,1712988000,1713038400,split=evaluation bins=2 mem_heavy_share=0.70 x_median_share=7.8 heavy_x_median=12.3 total_x_median=1.66
+109,W2,util,1713096000,1713117600,split=evaluation bins=1 mem_heavy_share=0.42 x_median_share=4.7 heavy_x_median=4.3 total_x_median=0.97
+110,W2,util,1713142800,1713160800,split=evaluation bins=1 mem_heavy_share=0.37 x_median_share=4.1 heavy_x_median=3.5 total_x_median=0.88
+111,W2,util,1713423600,1713452400,split=evaluation bins=2 mem_heavy_share=0.45 x_median_share=5.0 heavy_x_median=11.7 total_x_median=2.48
+112,W2,util,1713560400,1713571200,split=evaluation bins=1 mem_heavy_share=0.33 x_median_share=3.6 heavy_x_median=1.9 total_x_median=0.55
+113,W2,util,1713643200,1713661200,split=evaluation bins=1 mem_heavy_share=0.32 x_median_share=3.6 heavy_x_median=1.7 total_x_median=0.51
+114,W2,util,1713772800,1713776400,split=evaluation bins=1 mem_heavy_share=0.60 x_median_share=6.7 heavy_x_median=12.4 total_x_median=1.95
+115,W2,util,1713895200,1713934800,split=evaluation bins=2 mem_heavy_share=0.39 x_median_share=4.4 heavy_x_median=2.0 total_x_median=0.49
+116,W2,util,1714046400,1714064400,split=evaluation bins=1 mem_heavy_share=0.62 x_median_share=6.9 heavy_x_median=27.3 total_x_median=4.18
+117,W2,util,1714136400,1714143600,split=evaluation bins=1 mem_heavy_share=0.33 x_median_share=3.6 heavy_x_median=4.1 total_x_median=1.18
+118,W2,util,1714550400,1714557600,split=evaluation bins=1 mem_heavy_share=0.38 x_median_share=4.2 heavy_x_median=4.8 total_x_median=1.20
+119,W2,util,1714813200,1714863600,split=evaluation bins=3 mem_heavy_share=0.49 x_median_share=5.5 heavy_x_median=10.9 total_x_median=2.09
+120,W2,util,1714914000,1714917600,split=evaluation bins=1 mem_heavy_share=0.32 x_median_share=3.5 heavy_x_median=5.6 total_x_median=1.65
+121,W2,util,1715112000,1715115600,split=evaluation bins=1 mem_heavy_share=0.50 x_median_share=5.5 heavy_x_median=8.9 total_x_median=1.70
+122,W2,util,1715151600,1715155200,split=evaluation bins=1 mem_heavy_share=0.29 x_median_share=3.3 heavy_x_median=6.6 total_x_median=2.13
+123,W2,util,1715670000,1715698800,split=evaluation bins=2 mem_heavy_share=0.37 x_median_share=4.1 heavy_x_median=10.9 total_x_median=2.83
+124,W2,util,1715781600,1715814000,split=evaluation bins=2 mem_heavy_share=0.41 x_median_share=4.5 heavy_x_median=12.3 total_x_median=2.87
+125,W2,util,1715997600,1716019200,split=evaluation bins=1 mem_heavy_share=0.33 x_median_share=3.7 heavy_x_median=2.8 total_x_median=0.80
+126,W2,util,1716062400,1716066000,split=evaluation bins=1 mem_heavy_share=0.31 x_median_share=3.4 heavy_x_median=2.8 total_x_median=0.88
+127,W2,util,1716109200,1716112800,split=evaluation bins=1 mem_heavy_share=0.40 x_median_share=4.5 heavy_x_median=4.8 total_x_median=1.11
+128,W2,util,1716188400,1716192000,split=evaluation bins=1 mem_heavy_share=0.37 x_median_share=4.1 heavy_x_median=10.5 total_x_median=2.69
+129,W2,util,1716285600,1716296400,split=evaluation bins=1 mem_heavy_share=0.57 x_median_share=6.4 heavy_x_median=14.6 total_x_median=2.42
+130,W2,util,1716501600,1716505200,split=evaluation bins=1 mem_heavy_share=0.40 x_median_share=4.5 heavy_x_median=4.9 total_x_median=1.16
+131,W2,util,1717052400,1717059600,split=evaluation bins=1 mem_heavy_share=0.27 x_median_share=3.0 heavy_x_median=9.0 total_x_median=3.14
+132,W2,util,1718474400,1718517600,split=evaluation bins=2 mem_heavy_share=0.37 x_median_share=4.2 heavy_x_median=2.4 total_x_median=0.62
+133,W2,util,1718784000,1718794800,split=evaluation bins=1 mem_heavy_share=0.39 x_median_share=4.4 heavy_x_median=5.5 total_x_median=1.34
+134,W2,util,1719345600,1719356400,split=evaluation coverage=partial bins=1 mem_heavy_share=0.44 x_median_share=4.9 heavy_x_median=1.0 total_x_median=0.22
+135,W2,util,1719446400,1719450000,split=evaluation coverage=partial bins=1 mem_heavy_share=0.40 x_median_share=4.5 heavy_x_median=3.5 total_x_median=0.81
+136,W2,util,1719500400,1719507600,split=evaluation coverage=partial bins=1 mem_heavy_share=0.42 x_median_share=4.7 heavy_x_median=9.9 total_x_median=2.23
+137,W2,util,1719572400,1719590400,split=evaluation coverage=partial bins=1 mem_heavy_share=0.28 x_median_share=3.1 heavy_x_median=1.6 total_x_median=0.55
+138,W2,util,1719680400,1719694800,split=evaluation coverage=partial bins=1 mem_heavy_share=0.31 x_median_share=3.4 heavy_x_median=3.3 total_x_median=1.00
+139,W2,util,1719734400,1719770400,split=evaluation coverage=partial bins=2 mem_heavy_share=0.61 x_median_share=6.8 heavy_x_median=1.4 total_x_median=0.22
+140,W4,util,1704139200,1704153600,split=calibration seq=W2#56>W1#1
+141,W4,util,1704999600,1705064400,split=calibration seq=W2#61>W1#3
+142,W4,util,1705428000,1705474800,split=calibration seq=W2#65>W1#4
+143,W4,util,1707422400,1707429600,split=calibration seq=W2#78>W1#12
+144,W4,util,1708088400,1708124400,split=calibration seq=W2#85>W1#14
+145,W4,fairness,1708329600,1708369200,split=calibration seq=W1#15>W2#87
+146,W4,fairness,1708426800,1708491600,split=calibration seq=W1#16>W2#88
+147,W4,util,1708714800,1708768800,split=calibration seq=W2#91>W1#17
+148,W4,util,1709362800,1709416800,split=evaluation seq=W2#95>W1#19
+149,W4,util,1712988000,1713038400,split=evaluation seq=W2#108>W1#28
+150,W4,fairness,1713078000,1713117600,split=evaluation seq=W1#29>W2#109
+151,W4,fairness,1713621600,1713661200,split=evaluation seq=W1#31>W2#113
+152,W4,util,1713772800,1713794400,split=evaluation seq=W2#114>W1#32
+153,W4,fairness,1713884400,1713934800,split=evaluation seq=W1#33>W2#115
+154,W4,util,1715151600,1715173200,split=evaluation seq=W2#122>W1#38
+155,W4,util,1715781600,1715814000,split=evaluation seq=W2#124>W1#41
+156,W4,util,1717052400,1717081200,split=evaluation seq=W2#131>W1#42
+157,W4,fairness,1719475200,1719507600,split=evaluation coverage=partial seq=W1#54>W2#136
+158,W4,fairness,1719561600,1719590400,split=evaluation coverage=partial seq=W1#55>W2#137
+159,W6,none,1704110400,1704128400,split=calibration daily_peak=12:00-17:00 peak_ratio=0.47 day=Mon
+160,W6,none,1704196800,1704214800,split=calibration daily_peak=12:00-17:00 peak_ratio=0.93 day=Tue
+161,W6,none,1704283200,1704301200,split=calibration daily_peak=12:00-17:00 peak_ratio=1.33 day=Wed
+162,W6,none,1704369600,1704387600,split=calibration daily_peak=12:00-17:00 peak_ratio=2.16 day=Thu
+163,W6,none,1704456000,1704474000,split=calibration daily_peak=12:00-17:00 peak_ratio=1.56 day=Fri
+164,W6,none,1704542400,1704560400,split=calibration daily_peak=12:00-17:00 peak_ratio=0.83 day=Sat
+165,W6,none,1704628800,1704646800,split=calibration daily_peak=12:00-17:00 peak_ratio=0.62 day=Sun
+166,W6,none,1704715200,1704733200,split=calibration daily_peak=12:00-17:00 peak_ratio=1.63 day=Mon
+167,W6,none,1704801600,1704819600,split=calibration daily_peak=12:00-17:00 peak_ratio=1.73 day=Tue
+168,W6,none,1704888000,1704906000,split=calibration daily_peak=12:00-17:00 peak_ratio=2.32 day=Wed
+169,W6,none,1704974400,1704992400,split=calibration daily_peak=12:00-17:00 peak_ratio=1.12 day=Thu
+170,W6,none,1705060800,1705078800,split=calibration daily_peak=12:00-17:00 peak_ratio=2.24 day=Fri
+171,W6,none,1705147200,1705165200,split=calibration daily_peak=12:00-17:00 peak_ratio=1.73 day=Sat
+172,W6,none,1705233600,1705251600,split=calibration daily_peak=12:00-17:00 peak_ratio=1.42 day=Sun
+173,W6,none,1705320000,1705338000,split=calibration daily_peak=12:00-17:00 peak_ratio=0.44 day=Mon
+174,W6,none,1705406400,1705424400,split=calibration daily_peak=12:00-17:00 peak_ratio=0.42 day=Tue
+175,W6,none,1705492800,1705510800,split=calibration daily_peak=12:00-17:00 peak_ratio=1.58 day=Wed
+176,W6,none,1705579200,1705597200,split=calibration daily_peak=12:00-17:00 peak_ratio=2.31 day=Thu
+177,W6,none,1705665600,1705683600,split=calibration daily_peak=12:00-17:00 peak_ratio=0.43 day=Fri
+178,W6,none,1705752000,1705770000,split=calibration daily_peak=12:00-17:00 peak_ratio=2.41 day=Sat
+179,W6,none,1705838400,1705856400,split=calibration daily_peak=12:00-17:00 peak_ratio=0.35 day=Sun
+180,W6,none,1705924800,1705942800,split=calibration daily_peak=12:00-17:00 peak_ratio=2.46 day=Mon
+181,W6,none,1706011200,1706029200,split=calibration daily_peak=12:00-17:00 peak_ratio=0.83 day=Tue
+182,W6,none,1706097600,1706115600,split=calibration daily_peak=12:00-17:00 peak_ratio=0.67 day=Wed
+183,W6,none,1706184000,1706202000,split=calibration daily_peak=12:00-17:00 peak_ratio=1.66 day=Thu
+184,W6,none,1706270400,1706288400,split=calibration daily_peak=12:00-17:00 peak_ratio=2.40 day=Fri
+185,W6,none,1706356800,1706374800,split=calibration daily_peak=12:00-17:00 peak_ratio=1.26 day=Sat
+186,W6,none,1706443200,1706461200,split=calibration daily_peak=12:00-17:00 peak_ratio=1.46 day=Sun
+187,W6,none,1706529600,1706547600,split=calibration daily_peak=12:00-17:00 peak_ratio=2.75 day=Mon
+188,W6,none,1706616000,1706634000,split=calibration daily_peak=12:00-17:00 peak_ratio=1.54 day=Tue
+189,W6,none,1706702400,1706720400,split=calibration daily_peak=12:00-17:00 peak_ratio=0.67 day=Wed
+190,W6,none,1706788800,1706806800,split=calibration daily_peak=12:00-17:00 peak_ratio=1.37 day=Thu
+191,W6,none,1706875200,1706893200,split=calibration daily_peak=12:00-17:00 peak_ratio=1.69 day=Fri
+192,W6,none,1706961600,1706979600,split=calibration daily_peak=12:00-17:00 peak_ratio=1.36 day=Sat
+193,W6,none,1707048000,1707066000,split=calibration daily_peak=12:00-17:00 peak_ratio=0.81 day=Sun
+194,W6,none,1707134400,1707152400,split=calibration daily_peak=12:00-17:00 peak_ratio=1.83 day=Mon
+195,W6,none,1707220800,1707238800,split=calibration daily_peak=12:00-17:00 peak_ratio=2.53 day=Tue
+196,W6,none,1707307200,1707325200,split=calibration daily_peak=12:00-17:00 peak_ratio=1.51 day=Wed
+197,W6,none,1707393600,1707411600,split=calibration daily_peak=12:00-17:00 peak_ratio=0.55 day=Thu
+198,W6,none,1707480000,1707498000,split=calibration daily_peak=12:00-17:00 peak_ratio=1.82 day=Fri
+199,W6,none,1707566400,1707584400,split=calibration daily_peak=12:00-17:00 peak_ratio=0.76 day=Sat
+200,W6,none,1707652800,1707670800,split=calibration daily_peak=12:00-17:00 peak_ratio=0.73 day=Sun
+201,W6,none,1707739200,1707757200,split=calibration daily_peak=12:00-17:00 peak_ratio=0.85 day=Mon
+202,W6,none,1707825600,1707843600,split=calibration daily_peak=12:00-17:00 peak_ratio=1.67 day=Tue
+203,W6,none,1707912000,1707930000,split=calibration daily_peak=12:00-17:00 peak_ratio=2.00 day=Wed
+204,W6,none,1707998400,1708016400,split=calibration daily_peak=12:00-17:00 peak_ratio=1.81 day=Thu
+205,W6,none,1708084800,1708102800,split=calibration daily_peak=12:00-17:00 peak_ratio=1.82 day=Fri
+206,W6,none,1708171200,1708189200,split=calibration daily_peak=12:00-17:00 peak_ratio=3.12 day=Sat
+207,W6,none,1708257600,1708275600,split=calibration daily_peak=12:00-17:00 peak_ratio=1.03 day=Sun
+208,W6,none,1708344000,1708362000,split=calibration daily_peak=12:00-17:00 peak_ratio=0.35 day=Mon
+209,W6,none,1708430400,1708448400,split=calibration daily_peak=12:00-17:00 peak_ratio=1.88 day=Tue
+210,W6,none,1708516800,1708534800,split=calibration daily_peak=12:00-17:00 peak_ratio=2.80 day=Wed
+211,W6,none,1708603200,1708621200,split=calibration daily_peak=12:00-17:00 peak_ratio=2.26 day=Thu
+212,W6,none,1708689600,1708707600,split=calibration daily_peak=12:00-17:00 peak_ratio=2.45 day=Fri
+213,W6,none,1708776000,1708794000,split=calibration daily_peak=12:00-17:00 peak_ratio=0.35 day=Sat
+214,W6,none,1708862400,1708880400,split=calibration daily_peak=12:00-17:00 peak_ratio=0.40 day=Sun
+215,W6,none,1708948800,1708966800,split=calibration daily_peak=12:00-17:00 peak_ratio=3.03 day=Mon
+216,W6,none,1709035200,1709053200,split=calibration daily_peak=12:00-17:00 peak_ratio=1.38 day=Tue
+217,W6,none,1709121600,1709139600,split=calibration daily_peak=12:00-17:00 peak_ratio=1.50 day=Wed
+218,W6,none,1709208000,1709226000,split=calibration daily_peak=12:00-17:00 peak_ratio=1.64 day=Thu
+219,W6,none,1709294400,1709312400,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.89 day=Fri
+220,W6,none,1709380800,1709398800,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.49 day=Sat
+221,W6,none,1709467200,1709485200,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.39 day=Sun
+222,W6,none,1709553600,1709571600,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.88 day=Mon
+223,W6,none,1709640000,1709658000,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.95 day=Tue
+224,W6,none,1709726400,1709744400,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.09 day=Wed
+225,W6,none,1709812800,1709830800,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.61 day=Thu
+226,W6,none,1709899200,1709917200,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.29 day=Fri
+227,W6,none,1709985600,1710003600,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.81 day=Sat
+228,W6,none,1710072000,1710090000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.29 day=Sun
+229,W6,none,1710158400,1710176400,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.37 day=Mon
+230,W6,none,1710244800,1710262800,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.92 day=Tue
+231,W6,none,1710331200,1710349200,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.62 day=Wed
+232,W6,none,1710417600,1710435600,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.66 day=Thu
+233,W6,none,1710504000,1710522000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.70 day=Fri
+234,W6,none,1710590400,1710608400,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.81 day=Sat
+235,W6,none,1710676800,1710694800,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.91 day=Sun
+236,W6,none,1710763200,1710781200,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.52 day=Mon
+237,W6,none,1710849600,1710867600,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.05 day=Tue
+238,W6,none,1710936000,1710954000,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.07 day=Wed
+239,W6,none,1711022400,1711040400,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.18 day=Thu
+240,W6,none,1711108800,1711126800,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.55 day=Fri
+241,W6,none,1711195200,1711213200,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.34 day=Sat
+242,W6,none,1711281600,1711299600,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.92 day=Sun
+243,W6,none,1711368000,1711386000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.22 day=Mon
+244,W6,none,1711454400,1711472400,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.26 day=Tue
+245,W6,none,1711540800,1711558800,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.82 day=Wed
+246,W6,none,1711627200,1711645200,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.24 day=Thu
+247,W6,none,1711713600,1711731600,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.87 day=Fri
+248,W6,none,1711800000,1711818000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.80 day=Sat
+249,W6,none,1711886400,1711904400,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.91 day=Sun
+250,W6,none,1711972800,1711990800,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.25 day=Mon
+251,W6,none,1712059200,1712077200,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.95 day=Tue
+252,W6,none,1712145600,1712163600,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.02 day=Wed
+253,W6,none,1712232000,1712250000,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.58 day=Thu
+254,W6,none,1712318400,1712336400,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.79 day=Fri
+255,W6,none,1712404800,1712422800,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.74 day=Sat
+256,W6,none,1712491200,1712509200,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.11 day=Sun
+257,W6,none,1712577600,1712595600,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.05 day=Mon
+258,W6,none,1712664000,1712682000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.21 day=Tue
+259,W6,none,1712750400,1712768400,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.26 day=Wed
+260,W6,none,1712836800,1712854800,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.82 day=Thu
+261,W6,none,1712923200,1712941200,split=evaluation daily_peak=12:00-17:00 peak_ratio=3.09 day=Fri
+262,W6,none,1713009600,1713027600,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.60 day=Sat
+263,W6,none,1713096000,1713114000,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.78 day=Sun
+264,W6,none,1713182400,1713200400,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.61 day=Mon
+265,W6,none,1713268800,1713286800,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.39 day=Tue
+266,W6,none,1713355200,1713373200,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.09 day=Wed
+267,W6,none,1713441600,1713459600,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.23 day=Thu
+268,W6,none,1713528000,1713546000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.87 day=Fri
+269,W6,none,1713614400,1713632400,split=evaluation daily_peak=12:00-17:00 peak_ratio=3.02 day=Sat
+270,W6,none,1713700800,1713718800,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.06 day=Sun
+271,W6,none,1713787200,1713805200,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.22 day=Mon
+272,W6,none,1713873600,1713891600,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.40 day=Tue
+273,W6,none,1713960000,1713978000,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.48 day=Wed
+274,W6,none,1714046400,1714064400,split=evaluation daily_peak=12:00-17:00 peak_ratio=3.00 day=Thu
+275,W6,none,1714132800,1714150800,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.21 day=Fri
+276,W6,none,1714219200,1714237200,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.79 day=Sat
+277,W6,none,1714305600,1714323600,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.35 day=Sun
+278,W6,none,1714392000,1714410000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.32 day=Mon
+279,W6,none,1714478400,1714496400,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.54 day=Tue
+280,W6,none,1714564800,1714582800,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.88 day=Wed
+281,W6,none,1714651200,1714669200,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.82 day=Thu
+282,W6,none,1714737600,1714755600,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.39 day=Fri
+283,W6,none,1714824000,1714842000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.54 day=Sat
+284,W6,none,1714910400,1714928400,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.57 day=Sun
+285,W6,none,1714996800,1715014800,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.31 day=Mon
+286,W6,none,1715083200,1715101200,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.03 day=Tue
+287,W6,none,1715169600,1715187600,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.97 day=Wed
+288,W6,none,1715256000,1715274000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.44 day=Thu
+289,W6,none,1715342400,1715360400,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.26 day=Fri
+290,W6,none,1715428800,1715446800,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.11 day=Sat
+291,W6,none,1715515200,1715533200,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.93 day=Sun
+292,W6,none,1715601600,1715619600,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.37 day=Mon
+293,W6,none,1715688000,1715706000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.96 day=Tue
+294,W6,none,1715774400,1715792400,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.15 day=Wed
+295,W6,none,1715860800,1715878800,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.97 day=Thu
+296,W6,none,1715947200,1715965200,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.20 day=Fri
+297,W6,none,1716033600,1716051600,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.87 day=Sat
+298,W6,none,1716120000,1716138000,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.88 day=Sun
+299,W6,none,1716206400,1716224400,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.65 day=Mon
+300,W6,none,1716292800,1716310800,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.50 day=Tue
+301,W6,none,1716379200,1716397200,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.46 day=Wed
+302,W6,none,1716465600,1716483600,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.59 day=Thu
+303,W6,none,1716552000,1716570000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.83 day=Fri
+304,W6,none,1716638400,1716656400,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.49 day=Sat
+305,W6,none,1716724800,1716742800,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.94 day=Sun
+306,W6,none,1716811200,1716829200,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.08 day=Mon
+307,W6,none,1716897600,1716915600,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.13 day=Tue
+308,W6,none,1716984000,1717002000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.67 day=Wed
+309,W6,none,1717070400,1717088400,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.61 day=Thu
+310,W6,none,1717156800,1717174800,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.31 day=Fri
+311,W6,none,1717243200,1717261200,split=evaluation daily_peak=12:00-17:00 peak_ratio=3.42 day=Sat
+312,W6,none,1717329600,1717347600,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.86 day=Sun
+313,W6,none,1717416000,1717434000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.56 day=Mon
+314,W6,none,1717502400,1717520400,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.96 day=Tue
+315,W6,none,1717588800,1717606800,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.62 day=Wed
+316,W6,none,1717675200,1717693200,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.63 day=Thu
+317,W6,none,1717761600,1717779600,split=evaluation daily_peak=12:00-17:00 peak_ratio=3.28 day=Fri
+318,W6,none,1717848000,1717866000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.22 day=Sat
+319,W6,none,1717934400,1717952400,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.16 day=Sun
+320,W6,none,1718020800,1718038800,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.77 day=Mon
+321,W6,none,1718107200,1718125200,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.49 day=Tue
+322,W6,none,1718193600,1718211600,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.50 day=Wed
+323,W6,none,1718280000,1718298000,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.62 day=Thu
+324,W6,none,1718366400,1718384400,split=evaluation daily_peak=12:00-17:00 peak_ratio=3.27 day=Fri
+325,W6,none,1718452800,1718470800,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.91 day=Sat
+326,W6,none,1718539200,1718557200,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.65 day=Sun
+327,W6,none,1718625600,1718643600,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.84 day=Mon
+328,W6,none,1718712000,1718730000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.31 day=Tue
+329,W6,none,1718798400,1718816400,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.38 day=Wed
+330,W6,none,1718884800,1718902800,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.81 day=Thu
+331,W6,none,1718971200,1718989200,split=evaluation daily_peak=12:00-17:00 peak_ratio=0.55 day=Fri
+332,W6,none,1719057600,1719075600,split=evaluation daily_peak=12:00-17:00 peak_ratio=2.09 day=Sat
+333,W6,none,1719144000,1719162000,split=evaluation daily_peak=12:00-17:00 peak_ratio=1.89 day=Sun
+334,W6,none,1719230400,1719248400,split=evaluation coverage=partial daily_peak=12:00-17:00 peak_ratio=1.09 day=Mon
+335,W6,none,1719316800,1719334800,split=evaluation coverage=partial daily_peak=12:00-17:00 peak_ratio=4.08 day=Tue
+336,W6,none,1719403200,1719421200,split=evaluation coverage=partial daily_peak=12:00-17:00 peak_ratio=0.60 day=Wed
+337,W6,none,1719489600,1719507600,split=evaluation coverage=partial daily_peak=12:00-17:00 peak_ratio=1.71 day=Thu
+338,W6,none,1719576000,1719594000,split=evaluation coverage=partial daily_peak=12:00-17:00 peak_ratio=1.08 day=Fri
+339,W6,none,1719662400,1719680400,split=evaluation coverage=partial daily_peak=12:00-17:00 peak_ratio=0.59 day=Sat
+340,W6,none,1719748800,1719766800,split=evaluation coverage=partial daily_peak=12:00-17:00 peak_ratio=1.64 day=Sun
