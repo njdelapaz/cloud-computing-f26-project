@@ -1,6 +1,13 @@
 /*
  * ver_0.2 fork of priority/multifactor (Slurm simulator @ f99a71e).
- * P1: identical to multifactor except the plugin name and a clock probe in the decay loop.
+ * P1: plugin name changed, plus a clock probe in the decay loop.
+ * A1: the ordering weights come from one policy in policies.conf (SPEC §4, §13.1), not from
+ *     slurm.conf's PriorityWeight*. _load_policy() reads adaptive.conf from the slurm.conf
+ *     directory and the policies.conf it names, and takes FixedPolicy if set, otherwise
+ *     DefaultPolicy. That policy's Fairshare, Age and JobSize become the weights; Assoc,
+ *     Partition, QOS and TRES weights are 0. Everything else (decay, PriorityMaxAge,
+ *     PriorityFlags, ...) still comes from slurm.conf. Without an adaptive.conf the plugin
+ *     uses slurm.conf's weights, exactly like multifactor. A malformed file is fatal at start-up.
  * Keep the names decay_handler_thread and _decay_thread: the simulator drives the decay
  * loop by matching them.
  */
@@ -55,6 +62,7 @@
 #include <sys/prctl.h>
 #endif
 
+#include <errno.h>
 #include <fcntl.h>
 #include <float.h>
 #include <limits.h>
@@ -77,6 +85,7 @@
 #include "src/slurmctld/read_config.h"
 
 #include "fair_tree.h"
+#include "adaptive_conf.h"
 
 #define SECS_PER_DAY	(24 * 60 * 60)
 #define SECS_PER_WEEK	(7 * SECS_PER_DAY)
@@ -154,6 +163,10 @@ static double  *weight_tres; /* tres weights */
 static uint32_t flags;       /* Priority Flags */
 static time_t g_last_ran = 0; /* when the last poll ran */
 static double decay_factor = 1; /* The decay factor when decaying time. */
+
+/* ver_0.2 A1: the policy whose ordering weights are in use (when policy_loaded) */
+static bool policy_loaded = false;
+static adaptive_policy_t active_policy;
 
 /* variables defined in priority_multifactor.h */
 
@@ -1596,7 +1609,49 @@ static void _filter_job(job_record_t *job_ptr,
 	list_iterator_destroy(job_iter);
 }
 
-static void _internal_setup(void)
+/*
+ * ver_0.2 A1: read adaptive.conf (next to slurm.conf, found the way the simulator finds
+ * users.sim) and the policies.conf it names, and remember the active policy. With no
+ * adaptive.conf, use slurm.conf's weights as multifactor does. A malformed file is fatal at
+ * start-up; on reconfigure the error is logged and the previous weights stay.
+ */
+static void _load_policy(bool startup)
+{
+	char *conf_path = get_extra_conf_path(ADAPTIVE_CONF_NAME);
+	adaptive_conf_t *conf = xmalloc(sizeof(*conf));
+	adaptive_policies_t *pols = xmalloc(sizeof(*pols));
+	const adaptive_policy_t *active = NULL;
+	const char *mode = NULL;
+	char err[ADAPTIVE_ERR_LEN];
+	struct stat st;
+
+	if ((stat(conf_path, &st) != 0) && (errno == ENOENT)) {
+		policy_loaded = false;
+		info("adaptive: no %s, so the ordering weights come from slurm.conf's PriorityWeight* (stock multifactor behaviour)",
+		     conf_path);
+	} else if (adaptive_load(conf_path, slurm_conf.priority_calc_period, conf, pols,
+				 &active, &mode, err, sizeof(err))) {
+		if (startup)
+			fatal("adaptive: bad policy configuration: %s", err);
+		error("adaptive: bad policy configuration, keeping the previous weights: %s",
+		      err);
+	} else {
+		active_policy = *active;
+		policy_loaded = true;
+		info("adaptive: loaded policy=%s mode=%s Fairshare=%u Age=%u JobSize=%u from %s (%d policies); Assoc, Partition, QOS and TRES weights are 0 and slurm.conf's PriorityWeight* are ignored",
+		     active_policy.name, mode, active_policy.fairshare, active_policy.age,
+		     active_policy.jobsize, conf->policies_file, pols->count);
+		if (conf->force_alternate[0][0])
+			info("adaptive: ForceAlternate=%s,%s is not used yet (switching comes in A2); %s stays active",
+			     conf->force_alternate[0], conf->force_alternate[1],
+			     active_policy.name);
+	}
+	xfree(conf_path);
+	xfree(conf);
+	xfree(pols);
+}
+
+static void _internal_setup(bool startup)
 {
 	damp_factor = (long double) slurm_conf.fs_dampening_factor;
 	max_age = slurm_conf.priority_max_age;
@@ -1610,6 +1665,17 @@ static void _internal_setup(void)
 	weight_tres = slurm_get_tres_weight_array(
 		slurm_conf.priority_weight_tres, slurmctld_tres_cnt, true);
 	flags = slurm_conf.priority_flags;
+
+	_load_policy(startup);
+	if (policy_loaded) {
+		weight_age = active_policy.age;
+		weight_fs = active_policy.fairshare;
+		weight_js = active_policy.jobsize;
+		weight_assoc = 0;
+		weight_part = 0;
+		weight_qos = 0;
+		xfree(weight_tres);	/* NULL: no TRES factor */
+	}
 
 	log_flag(PRIO, "priority: Damp Factor is %u", damp_factor);
 	log_flag(PRIO, "priority: AccountingStorageEnforce is %u",
@@ -1782,7 +1848,7 @@ int init ( void )
 		return SLURM_SUCCESS;
 	}
 
-	_internal_setup();
+	_internal_setup(true);
 
 	/* Check to see if we are running a supported accounting plugin */
 	if (!slurm_with_slurmdbd()) {
@@ -1878,7 +1944,7 @@ extern void priority_p_reconfig(bool assoc_clear)
 				   NO_LOCK, NO_LOCK, NO_LOCK };
 
 	reconfig = 1;
-	_internal_setup();
+	_internal_setup(false);
 
 	/* Since Fair Tree uses a different shares calculation method, we
 	 * must reassign shares at reconfigure if the algorithm was switched to

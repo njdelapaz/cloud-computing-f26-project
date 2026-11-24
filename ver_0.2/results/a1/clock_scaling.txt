@@ -1,0 +1,31 @@
+# Probe day (workloads/traces/p1_probe, 3,028 jobs, config/project) at ClockScaling=0.001 (results/a1/cs/)
+# vs the earlier ClockScaling=1.0 runs (results/a1/probe_*). Only sim.conf differs: ClockScaling=0.001 and
+# TimeAfterAllEventsDone=0 (counts only once every job has finished). Times in s; 'not skipped' = simulated
+# time the event loop did not jump over. Real time = slurmsim.log mtime - etc/slurm.conf mtime.
+
+run                         jobs    mean  median     p95  >60s  makespan  sim span   skipped not skipped
+cs/probe_stock_base_1       3028    1975       2    5462  1079    359695    360062    360060         2.4
+cs/probe_stock_base_2       3028    1659       2    5697  1099    359695    360062    360060         2.5
+cs/probe_adaptive_base      3028    1221       2    3948   969    359695    360062    360060         2.5
+probe_stock_base            3028    1099       1    4589   930    359695    360095    359500       594.9
+probe_stock_base_2          3028    5727       2   49941  1175    359695    360104    359446       657.8
+probe_adaptive_base         3028    2759       2   11436  1137    359695    360097    359485       611.9
+probe_adaptive_base_2       3028    1895       1    8191  1044    359695    360095    359482       613.0
+
+cs/probe_stock_base_1 vs cs/probe_stock_base_2: exact differences 969; within 1 s: missing 0, nodes 697, moved 716, flips 14521
+  first divergence: jobid_238 at 03:48:57 (waited 2 s): start -1 s, end -1 s, nodes n01 vs n01
+cs/probe_stock_base_1 vs cs/probe_adaptive_base: exact differences 1586; within 1 s: missing 0, nodes 1388, moved 927, flips 36252
+  first divergence: jobid_238 at 03:48:57 (waited 2 s): start -1 s, end -1 s, nodes n01 vs n01
+cs/probe_stock_base_2 vs cs/probe_adaptive_base: exact differences 1490; within 1 s: missing 0, nodes 1376, moved 871, flips 37143
+  first divergence: jobid_251 at 03:53:34 (waited 1 s): start -1 s, end -1 s, nodes n05 vs n05
+probe_stock_base vs cs/probe_stock_base_1: exact differences 2284; within 1 s: missing 0, nodes 2173, moved 1260, flips 35198
+  first divergence: jobid_220 at 03:43:48 (waited 0 s): start +0 s, end +0 s, nodes n06 vs n05
+
+real time per run:
+  probe_stock_base 669
+  probe_stock_base_2 738
+  probe_adaptive_base 689
+  probe_adaptive_base_2 689
+  cs/probe_stock_base_1 645
+  cs/probe_stock_base_2 647
+  cs/probe_adaptive_base 642

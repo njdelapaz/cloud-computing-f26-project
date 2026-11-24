@@ -8,8 +8,9 @@ The tracker for `ver_0.2`. `SPEC.md` says what to build, `WORKFLOW.md` says how,
   - P1 (simulator environment): the simulator builds from pinned sources, runs, and enforces memory; both do-nothing plugin forks match stock exactly.
   - P2 (interfaces): every config, data and log format is defined in SPEC §13, with a validator, an example and unit tests.
   - B1 (workloads): the trace filter, load-targeted sampler, simulator converter and episode finder are built and merged into `dev`.
-- **In progress:** A1 (ordering plugin). Its own worktree session is testing whether `ClockScaling=0.001` makes realistic runs repeatable (see the A1 note under Results).
-- **Next:** B2 (metrics) can start; A2 follows A1.
+  - A1 (ordering plugin, static): `priority/adaptive` takes its ordering weights from one policy; it matches stock exactly on the smoke trace and within 1 s on a contended trace. Merged into `dev`.
+- **Waiting on a decision:** whether SPEC G1 and WORKFLOW's A1 gate should say what A1 actually checks, an exact match on the smoke trace and within 1 s on a contended trace (see Decisions log).
+- **Next:** A2 (switching) and B2 (metrics); they touch separate folders. Before P4: decide how experiments handle run-to-run spread.
 
 ## Phase tracker
 
@@ -18,7 +19,7 @@ The tracker for `ver_0.2`. `SPEC.md` says what to build, `WORKFLOW.md` says how,
 | P0 Spec | ✅ done | Gate passed: none of the items left in SPEC §11 blocks P1–P2 |
 | P1 Simulator env | ✅ done | Gate passed: `scripts/check_p1.sh` passes 7 of 7 checks (results/p1/check_p1.txt) |
 | P2 Interfaces | ✅ done | Gate passed: `scripts/check_p2.sh` validates all 8 config and example files and passes 30 unit tests (results/p2/check_p2.txt) |
-| A1 Ordering plugin: static | not started | |
+| A1 Ordering plugin: static | ✅ done | Gate passed: `scripts/check_a1.sh` passes 5 of 5 gating checks (results/a1/check_a1.txt). Check 2 uses a contended trace instead of the probe day, because the simulator doesn't repeat itself on realistic load (results/a1/summary.md) |
 | A2 Switching | not started | |
 | A3 States | not started | |
 | A4 Placement plugin | not started | |
@@ -53,6 +54,10 @@ The current decisions are listed in SPEC §11 (#1–19). This log keeps the hist
 | Sampling method (B1) | Seeded random keys taken in order until the load reaches 0.85, with a 2% overshoot skip (SPEC §9.2) | A fixed *p* per window, which landed within ±5% only about half the time |
 | W2 rule (B1) | Volume floor added: memory-heavy core-hours at least their median per window; 91 → 84 episodes (SPEC §9.3) | The starting rule, which flagged 11 near-idle windows |
 | Window and warm-up length | Both default to 1 day in B1's sampler; still to decide in B3/P4 | — |
+| A1 gate check 2 | A 41-job contended trace, within 1 s, with the realistic day reported as spread but not gating. The user chose to test `ClockScaling = 0.001` first, then fall back to this | Identity on a realistic W0 trace, which the simulator can't repeat |
+| `ClockScaling` | Stays 1.0. 0.001 cut the spread but didn't remove it, gave no speed-up, and stops backfill's time limits binding | — |
+| Run-to-run spread in experiments | To decide before P4. Options: repeats per seed, more seeds, or patching the simulator's event order and clock. B2/B3 should support repeat runs either way | — |
+| SPEC G1 / WORKFLOW A1 wording | Pending: no preference given yet on updating them to match A1's gate | — |
 
 ## Spec changes from P1 (approved and applied to SPEC.md)
 Along with these, SPEC §8's timing note and the §11 window-length item now state what P1 measured.
@@ -134,10 +139,21 @@ Trace profiling, done with one-off scripts that aren't saved in the repo. B1's g
   - Every submit lands 11 s after its trace time because of the simulator's start-up lag, so B2 should take submit times from the simulator's output.
   - Use strong weekdays for W6.
 
-### A1 (in progress): simulator repeatability
-- **Plugin:** `priority/adaptive` loads its policy from `adaptive.conf`/`policies.conf` and matches stock exactly on the smoke trace. The `FixedPolicy=U` check and the malformed-file check pass, as do its 47 parser tests (on A1's branch).
-- **Problem:** on one realistic day, two *identical* stock runs differ on about 2,100 of 3,028 jobs, with mean waits of 1,099 s and 5,727 s. Scheduler CPU time advances the simulated clock (`ClockScaling = 1.0`), so a 1 s shift snowballs. The smoke traces are repeatable only because no queue forms.
-- **Decision:** test `ClockScaling = 0.001` on the real day first. If runs still differ, swap A1's check 2 for a contended 41-job trace and handle the spread with repeat runs in B3/P4.
+### A1: ordering plugin (static)
+- **Plugin:** `priority/adaptive` reads `adaptive.conf` and the `policies.conf` it names (parser in `plugin/priority_adaptive/adaptive_conf.c`, 47 tests). The active policy is `FixedPolicy`, otherwise `DefaultPolicy`, and its weights replace `slurm.conf`'s. A malformed file is fatal at start-up. With no `adaptive.conf` the plugin keeps `slurm.conf`'s weights. Full write-up: `results/a1/summary.md`.
+- **Run script:** `scripts/sim_run.sh` gained `ADAPTIVE=` and `ADAPTIVE_SET="Key=Value ..."`. A run given either must log `loaded policy`, so it can't quietly fall back to `slurm.conf`'s weights.
+- **Gate** (`scripts/check_a1.sh`, 5 of 5):
+  - exact match with stock on the smoke trace
+  - within 1 s on a 41-job contended trace, with 0 node differences and 0 order flips; a JobSize-only control flips 333 pairs
+  - `FixedPolicy=U` gives submission order
+  - a malformed file is fatal
+  - the parser tests pass
+- **Run-to-run spread, the key finding for P4–P8:**
+  - The simulated clock runs at real speed while slurmctld works, so a scheduling pass that crosses a second boundary shifts a start by 1 s. On realistic load the shift snowballs.
+  - Two identical stock runs of the probe day differ on about 2,100 of 3,028 jobs, with mean waits of 1,099 s and 5,727 s.
+  - With `ClockScaling = 0.001` they still differ on 969 jobs (mean waits 1,975 and 1,659 s), with no speed-up, and backfill's time limits would stop binding. `ClockScaling` stays 1.0.
+  - On the contended smoke trace the jitter stays at 1 s and doesn't grow.
+- **Image:** A1 built `ver02/slurm-sim:a1` from the merged `docker/Dockerfile`. The shared `ver02/slurm-sim:p1` image predates A1, so later phases should rebuild from `dev`.
 
 ## Change log
 
@@ -152,4 +168,8 @@ Trace profiling, done with one-off scripts that aren't saved in the repo. B1's g
 | 2026-11-24 | `04add00` | P2 finished: interface formats in SPEC §13, config files, examples, validators and tests |
 | 2026-11-24 | `b5998e9` | B1 finished: trace filter, sampler, converter, episode finder and gate (B1 session) |
 | 2026-11-24 | `90eee24` | B1 merged into `dev` |
-| 2026-11-24 | — | B1's spec edits applied (SPEC §9.2, §9.3, §13.2); A1 repeatability finding recorded |
+| 2026-11-24 | `8feb002` | B1's spec edits applied (SPEC §9.2, §9.3, §13.2); A1 repeatability finding recorded |
+| 2026-11-24 | `e0b38e2` | A1: `priority/adaptive` takes ordering weights from `policies.conf` (A1 session) |
+| 2026-11-24 | `bec7565` | A1 finished: contended-trace identity check, gate 5 of 5 (A1 session) |
+| 2026-11-24 | `2d6b890` | A1: `ClockScaling = 0.001` tested on the probe day; runs still don't repeat (A1 session) |
+| 2026-11-24 | — | A1 merged into `dev` |
