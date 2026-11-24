@@ -16,3 +16,6 @@ workloads/traces/
 
 # Python bytecode
 __pycache__/
+
+# Session worktrees created by Claude Code
+.claude/

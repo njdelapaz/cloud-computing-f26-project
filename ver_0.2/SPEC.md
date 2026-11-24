@@ -248,12 +248,20 @@ All workloads come from the real job trace in `dataset/`. There is no synthetic 
 
 **Filters, in order:**
 1. Keep partitions `htc`, `htc_highmem` and `hpc`. This drops `gpu` and `gpu_interactive` (no GPUs in this project), `htc_daemon` (service jobs with limits up to 90 days), and `htc_interactive` and `flash` (interactive and very small). About 54k jobs go.
-2. Drop jobs that never started (about 287k, cancelled while pending) and jobs with zero elapsed time (about 331k).
+2. Drop jobs that never started (about 289k, counting `started = 0` as never started; mostly cancelled while pending) and jobs with zero elapsed time (about 328k).
 3. Drop jobs that don't fit one node: more than 32 cores, more than 128 GB, or multi-node. That's 0.05% of jobs and 1.1% of core-hours.
 
 About 22.9M jobs remain, all single-node.
 
-**Scaling by random job sampling:** each seed draws an independent random sample of the filtered trace, keeping each job with probability *p*. The converter sets *p* so the sample's average offered load is about 0.85 of 512 cores. That works out to roughly 3.3% on average, varying a little by month, computed exactly from the filtered trace for each window. Sampling keeps the real mix of job shapes, users and daily cycle. Bursts shrink in absolute size but keep their size relative to the cluster.
+**Scaling by random job sampling:** each seed draws an independent random sample of the filtered trace, keeping each job with probability *p*. The sample's offered load (Σ cores × runtime of jobs submitted in the measured window ÷ (512 × window length)) targets 0.85.
+- **How p is set:** a fixed *p* per window misses the target too often, because a few long, wide jobs dominate a day's core-hours. Instead each job gets a seeded random key u ~ U(0, 1).
+  - The measured window's jobs are taken in increasing u until the load reaches 0.85.
+  - *p* is the key of the job that gets there; it is recorded as `sampling_rate` in `meta.json`.
+  - A job that would push the load more than 2% over is skipped.
+  - Warm-up jobs are kept when u ≤ *p*.
+- **Result:** the load lands in [0.85, 0.867] (all 640 samples in B1's sweep were within ±5%). *p* averages about 3.3% and ranged from 1.1% to 3.9% in B1's gate windows.
+- **Cost:** the very largest jobs, each worth over 20% of a day's target, are kept at about half the nominal rate. Jobs worth up to 5% are kept at 0.99–1.04× the nominal rate.
+- **What sampling keeps:** the real mix of job shapes, users and daily cycle. Bursts shrink in absolute size but keep their size relative to the cluster.
 
 **What the trace says about these jobs** (these replace the earlier generator assumptions):
 - **Sizes:** median 1 core, p90 2 cores, p99 12 cores.
@@ -268,12 +276,12 @@ The trigger workloads are windows of the trace where the pattern happens on its 
 | ID | Workload | Purpose | How it's found (starting thresholds, reviewed in B1) | Found in the full trace |
 |---|---|---|---|---|
 | W0 | General | baseline, false-trigger check | windows with none of the episodes below | — |
-| W1 | User flood | fires **fairness** | a 6-hour window where one user submits over half the core-hours and the total is above 1.5× the median | 58 windows, 22 different users |
-| W2 | Memory-heavy burst: memory-heavy jobs fill nodes' memory and strand their cores | fires **utilization** | a 6-hour window where jobs above 8 GB per core make up more than 3× their median share of submitted core-hours | 91 episodes |
+| W1 | User flood | fires **fairness** | a 6-hour window where one user submits over half the core-hours and the total is above 1.5× the median | 58 windows from 22 users, merging into 55 episodes |
+| W2 | Memory-heavy burst: memory-heavy jobs fill nodes' memory and strand their cores | fires **utilization** | a 6-hour window where jobs above 8 GB per core make up more than 3× their median share of submitted core-hours, **and** their core-hours are at least their median per window (a volume floor added in B1's review, which drops near-idle windows) | 84 episodes |
 | W3 | Uneven node load: load piles up on some nodes while others sit nearly empty | fires **balance** | needs `BASE` simulation runs; found in P6 | not yet known |
-| W4 | Sequence | several correct switches in one run | a window holding episodes of at least two kinds back to back | built from the W1–W3 lists |
+| W4 | Sequence | several correct switches in one run | a window holding episodes of at least two kinds back to back | 19 chains of W1 and W2 episodes within one day (W3 joins once P6 finds it) |
 | W5 | Oscillating: signals flip faster than a plausible T_min | tests cooldown and hysteresis | needs `BASE` simulation runs; found in P6 | not yet known; may not exist |
-| W6 | Daily peak | override vs auto | the natural peak, 12:00–17:00 UTC, over several days | present in the daily profile (about 1.6× the average rate, not the ×2.5 first assumed) |
+| W6 | Daily peak | override vs auto | the natural peak, 12:00–17:00 UTC, over several days | every day in the profile (about 1.6× the average rate, not the ×2.5 first assumed). Day by day the median peak ratio is 1.43, and 56 of 182 days, mostly weekends, have no peak, so W6 runs pick strong weekdays |
 
 **Onset times:** each episode's estimated start is recorded in a sidecar file and used as ground truth for response latency.
 - **W1 and W2:** the start of the burst's submissions, refined to the hour.
@@ -429,7 +437,7 @@ All three use one entry per line. `#` starts a comment, blank lines are ignored,
 
 **`meta.json`**, one per sampled window, holds:
 - `window_start` and `window_end`, the submit window in Unix seconds
-- `warmup_end`: jobs submitted before it are excluded from metrics
+- `warmup_end`: jobs submitted before it are excluded from metrics. The warm-up comes **before** the measured window: `window_start` = start − warm-up, `warmup_end` = start, `window_end` = start + length
 - `seed`, `sampling_rate` in (0, 1], and `target_load` in (0, 1]
 - the counts `jobs`, `users` and `accounts`, which must match `jobs.csv`
 
@@ -438,7 +446,7 @@ All three use one entry per line. `#` starts a comment, blank lines are ignored,
 - `workload`, W1–W6
 - `signal`: `fairness`, `balance`, `util` or `none`
 - `onset` and `end` in Unix seconds, with `end` after `onset`
-- `detail`, free text such as `user=user0023`
+- `detail`, free text such as `user=user0023`. It always starts with `split=calibration` or `split=evaluation` (by onset), and episodes that reach past 2024-06-23T22:00Z add `coverage=partial`. Jobs submitted after that point and still running at the end of June aren't in the trace
 
 ### 13.3 Logs (written by the plugins)
 **Decision log**, one row per controller tick:
