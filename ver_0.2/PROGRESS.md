@@ -16,7 +16,7 @@ The tracker for `ver_0.2`. `SPEC.md` says what to build, `WORKFLOW.md` says how,
 | P0 Spec | ✅ done | Gate passed: none of the items left in SPEC §11 blocks P1–P2 |
 | P1 Simulator env | ✅ done | Gate passed: `scripts/check_p1.sh` passes 7 of 7 checks (results/p1/check_p1.txt) |
 | P2 Interfaces | ✅ done | Gate passed: `scripts/check_p2.sh` validates all 8 config and example files and passes 30 unit tests (results/p2/check_p2.txt) |
-| A1 Ordering plugin: static | in progress | Plugin, parser, tests and `scripts/check_a1.sh` built; smoke checks pass (results/a1/check_a1.txt); the probe-day pair isn't confirmed yet (results/a1/summary.md) |
+| A1 Ordering plugin: static | ✅ done | Gate passed: `scripts/check_a1.sh` passes 5 of 5 gating checks (results/a1/check_a1.txt). Check 2 uses a contended trace instead of the probe day, because the simulator doesn't repeat itself on realistic load (results/a1/summary.md) |
 | A2 Switching | not started | |
 | A3 States | not started | |
 | A4 Placement plugin | not started | |
