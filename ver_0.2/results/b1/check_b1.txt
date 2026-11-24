@@ -1,0 +1,99 @@
+== 0. build: filter the trace and find episodes
+01.tsv: 3,504,369 jobs, 3,136,322 kept
+02.tsv: 3,621,277 jobs, 3,562,591 kept
+03.tsv: 5,612,759 jobs, 5,564,477 kept
+04.tsv: 3,875,673 jobs, 3,823,440 kept
+05.tsv: 3,529,827 jobs, 3,467,995 kept
+06.tsv: 3,395,245 jobs, 3,302,022 kept
+{
+  "source_jobs": 23539150,
+  "dropped_partition": 54083,
+  "dropped_never_started": 289460,
+  "dropped_zero_elapsed": 328388,
+  "dropped_too_big": 10372,
+  "too_big_job_frac": 0.00045357504994376446,
+  "too_big_core_hour_frac": 0.011107717232213363,
+  "too_big_by_reason": {
+    "cores": 1832,
+    "mem": 9192,
+    "multinode": 740
+  },
+  "kept_jobs": 22856847,
+  "kept_core_hours": 57278965.80972222,
+  "duplicate_jobids": 0,
+  "capped_jobs": 379627,
+  "capped_frac": 0.016608896231400595,
+  "capped_timeout_frac": 0.9985195995016161,
+  "capped_median_over_s": 16.0,
+  "users": 649,
+  "accounts": 94,
+  "submit_min": 1703176101,
+  "submit_max": 1719784425,
+  "max_timelimit_s": 604800,
+  "min_mem_mb": 1
+}
+W1 55 episodes from 58 bins (22 users), W2 84 episodes from 130 bins, W4 19, W6 182 -> /home/benson/CS/CloudComp/Project/cloud-computing-f26-project/ver_0.2/.claude/worktrees/b1-trace-pipeline-5b36bf/ver_0.2/workloads/traces/episodes/episodes.csv
+
+== 1. filtered trace (SPEC §9.2)
+source 23,539,150 jobs; dropped: partition 54,083, never started 289,460, zero elapsed 328,388, too big 10,372 (0.045% of jobs, 1.11% of core-hours; cores 1,832, mem 9,192, multi-node 740); kept 22,856,847
+PASS  filter: about 22.9M jobs kept  (22,856,847)
+PASS  filter: about 54k dropped for other partitions  (54,083)
+PASS  filter: about 287k never started  (289,460)
+PASS  filter: about 331k zero elapsed  (328,388)
+PASS  filter: never started + zero elapsed about 618k  (617,848)
+PASS  filter: too big for one node is 0.05% of jobs  (0.045%)
+PASS  filter: too big for one node is 1.1% of core-hours  (1.11%)
+PASS  filter: 1.66% of kept jobs capped at their time limit, median 16 s over  (1.661%, median 16 s, 99.85% timeout jobs)
+PASS  filter: 649 users in 94 accounts  (649 users, 94 accounts)
+PASS  filter: single-node jobs only, limits up to 7 days  (max time limit 7 d)
+
+== 2. sampling and conversion
+window      len seed split             p   jobs    load   err% warm-up users accts
+2024-01-15   1d    1 calibration  0.0388   5223  0.8500   0.00   0.321    62    35
+2024-01-30   1d    2 calibration  0.0302   6092  0.8558   0.68   0.992    97    38
+2024-02-12   1d    3 calibration  0.0334  10947  0.8501   0.01   0.432    67    31
+2024-02-26   1d    1 calibration  0.0213   2606  0.8516   0.19   0.475    52    35
+2024-03-12   1d    4 evaluation   0.0369  10623  0.8500   0.00   0.974    98    37
+2024-03-12   1d    5 evaluation   0.0335   9627  0.8506   0.08   1.086    99    39
+2024-04-09   1d    6 evaluation   0.0358  10728  0.8622   1.43   1.672    96    38
+2024-05-14   1d    7 evaluation   0.0286   6283  0.8501   0.01   0.662    92    36
+2024-06-11   1d    8 evaluation   0.0112   2267  0.8639   1.64   0.307    70    32
+2024-06-21   1d    2 evaluation   0.0375   7107  0.8510   0.11   0.756    88    35
+2024-02-05   3d    1 calibration  0.0307  21849  0.8500   0.00   0.707   124    40
+2024-04-22   3d    3 evaluation   0.0335  12273  0.8500   0.00   0.179   112    42
+PASS  sampling: 12 windows over 6 months, within ±5% of 0.85  (errors +0.00% to +1.64%)
+PASS  sampling: every jobs.csv and meta.json passes scripts/validate.py
+PASS  converter: every events file matches its jobs.csv (one node, --mem in MB, whole minutes), equal account shares
+sweep 1-day windows: 320 samples; sampler 100.0% within ±5% (max error 1.78%); plain Bernoulli 52.2% within ±5% (max error 52.0%)
+    jobs kept / expected at rate p, by job size as a share of the window's target core-hours: <0.1%: 1.02 (expected 1,463,211), 0.1-1%: 1.00 (expected 42,364), 1-5%: 0.99 (expected 1,935), 5-20%: 0.90 (expected 193), >20%: 1.01 (expected 9)
+sweep 3-day windows: 320 samples; sampler 100.0% within ±5% (max error 1.79%); plain Bernoulli 58.1% within ±5% (max error 22.3%)
+    jobs kept / expected at rate p, by job size as a share of the window's target core-hours: <0.1%: 1.00 (expected 4,931,997), 0.1-1%: 1.00 (expected 34,968), 1-5%: 1.04 (expected 1,857), 5-20%: 0.90 (expected 81)
+PASS  sampling sweep: every sample within ±5%  (640 samples over random 1- and 3-day windows, seeds 1-8)
+
+== 3. episodes (SPEC §9.3)
+PASS  episodes: episodes.csv passes scripts/validate.py
+W1: 55 episodes (18 calibration, 37 evaluation)
+W2: 84 episodes (38 calibration, 46 evaluation)
+W4: 19 episodes (8 calibration, 11 evaluation)
+W6: 182 episodes (60 calibration, 122 evaluation)
+PASS  episodes: every episode tagged calibration or evaluation by its onset
+PASS  episodes: W1 reproduces SPEC §9.3 (58 flood windows, 22 users, split 21/37)  (58 windows, 22 users, 21/37)
+PASS  episodes: W2 starting rule reproduces SPEC §9.3 (91 episodes)  (141 bins -> 91 episodes; with the B1 volume floor: 84 episodes)
+PASS  episodes: busiest 5 h are 12:00-17:00 UTC, with about 33% of core-hours (about 1.6x the average rate)  (32.7%, 1.57x)
+PASS  episodes: W4 sequences found  (19 sequences)
+PASS  episodes: counts and review recorded in results/b1/summary.md
+
+all B1 checks passed
+
+== 4. validators and unit tests
+OK    config/policies.conf
+OK    config/schedule.conf
+OK    config/adaptive.conf
+OK    examples/meta.json
+OK    examples/jobs.csv
+OK    examples/episodes.csv
+OK    examples/decisions.csv
+OK    examples/placements.csv
+Ran 47 tests in 0.143s
+
+OK

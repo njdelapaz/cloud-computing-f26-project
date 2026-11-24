@@ -20,7 +20,7 @@ The tracker for `ver_0.2`. `SPEC.md` says what to build, `WORKFLOW.md` says how,
 | A2 Switching | not started | |
 | A3 States | not started | |
 | A4 Placement plugin | not started | |
-| B1 Workloads | not started | |
+| B1 Workloads | ✅ done | Gate passed: `scripts/check_b1.sh` (results/b1/check_b1.txt). 22,856,847 jobs kept; samples land within +2% of 0.85; episodes W1 55, W2 84 (volume floor added in review), W4 19, W6 182. Spec follow-ups in results/b1/summary.md |
 | B2 Metrics | not started | |
 | B3 Runner | not started | |
 | P4 Static policies | not started | |

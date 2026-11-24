@@ -2,7 +2,8 @@
 """P1 speed probe: turn one window of the real trace into simulator input for the project cluster.
 
 This is a quick, single-purpose converter, used only to measure how fast the simulator runs on
-realistic load. B1 builds the real filter/sampler/converter (SPEC §9.2).
+realistic load. Superseded in B1 by workloads/convert/ (filter_trace.py, sample.py, to_sim.py);
+kept only so the P1 speed measurement can be reproduced.
 
 Output folder (default workloads/traces/p1_probe/):
   jobs.events      simulator events file
