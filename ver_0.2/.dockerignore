@@ -1,0 +1,8 @@
+# Keep the Docker build context small: only docker/ and third_party/ are needed
+dataset/
+.venv/
+results/
+workloads/traces/
+**/.git
+third_party/slurm_sim_tools/tutorials/
+third_party/slurm_sim_tools/doc/

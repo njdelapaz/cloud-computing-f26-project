@@ -1,0 +1,68 @@
+# Project cluster (SPEC §9): 16 nodes x 32 cores x 128 GB, one partition.
+# Template: scripts/sim_run.sh fills in the run directory and the priority weights.
+ClusterName=project
+AuthType=auth/none
+SlurmUser=slurm
+SlurmdUser=root
+ControlMachine=localhost
+ControlAddr=localhost
+FrontEndName=localhost
+ReturnToService=1
+MessageTimeout=60
+JobRequeue=0
+JobCredentialPrivateKey=@RUNDIR@/etc/slurm.key
+JobCredentialPublicCertificate=@RUNDIR@/etc/slurm.cert
+SlurmdParameters=config_overrides
+ProctrackType=proctrack/pgid
+SwitchType=switch/none
+TaskPlugin=task/none
+FirstJobId=1001
+UsePAM=0
+SlurmctldTimeout=300
+SlurmdTimeout=300
+InactiveLimit=0
+MinJobAge=300
+KillWait=30
+Waittime=0
+
+# Scheduling
+SchedulerType=sched/backfill
+SchedulerParameters=bf_interval=30,bf_max_job_test=1200,default_queue_depth=1200,bf_continue,sched_interval=60
+SelectType=@SELECT_TYPE@
+SelectTypeParameters=CR_Core_Memory
+
+# Priority (plugin and weights come from the run variant)
+PriorityType=@PRIORITY_TYPE@
+PriorityCalcPeriod=1
+PriorityDecayHalfLife=0-4
+PriorityMaxAge=0-1
+PriorityFavorSmall=NO
+@PRIORITY_WEIGHTS@
+
+# Logging
+SlurmctldDebug=info
+SlurmdDebug=info
+SlurmctldLogFile=@RUNDIR@/log/slurmctld.log
+SlurmdLogFile=@RUNDIR@/log/slurmd.log
+SlurmSchedLogFile=@RUNDIR@/log/sched.log
+SlurmSchedLogLevel=1
+SlurmctldPidFile=@RUNDIR@/var/slurmctld.pid
+SlurmdPidFile=@RUNDIR@/var/slurmd.pid
+SlurmdSpoolDir=@RUNDIR@/var/spool
+StateSaveLocation=@RUNDIR@/var/state
+JobCompType=jobcomp/filetxt
+JobCompLoc=@RUNDIR@/log/jobcomp.log
+
+# Accounting
+JobAcctGatherType=jobacct_gather/linux
+AccountingStorageType=accounting_storage/slurmdbd
+AccountingStorageEnforce=associations,limits,qos
+AccountingStorageHost=localhost
+PropagateResourceLimits=NONE
+VSizeFactor=0
+KillOnBadExit=1
+
+# Nodes and partition
+NodeName=DEFAULT RealMemory=128000 Procs=32 Sockets=2 CoresPerSocket=16 ThreadsPerCore=1
+NodeName=n[01-16]
+PartitionName=normal Nodes=n[01-16] Default=YES DefMemPerCPU=4000 MaxTime=7-00:00:00 State=UP

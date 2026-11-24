@@ -3,3 +3,13 @@ dataset/
 
 # Local Python virtual environment
 .venv/
+
+# Third-party sources cloned for the simulator build (pinned commits recorded in PROGRESS.md)
+third_party/
+
+# Raw simulation output (one folder per run) and build/run logs; summary files are kept
+results/*/*/
+results/*/*.log
+
+# Traces generated from dataset/ by scripts
+workloads/traces/

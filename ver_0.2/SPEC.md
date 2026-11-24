@@ -19,7 +19,7 @@ No single fixed configuration is best under every load. Fairness is about who go
 
 We will build two cooperating plugins and a controller:
 - `priority/adaptive` sets job **order**. Only fairness drives it.
-- `select/adaptive` sets job **placement**. Balance and utilization drive it.
+- `select/cons_tres_adaptive` sets job **placement**. Balance and utilization drive it.
 - The controller picks the active **policy**, meaning an ordering part plus a placement part. It decides automatically from observed system state, or follows a schedule of admin-defined time windows.
 
 We will then measure whether this beats any single static policy, and how much the switching costs.
@@ -28,7 +28,7 @@ We will then measure whether this beats any single static policy, and how much t
 
 | # | Goal | Done when |
 |---|------|-----------|
-| G1 | Two plugins forked from the simulator's Slurm 23.x source. **`priority/adaptive`**, a fork of `priority/multifactor`, takes its ordering weights from the active policy. **`select/adaptive`**, a fork of `select/cons_tres`, ranks candidate nodes by the active policy's placement score (§6.1) | With switching off and `BASE` loaded (stock ordering weights, placement weights 0), both job start order **and** node assignments are **identical** to stock multifactor + cons_tres on the same trace (regression check) |
+| G1 | Two plugins forked from the simulator's Slurm 23.11 source. **`priority/adaptive`**, a fork of `priority/multifactor`, takes its ordering weights from the active policy. **`select/cons_tres_adaptive`**, a fork of `select/cons_tres`, ranks candidate nodes by the active policy's placement score (§6.1). Its name has to contain "cons_tres": slurmctld turns on cons_tres-only code by checking `SelectType` for that string | With switching off and `BASE` loaded (stock ordering weights, placement weights 0), both job start order **and** node assignments are **identical** to stock multifactor + cons_tres on the same trace (regression check) |
 | G2 | Policy schedule with two modes, **override** (a scheduled window is active) and **auto** (no window, so the controller picks) | On a trace with a window `[t1, t2)`, the decision log shows override from t1 and auto from t2, both within one controller tick |
 | G3 | Policy-update mechanism (ordering and placement), overhead measurement, minimum wait time `T_min` | Switch cost, placement cost and disruption are measured (§8), and `T_min` is chosen by a rule written down **before** the sweep, with a plot supporting it |
 | G4 | System states that trigger switches, with no sampling while `T_min` blocks a switch | Decision log has zero state evaluations inside cooldown or override. Each trigger workload fires its intended state. The general workload rarely switches |
@@ -57,7 +57,7 @@ slurmctld
  │    ├─ controller: ticks every PriorityCalcPeriod and picks the active policy
  │    └─ ordering:   priority = Fairshare·f_fairshare + Age·f_age, weights from the active policy
  ├─ shared policy state (written by the controller, read by the placement scorer)
- └─ select/adaptive     (fork of select/cons_tres)
+ └─ select/cons_tres_adaptive   (fork of select/cons_tres)
       └─ placement:  when a job starts, or backfill tests where it would run,
                      rank the nodes that fit by the active policy's placement score
 ```
@@ -165,7 +165,7 @@ A policy is a mix of the three with coefficients `(c_F, c_B, c_U)` that sum to 1
 
 That makes 10 policies the controller switches to on a trigger, plus `BASE` as the resting state. In auto mode `BASE` runs whenever no signal is active, so auto equals the baseline until a trigger fires. The 0.6 / 0.3 / 0.1 split, the 90k Fairshare scale and the 10k Age floor are starting points, tuned in P4.
 
-### 6.1 Placement scoring (new in `select/adaptive`)
+### 6.1 Placement scoring (new in `select/cons_tres_adaptive`)
 When a single-node job fits on several nodes, each candidate node *n* gets a score:
 
 ```
@@ -230,7 +230,7 @@ All signals come from one in-memory snapshot of pending and running jobs, node s
    A placement change doesn't move anything already running, so its disruption shows up only in later waits and is caught by level 5.
 5. **End-to-end cost of switching:** forced alternation between two very different policies (`F` and `U`, which differ on both levers) every *P* ∈ {1 tick, 15 m, 30 m, 1 h, 2 h, 4 h}, compared with each one run statically. This isolates what switching costs from whether the decisions were any good.
 
-**Timing caveat:** the simulator virtualizes time. Phase P1 must confirm which clock (for example `CLOCK_MONOTONIC`) still reports real elapsed time, so that `swap_us` and `score_us` mean something.
+**Timing:** the simulator wraps `time()`, `gettimeofday()` and the sleep calls to return simulated time, but not `clock_gettime()`. So `swap_us` and `score_us` are measured with `CLOCK_MONOTONIC`, which stays real (confirmed in P1). Backfill cycles also advance the simulated clock by their real duration, so the scheduler's real CPU cost, the scorer's included, shows up in simulated time.
 
 **T_min selection:**
 - Sweep `T_min` ∈ {1 tick, 15 m, 30 m, 1 h, 2 h, 4 h, ∞} in auto mode, on the trigger workloads plus the general workload.
@@ -268,7 +268,7 @@ All workloads come from the real job trace in `dataset/`. There is no synthetic 
 | `alloccpus` | cores requested, on one node | |
 | `allocmem` | `--mem` (MB) | |
 | `timelimit` | `--time`, the requested walltime | |
-| `elapsed` | actual runtime the simulator replays | never above `timelimit` |
+| `elapsed` | actual runtime the simulator replays | capped at `timelimit`. 1.66% of kept jobs ran past their limit, by a median of 16 s (the kill grace period), and almost all are `timeout` jobs. Capped, they time out at the limit as they did for real |
 | `user`, `account` | user and account for fair-share | |
 | `partition` | not kept | every job goes to the single partition |
 | `state` | used only for filtering | failed and timed-out jobs still held resources, so they stay |
@@ -352,7 +352,7 @@ Report every metric as mean ± 95% CI across the 5 evaluation seeds. All plots c
 
 | # | Question | Decision |
 |---|---|---|
-| 1 | Simulator | Newer UB simulator, built on Slurm 23.x |
+| 1 | Simulator | UB simulator v3.0: `slurm_simulator` @ `f99a71e` and `slurm_sim_tools` @ `21ba58d`. The code is Slurm 23.11.0-0rc1 (per its `META` file), even though the branch is named `slurm-23-02-sim` |
 | 2 | What "balance" means | Even load across nodes, achieved through placement (§6.1) |
 | 3 | Override vs T_min | Override wins; a window's end starts a fresh cooldown |
 | 4 | Device utilization | CPU cores only; no GPUs in the project |
@@ -369,24 +369,23 @@ Report every metric as mean ± 95% CI across the 5 evaluation seeds. All plots c
 | 15 | Calibration vs evaluation | January–February for calibration, March–June for evaluation |
 | 16 | Episode-finding thresholds (§9.3) | Starting points; the episodes found get reviewed in B1 and the thresholds adjusted if they don't look like real floods or bursts |
 | 17 | What each policy controls | Fairness sets job order. Balance and utilization set node placement (§6) |
-| 18 | Placement mechanism | Custom node scoring in `select/adaptive`, a fork of `select/cons_tres` (§6.1) |
+| 18 | Placement mechanism | Custom node scoring in `select/cons_tres_adaptive`, a fork of `select/cons_tres` (§6.1). The name keeps "cons_tres" because slurmctld turns on cons_tres-only code by checking for that string (found in P1) |
 | 19 | Ordering in composites | Fairshare scales with fairness's coefficient; Age takes the rest, with a 10k floor (§6) |
+| 20 | Memory tracking | Confirmed in P1: with `CR_Core_Memory`, the simulator enforces memory per node |
 
 **Settled by later phases:**
-- Exact Slurm 23.x release inside the simulator: confirmed in P1.
-- Whether the simulator tracks memory as a consumable resource: confirmed in P1. Both placement terms and the utilization signal need it.
 - How the two plugins share the active policy inside slurmctld: settled in A2 and A4.
 - `MinDemand` for the balance and utilization signals: calibrated in P6 along with the thresholds.
 - W3 and W5 can only be found from `BASE` simulation runs (P6). If either turns out not to exist in the trace, what to do about it needs a decision then.
-- Window length per run: set once P1 measures simulator speed.
+- Window length per run: P1 measured about 11 minutes of real time per simulated day of submissions on the project cluster (about 530×). The length gets set along with the runner and run matrix (B3, P4).
 - X and Y for the T_min rule: set after P5.
 
 ## 12. Repository layout (all inside `ver_0.2/`)
 ```
 SPEC.md  WORKFLOW.md  PROGRESS.md
-docker/                      simulator image with priority/adaptive and select/adaptive compiled in
+docker/                      simulator image with priority/adaptive and select/cons_tres_adaptive compiled in
 plugin/priority_adaptive/    C source + build glue (ordering + controller)
-plugin/select_adaptive/      C source + build glue (placement scorer)
+plugin/select_cons_tres_adaptive/  C source + build glue (placement scorer)
 plugin/tests/                unit tests for decide() and score()
 config/                      slurm.conf, policies.conf, schedule.conf, adaptive.conf
 dataset/                     source trace (read-only, too large to commit)

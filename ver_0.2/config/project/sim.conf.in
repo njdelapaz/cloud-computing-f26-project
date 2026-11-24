@@ -1,0 +1,10 @@
+# Simulator settings (EventsFile and SecondsBeforeFirstJob are overwritten by `slurmsim run_sim`)
+TimeStart = @TIME_START@
+TimeStop = 0
+SecondsBeforeFirstJob = 30
+ClockScaling = 1.0
+EventsFile = @EVENTS@
+TimeAfterAllEventsDone = 30
+FirstJobDelay = 0.0
+CompJobDelay = 0.0
+TimeLimitDelay = 0.0

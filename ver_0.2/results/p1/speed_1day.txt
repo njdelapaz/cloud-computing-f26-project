@@ -1,0 +1,16 @@
+{
+  "window_start_utc": "2024-01-15",
+  "days": 1.0,
+  "time_start": 1705276800,
+  "seed": 1,
+  "target_load": 0.85,
+  "sampling_rate": 0.03779928805514308,
+  "jobs_in_window": 80922,
+  "jobs_sampled": 3028,
+  "users": 54,
+  "accounts": 36,
+  "offered_core_hours": 9792.02638888889
+}
+[INFO] Simulated time: 4 days, 4:01:34.741675
+[INFO] Real time: 0:11:20.410158
+[INFO] Acceleration: 529.231872

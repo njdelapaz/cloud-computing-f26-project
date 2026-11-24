@@ -1,0 +1,10 @@
+modify QOS set normal Priority=0
+add cluster Name=smoke Fairshare=1 QOS=normal
+add account name=account1 Fairshare=100
+add account name=account2 Fairshare=100
+add user name=admin DefaultAccount=account1 MaxSubmitJobs=1000 AdminLevel=Administrator
+add user name=user1 DefaultAccount=account1 MaxSubmitJobs=1000
+add user name=user2 DefaultAccount=account1 MaxSubmitJobs=1000
+add user name=user3 DefaultAccount=account2 MaxSubmitJobs=1000
+add user name=user4 DefaultAccount=account2 MaxSubmitJobs=1000
+list associations format=Account,Cluster,User,Fairshare tree withd
