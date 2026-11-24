@@ -103,4 +103,4 @@ Trace profiling, done with one-off scripts that aren't saved in the repo. B1's g
 | 2026-11-24 | `a28fe3a` | Workloads moved to the real trace; cluster made CPU-only; `.gitignore` for `dataset/` and `.venv/` |
 | 2026-11-24 | `ec1037c` | Policies split into ordering (fairness) and placement (balance, utilization); sign-offs recorded |
 | 2026-11-24 | `d40689a` | P0 finished: draft merged into `SPEC.md`, `SPEC.proposed.md` removed, `PROGRESS.md` created |
-| 2026-11-24 | — | P1 finished: simulator image, smoke configs and checks, do-nothing plugin forks, speed probe |
+| 2026-11-24 | `bebf49e` | P1 finished: simulator image, smoke configs and checks, do-nothing plugin forks, speed probe |
