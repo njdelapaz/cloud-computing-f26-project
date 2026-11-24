@@ -1,0 +1,5 @@
+# Source job trace (several GB; individual files exceed GitHub's 100 MB limit)
+dataset/
+
+# Local Python virtual environment
+.venv/
