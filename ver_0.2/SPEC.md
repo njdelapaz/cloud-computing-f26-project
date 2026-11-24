@@ -87,45 +87,16 @@ every PriorityCalcPeriod (simulator clock):
 **Testability:** the decision logic is a pure function `decide(snapshot, config, now, controller_state) → decision`, and the node scorer is a pure function `score(job, node_state, policy) → number`. Neither uses Slurm locks or globals, so both can be unit-tested outside slurmctld.
 
 ### 4.1 Config files (`ver_0.2/config/`)
-The plugins read these at startup and on `scontrol reconfigure`.
-
-`policies.conf` (one policy per line, in slurm.conf-style key=value pairs; full set in §6):
-```
-PolicyName=BASE    Age=20000 Fairshare=70000 JobSize=10000 Spread=0    Fit=0      # stock-style order, stock placement
-PolicyName=F       Fairshare=90000 Age=10000               Spread=0    Fit=0      # fairness order, stock placement
-PolicyName=B       Fairshare=0     Age=100000              Spread=1.00 Fit=0
-PolicyName=U       Fairshare=0     Age=100000              Spread=0    Fit=1.00
-PolicyName=F>B>U   Fairshare=54000 Age=46000               Spread=0.75 Fit=0.25
-...
-```
-
-`schedule.conf` (override windows; overlapping windows are rejected at load):
-```
-Window Start=2024-04-08T12:00:00 End=2024-04-08T17:00:00 Policy=U      # one-off
-Window Daily=12:00-17:00 Policy=U                                       # recurring (the trace's daily peak, UTC)
-```
-
-`adaptive.conf`:
-```
-TMin=60min
-DefaultPolicy=BASE
-Signal=fairness    Enter=0.40 Exit=0.30
-Signal=balance     Enter=0.50 Exit=0.35
-Signal=util        Enter=0.25 Exit=0.15
-MinDemand=0.10
-QueuePressureMin=0.5
-LogFile=/path/decisions.csv
-PlacementLog=/path/placements.csv     # optional
-```
-(These numbers are placeholders. Thresholds get calibrated in workflow phase P6.)
+The plugins read these at startup and on `scontrol reconfigure`. The exact grammar and rules are in §13.1.
+- **`policies.conf`:** one line per policy, with its ordering weights (`Fairshare`, `Age`, `JobSize`) and placement weights (`Spread`, `Fit`). `scripts/make_policies.py` generates it from the §6 mapping.
+- **`schedule.conf`:** override windows, one-off or daily.
+- **`adaptive.conf`:** controller settings. These are file paths, `TMin`, `DefaultPolicy`, signal thresholds, log paths, and two experiment modes (`FixedPolicy` for static runs, `ForceAlternate` for P5).
 
 ### 4.2 Logs
-**Decision log** (CSV, one row per tick):
-`sim_time, mode, eligible, sampled, s_fairness, s_balance, s_util, queue_pressure, node_load_sd, active_policy, chosen_policy, switched, swap_us, pending_jobs`
-
-When a switch changes the ordering weights, the plugin can optionally dump the pending queue's priority order just before and after it (used for churn analysis, §8).
-
-**Placement log** (optional, one row per job start): `sim_time, job, chosen_node, score, candidates, score_us`.
+- **Decision log:** CSV, one row per controller tick.
+- **Placement log:** CSV, one row per job start, optional.
+- Columns and rules for both are in §13.3.
+- When a switch changes the ordering weights, the plugin can also dump the pending queue's priority order just before and after it, for churn analysis (§8).
 
 ---
 
@@ -372,6 +343,7 @@ Report every metric as mean ± 95% CI across the 5 evaluation seeds. All plots c
 | 18 | Placement mechanism | Custom node scoring in `select/cons_tres_adaptive`, a fork of `select/cons_tres` (§6.1). The name keeps "cons_tres" because slurmctld turns on cons_tres-only code by checking for that string (found in P1) |
 | 19 | Ordering in composites | Fairshare scales with fairness's coefficient; Age takes the rest, with a 10k floor (§6) |
 | 20 | Memory tracking | Confirmed in P1: with `CR_Core_Memory`, the simulator enforces memory per node |
+| 21 | Interfaces | Config grammars, data and log formats, controller edge cases and metric definitions are in §13 (P2) |
 
 **Settled by later phases:**
 - How the two plugins share the active policy inside slurmctld: settled in A2 and A4.
@@ -387,6 +359,9 @@ docker/                      simulator image with priority/adaptive and select/c
 plugin/priority_adaptive/    C source + build glue (ordering + controller)
 plugin/select_cons_tres_adaptive/  C source + build glue (placement scorer)
 plugin/tests/                unit tests for decide() and score()
+scripts/                     run, check, generate and validate scripts
+tests/                       Python unit tests (validators, later metrics)
+examples/                    small example of every data and log format (§13)
 config/                      slurm.conf, policies.conf, schedule.conf, adaptive.conf
 dataset/                     source trace (read-only, too large to commit)
 workloads/convert/           trace filter, random-job sampler, simulator converter
@@ -396,6 +371,119 @@ experiments/                 run-matrix definitions + runner
 analysis/                    metrics + plots
 results/                     raw per-run output + summary tables
 ```
+
+## 13. Interfaces (P2)
+Every format below has a validator in `scripts/validate.py` and an example file in `config/` or `examples/`. `scripts/check_p2.sh` checks them all and runs the unit tests in `tests/`.
+
+### 13.1 Config files
+All three use one entry per line. `#` starts a comment, blank lines are ignored, and `Key=Value` tokens are separated by spaces.
+
+**`policies.conf`** must define all 11 policies of §6:
+
+| Key | Type | Rule |
+|---|---|---|
+| `PolicyName` | name | letters, digits, `_`, `-` and `>`; unique |
+| `Fairshare`, `Age`, `JobSize` | integer ≥ 0 | sum to 100,000. `JobSize` is 0 except in `BASE` |
+| `Spread`, `Fit` | number in [0, 1] | sum to 1, or both 0 for stock placement. `BASE` always uses stock placement |
+
+**`schedule.conf`** (times are UTC on the simulator clock; an empty file means no overrides):
+- `Window Start=YYYY-MM-DDTHH:MM:SS End=YYYY-MM-DDTHH:MM:SS Policy=<name>` is a one-off window.
+- `Window Daily=HH:MM-HH:MM Policy=<name>` repeats every day and can't cross midnight.
+- Each window must end after it starts and name a known policy. No two windows may overlap, whether daily or one-off.
+
+**`adaptive.conf`:**
+
+| Key | Required | Rule |
+|---|---|---|
+| `PoliciesFile`, `ScheduleFile` | yes | paths |
+| `TMin` | yes | a duration such as `90s`, `15min` or `2h`; a whole multiple of `PriorityCalcPeriod` |
+| `DefaultPolicy` | yes | a known policy |
+| `Signal=<name> Enter=<x> Exit=<y>` | one line each for `fairness`, `balance` and `util` | 0 ≤ Exit < Enter ≤ 1 |
+| `MinDemand` | yes | in [0, 1] |
+| `QueuePressureMin` | yes | ≥ 0 |
+| `LogFile` | yes | where the decision log goes |
+| `PlacementLog` | no | where the placement log goes; no placement log when absent |
+| `FixedPolicy` | no | pins one policy for the whole run (static runs, mode `FIXED`) |
+| `ForceAlternate=A,B` with `ForcePeriod` | no | switches between two policies every period (P5, mode `FORCED`) |
+
+`FixedPolicy` and `ForceAlternate` can't both be set.
+
+**Controller rules these formats encode (decided in P2):**
+- At the start of a run no switch has happened yet, so the controller is eligible on its first tick.
+- When an override window starts, its policy takes over at once, even during a cooldown. When it ends, the controller switches back to `DefaultPolicy` at once and starts a fresh cooldown.
+- In `OVERRIDE`, `FIXED` and `FORCED` mode the controller never samples state.
+
+### 13.2 Data files (written in B1)
+**`jobs.csv`** is the neutral trace: one row per job, sorted by submit time.
+
+| Column | Type | Rule |
+|---|---|---|
+| `job_id` | integer | 1, 2, 3, … in file order |
+| `submit` | integer | Unix seconds (UTC), inside the window |
+| `user`, `account` | text | from the trace |
+| `cores` | integer | 1–32 |
+| `mem_mb` | integer | 1–128,000 |
+| `time_limit_s` | integer | ≥ 60 and in whole minutes; the simulator takes minutes, so the converter rounds up |
+| `runtime_s` | integer | from 1 up to `time_limit_s` (capped, §9.2) |
+| `src_jobid`, `src_partition`, `src_state` | text | where the job came from in the trace; the partition is `htc`, `htc_highmem` or `hpc` |
+
+**`meta.json`**, one per sampled window, holds:
+- `window_start` and `window_end`, the submit window in Unix seconds
+- `warmup_end`: jobs submitted before it are excluded from metrics
+- `seed`, `sampling_rate` in (0, 1], and `target_load` in (0, 1]
+- the counts `jobs`, `users` and `accounts`, which must match `jobs.csv`
+
+**`episodes.csv`** has these columns:
+- `episode_id`, a unique integer
+- `workload`, W1–W6
+- `signal`: `fairness`, `balance`, `util` or `none`
+- `onset` and `end` in Unix seconds, with `end` after `onset`
+- `detail`, free text such as `user=user0023`
+
+### 13.3 Logs (written by the plugins)
+**Decision log**, one row per controller tick:
+
+| Column | Rule |
+|---|---|
+| `sim_time` | Unix seconds, never decreasing |
+| `mode` | `AUTO`, `OVERRIDE`, `FIXED` or `FORCED` |
+| `eligible` | 1 only in `AUTO`, once the cooldown has passed |
+| `sampled` | 1 only when `eligible` is 1 (G4) |
+| `s_fairness`, `s_balance`, `s_util` | in [0, 1] when sampled, empty otherwise |
+| `queue_pressure` | ≥ 0 when sampled, empty otherwise |
+| `node_load_sd` | in [0, 0.5] when sampled, empty otherwise |
+| `active_policy` | the policy in force before the tick, which is the previous row's `chosen_policy` |
+| `chosen_policy` | the policy in force after the tick |
+| `switched` | 1 exactly when `chosen_policy` differs from `active_policy`. In `AUTO` a switch needs sampling, except on the tick right after a window ends |
+| `swap_us` | real microseconds (`CLOCK_MONOTONIC`) spent switching; empty when nothing switched |
+| `pending_jobs` | integer ≥ 0 |
+
+**Placement log**, one row per job start:
+- `sim_time`, `job_id` (each job appears once), `policy` and `chosen_node`
+- `score`: in [0, 1], or empty when the policy uses stock placement
+- `candidates`: the number of nodes the job fit on, at least 1
+- `score_us`: real microseconds spent scoring, 0 for stock placement
+
+### 13.4 Metric definitions (B2 implements them)
+Job metrics cover the **measured jobs**, those submitted between `warmup_end` and `window_end`. Time-averaged metrics integrate over [`warmup_end`, `window_end`).
+
+| Metric | Definition |
+|---|---|
+| wait | start − submit, in seconds |
+| bounded slowdown | max(1, (wait + runtime) ÷ max(runtime, 10 s)) |
+| **Fairness:** Jain index | (Σ xᵤ)² ÷ (n · Σ xᵤ²), where xᵤ is user u's mean bounded slowdown, over the n users with measured jobs. 1 means perfectly even |
+| **Fairness:** wait spread | the worst user's mean wait ÷ the best user's mean wait |
+| node load Lₙ(t) | max(allocated cores ÷ 32, allocated memory ÷ 128 GB) on node n |
+| **Balance:** load SD | time average of the standard deviation of Lₙ(t) across the 16 nodes |
+| **Balance:** max load | time average of maxₙ Lₙ(t) |
+| **Utilization:** cores | ∫ allocated cores dt ÷ (512 × window length). Memory utilization is the same with 2 TB |
+| **Utilization:** stranded core-hours | ∫ free cores on nodes whose free memory per free core is below the median memory per core of the jobs pending at that moment, counted only while jobs are pending |
+| makespan | last end − first submit, over measured jobs |
+| throughput | finished measured jobs per day of makespan |
+| general | mean, median, p95 and max wait; mean bounded slowdown |
+| overhead | switch count; mean, p95 and max of `swap_us` and `score_us`; churn |
+| churn | Kendall-τ distance between the pending order just before and just after a switch: the share of job pairs whose order flipped |
+| confidence interval | mean ± t₀.₉₇₅,₄ × s ÷ √5 over the 5 evaluation seeds (t = 2.776) |
 
 ---
 

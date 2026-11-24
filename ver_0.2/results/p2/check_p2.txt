@@ -1,0 +1,12 @@
+config/policies.conf: up to date
+OK    config/policies.conf
+OK    config/schedule.conf
+OK    config/adaptive.conf
+OK    examples/meta.json
+OK    examples/jobs.csv
+OK    examples/episodes.csv
+OK    examples/decisions.csv
+OK    examples/placements.csv
+Ran 30 tests in 0.006s
+
+OK

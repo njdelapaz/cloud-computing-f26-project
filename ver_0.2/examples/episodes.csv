@@ -1,0 +1,4 @@
+episode_id,workload,signal,onset,end,detail
+1,W1,fairness,1705298400,1705320000,user=user0023
+2,W2,util,1705334400,1705356000,mem_heavy_share=0.41
+3,W6,none,1705320000,1705338000,daily_peak=12:00-17:00

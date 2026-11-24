@@ -13,3 +13,6 @@ results/*/*.log
 
 # Traces generated from dataset/ by scripts
 workloads/traces/
+
+# Python bytecode
+__pycache__/
