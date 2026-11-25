@@ -4,7 +4,7 @@
 # scripts/check_a1.py. Takes about 10 min.
 # Usage (from anywhere): ver_0.2/scripts/check_a1.sh
 # Optional environment:
-#   IMAGE  simulator image (default ver02/slurm-sim:vclock, built from docker/Dockerfile if missing)
+#   IMAGE  simulator image (default ver02/slurm-sim:a2, built from docker/Dockerfile if missing)
 #   PROBE  set to 1 to also run the one-day probe trace (stock twice, adaptive once, about 11 min
 #          each) for the non-gating run-to-run spread report. Needs workloads/traces/p1_probe/
 #          (scripts/p1_speed_probe.py --start 2024-01-15 --days 1).
@@ -12,7 +12,7 @@
 set -euo pipefail
 VER02="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$VER02"
-export IMAGE="${IMAGE:-ver02/slurm-sim:vclock}" RESULTS=results/a1
+export IMAGE="${IMAGE:-ver02/slurm-sim:a2}" RESULTS=results/a1
 mkdir -p results/a1
 
 docker image inspect "$IMAGE" >/dev/null 2>&1 || docker build -f docker/Dockerfile -t "$IMAGE" .

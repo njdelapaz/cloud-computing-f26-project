@@ -5,7 +5,7 @@
 # Checks are listed in scripts/vclock.py (gate). All runs go in parallel; takes about 30 min (the two-day samples take longest).
 # Usage (from anywhere): ver_0.2/scripts/check_vclock.sh
 # Optional environment:
-#   IMAGE      simulator image (default ver02/slurm-sim:vclock, built from docker/Dockerfile if missing)
+#   IMAGE      simulator image (default ver02/slurm-sim:a2, built from docker/Dockerfile if missing)
 #   REAL_RUNS  real-clock runs of the probe day to compare against (not gating; default: every
 #              results/vclock/rf_probe_* folder present, the real-clock runs of the calibration)
 #   SENS       set to 1 to also run the probe day with every cost halved and doubled (not gating)
@@ -16,7 +16,7 @@
 set -euo pipefail
 VER02="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$VER02"
-export IMAGE="${IMAGE:-ver02/slurm-sim:vclock}" RESULTS=results/vclock
+export IMAGE="${IMAGE:-ver02/slurm-sim:a2}" RESULTS=results/vclock
 mkdir -p results/vclock
 
 scripts/sim_patch.sh check

@@ -1,5 +1,5 @@
 # Lean image for the UB Slurm simulator v3.0 (P1).
-# Build from ver_0.2/:   docker build -f docker/Dockerfile -t ver02/slurm-sim:vclock .
+# Build from ver_0.2/:   docker build -f docker/Dockerfile -t ver02/slurm-sim:a2 .
 # Sources come from third_party/ (pinned commits recorded in PROGRESS.md):
 #   third_party/slurm_simulator  ubccr-slurm-simulator/slurm_simulator @ f99a71e (branch slurm-23-02-sim)
 #   third_party/slurm_sim_tools  ubccr-slurm-simulator/slurm_sim_tools @ 21ba58d (branch v3.0-branch)

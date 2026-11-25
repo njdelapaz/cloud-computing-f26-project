@@ -223,7 +223,7 @@ Full write-up: `results/b2/summary.md`.
   - Ten metric details SPEC leaves open, including the queue-dump format for churn, are proposed in the summary and await a decision.
 
 ### A2: switching
-Full write-up: `results/a2/summary.md`. Image: `ver02/slurm-sim:a2`.
+Full write-up: `results/a2/summary.md`. Image: `ver02/slurm-sim:a2`, with both simulator patches; since the merge it is the default for every script.
 - **Code:**
   - `plugin/priority_adaptive/adaptive_ctl.c`: the pure `decide(snapshot, config, now, controller_state)`
   - `_controller_tick()` in the decay loop: decides, hot-swaps, logs
@@ -247,6 +247,20 @@ Full write-up: `results/a2/summary.md`. Image: `ver02/slurm-sim:a2`.
   - Fix: `docker/patches/sim_decay_time.patch` for stock, and the same line in the fork. A job's age term now grows as `PriorityMaxAge` predicts. `B>U>F` now differs from `F` on 35 of 41 jobs (`F` and `EQ` still agree on that small trace).
   - New probe-day baseline (stock BASE): mean wait 815 s and p95 3,361 s, against 847 s and 2,137 s before.
   - Evidence: `results/a2/decay_probe.txt`; write-up in `results/a2/summary.md`.
+
+### After merging A2 and B2
+- **Image:** every script now defaults to `ver02/slurm-sim:a2`. Its patches and plugin sources match merged `dev` file for file.
+- **Gates rerun on merged `dev`:** P1 7 of 7, A1 5 of 5, vclock 4 of 4, A2 6 of 6, B2 pass, with 72 Python unit tests (A2's 50 plus B2's 22). Every gating line matches A2's reruns on the same image (`results/a2/check_*_on_a2.txt`); only real-time figures differ. The committed result files are unchanged.
+- **B2's metrics after the decay fix** (stock BASE, virtual clock):
+
+  | Run | Mean / p95 wait (s) | Stranded core-h | Jain |
+  |---|---|---|---|
+  | 01-30 seed 2 | 5,711 / 25,430 | 3,072 | 0.10 |
+  | 02-12 seed 3 | 56 / 490 | 256 | 0.13 |
+  | probe day | 815 / 3,361 | 859 | 0.04 |
+
+  `results/b2/` still holds the numbers from before the fix. Wait spread is still infinite on all three runs.
+- **Stale fidelity reference:** the real-clock calibration runs (`results/vclock/rf_probe_*`) and the cost-sensitivity runs predate the decay fix. So `check_vclock.sh`'s fidelity INFO now compares the fixed virtual clock against unfixed real-clock runs. On the median it still falls inside their range; on mean (815 against 831–902), p95 (3,361 against 2,048–3,357) and jobs waiting over 60 s (982 against 845–891) it falls outside. That doesn't gate. Refreshing it needs the four real-clock probe-day runs redone on the fixed image.
 
 ## Change log
 

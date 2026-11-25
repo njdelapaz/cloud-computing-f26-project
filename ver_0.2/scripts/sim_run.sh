@@ -6,7 +6,7 @@
 #   ACCT          dir holding users.sim and sacctmgr.script (default: CONFIG)
 #   RESULTS       results dir (default results/p1)
 #   TIME_START    simulated start time, Unix seconds (default 1704067200 = 2024-01-01 UTC)
-#   IMAGE         simulator image (default ver02/slurm-sim:vclock, built from docker/Dockerfile)
+#   IMAGE         simulator image (default ver02/slurm-sim:a2, built from docker/Dockerfile)
 #   ADAPTIVE      adaptive.conf to use, relative to ver_0.2/ (plugins=adaptive only). The run's etc/
 #                 gets a copy, plus copies of the PoliciesFile and ScheduleFile it names; those paths
 #                 are pointed at etc/, and LogFile/PlacementLog at log/. priority/adaptive then takes
@@ -24,7 +24,7 @@ set -euo pipefail
 
 VER02="$(cd "$(dirname "$0")/.." && pwd)"
 NAME="$1"; WEIGHTS="$2"; EVENTS="$3"; PLUGINS="${4:-stock}"
-IMAGE="${IMAGE:-ver02/slurm-sim:vclock}"
+IMAGE="${IMAGE:-ver02/slurm-sim:a2}"
 CONFIG="${CONFIG:-config/smoke}"; ACCT="${ACCT:-$CONFIG}"; RESULTS="${RESULTS:-results/p1}"
 TIME_START="${TIME_START:-1704067200}"
 ADAPTIVE_SET="${ADAPTIVE_SET:-}"
