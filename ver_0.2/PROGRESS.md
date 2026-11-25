@@ -286,4 +286,5 @@ Full write-up: `results/a2/summary.md`. Image: `ver02/slurm-sim:a2`, with both s
 | 2026-11-24 | `b56f5c4` | A2: the simulator's frozen decay time is fixed (`docker/patches/sim_decay_time.patch` for stock multifactor, and the same line in the fork; `scripts/sim_patch.sh` takes a patch name). P1, A1, vclock and A2 gates rerun on the fixed image and passing (A2 session) |
 | 2026-11-24 | `3e02198` | SPEC §11 #1, new §11 #24 and §12 record the decay-time patch (the user's decision; A2 session) |
 | 2026-11-24 | `2c36c33` | B2 merged into `dev` |
-| 2026-11-24 | — | A2 merged into `dev` |
+| 2026-11-24 | `6463937` | A2 merged into `dev` |
+| 2026-11-24 | `e5fe61c` | Every script defaults to `ver02/slurm-sim:a2`; all five gates rerun on merged `dev` and passing |
