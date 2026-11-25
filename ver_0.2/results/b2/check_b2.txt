@@ -1,0 +1,187 @@
+== 1. hand trace (tests/data/b2, derivation in its README.md)
+  run                        hand      b2_tiny  computed      b2_tiny  ok
+  window_s                   hand         1000  computed         1000  ok
+  cluster_nodes              hand            3  computed            3  ok
+  cluster_cores              hand           12  computed           12  ok
+  cluster_mem_mb             hand        48000  computed        48000  ok
+  jobs_total                 hand            7  computed            7  ok
+  jobs_measured              hand            5  computed            5  ok
+  jobs_missing               hand            0  computed            0  ok
+  trace_mismatches           hand            0  computed            0  ok
+  runtime_source             hand     jobs.csv  computed     jobs.csv  ok
+  users_measured             hand            3  computed            3  ok
+  wait_mean_s                hand           86  computed           86  ok
+  wait_median_s              hand          100  computed          100  ok
+  wait_p95_s                 hand          168  computed          168  ok
+  wait_max_s                 hand          170  computed          170  ok
+  bsld_mean                  hand      1.15361  computed      1.15361  ok
+  fair_jain_bsld             hand     0.998368  computed     0.998368  ok
+  fair_wait_spread           hand          3.4  computed          3.4  ok
+  fair_wait_worst_user_s     hand          170  computed          170  ok
+  fair_wait_best_user_s      hand           50  computed           50  ok
+  makespan_s                 hand         1100  computed         1100  ok
+  throughput_per_day         hand      392.727  computed      392.727  ok
+  bal_load_sd                hand     0.249194  computed     0.249194  ok
+  bal_load_max               hand       0.9875  computed       0.9875  ok
+  util_cores                 hand     0.675333  computed     0.675333  ok
+  util_mem                   hand     0.293833  computed     0.293833  ok
+  stranded_core_h            hand    0.0555556  computed    0.0555556  ok
+  switches                   hand            4  computed            4  ok
+  swap_us_mean               hand          825  computed          825  ok
+  swap_us_p95                hand          985  computed          985  ok
+  swap_us_max                hand         1000  computed         1000  ok
+  placements_n               hand            5  computed            5  ok
+  score_n                    hand            3  computed            3  ok
+  score_us_mean              hand           17  computed           17  ok
+  score_us_p95               hand           24  computed           24  ok
+  score_us_max               hand           25  computed           25  ok
+  churn_n                    hand            1  computed            1  ok
+  churn_mean                 hand            1  computed            1  ok
+  churn_max                  hand            1  computed            1  ok
+  sched_n                    hand            9  computed            9  ok
+  sched_us_mean              hand      161.111  computed      161.111  ok
+  sched_us_p95               hand          280  computed          280  ok
+  sched_us_max               hand          300  computed          300  ok
+  sched_us_before_switch     hand          140  computed          140  ok
+  sched_us_after_switch      hand        197.5  computed        197.5  ok
+  bf_n                       hand            8  computed            8  ok
+  bf_us_mean                 hand          525  computed          525  ok
+  bf_us_p95                  hand        682.5  computed        682.5  ok
+  bf_us_max                  hand          700  computed          700  ok
+  bf_us_before_switch        hand          425  computed          425  ok
+  bf_us_after_switch         hand          625  computed          625  ok
+PASS  hand trace, every column: 51 of 51 match
+
+== 2. examples/ decision and placement logs (no window)
+  switches                   hand            4  computed            4  ok
+  swap_us_mean               hand        799.5  computed        799.5  ok
+  swap_us_p95                hand       810.35  computed       810.35  ok
+  swap_us_max                hand          812  computed          812  ok
+PASS  examples/decisions.csv: 4 of 4 match
+  placements_n               hand            7  computed            7  ok
+  score_n                    hand            3  computed            3  ok
+  score_us_mean              hand      12.3333  computed      12.3333  ok
+  score_us_p95               hand         13.8  computed         13.8  ok
+  score_us_max               hand           14  computed           14  ok
+PASS  examples/placements.csv: 5 of 5 match
+
+== 3. absent logs give empty values
+PASS  only jobcomp.log: 24 of 24 overhead columns empty, 16 of 16 job and node metrics unchanged
+
+== INFO: real virtual-clock runs (not gating)
+INFO  s0130_stock_1 (2024-01-30_1d_w1d_s2): 6092 completion records, meta.json says 6092 jobs, jobs_missing 0, trace_mismatches 0, runtimes from jobs.csv
+  jobs_measured              3716
+  users_measured             61
+  wait_mean_s                6524.96
+  wait_median_s              2606
+  wait_p95_s                 20192.8
+  wait_max_s                 129166
+  bsld_mean                  35.8275
+  fair_jain_bsld             0.096103
+  fair_wait_spread           inf
+  fair_wait_worst_user_s     122639
+  fair_wait_best_user_s      0
+  bal_load_sd                0.0572491
+  bal_load_max               0.999875
+  util_cores                 0.747523
+  util_mem                   0.934509
+  stranded_core_h            3047.75
+  makespan_s                 582329
+  throughput_per_day         551.342
+  sched_n                    6955
+  sched_us_mean              2793.65
+  sched_us_p95               6684.1
+  sched_us_max               12686
+  bf_n                       2868
+  bf_us_mean                 78748.5
+  bf_us_p95                  267373
+  bf_us_max                  588325
+  cross-check util_cores     metrics.py 0.747522809  per-second 0.747522809  agree
+  cross-check util_mem       metrics.py 0.934509415  per-second 0.934509415  agree
+  cross-check bal_load_sd    metrics.py 0.0572490801  per-second 0.0572490801  agree
+  cross-check bal_load_max   metrics.py 0.999874797  per-second 0.999874797  agree
+  cross-check stranded_core_h metrics.py 3047.75306  per-second 3047.75306  agree
+  cross-check wait_mean_s    metrics.py 6524.96313  per-second 6524.96313  agree
+  cross-check wait_median_s  metrics.py 2606  per-second 2606  agree
+  cross-check wait_p95_s     metrics.py 20192.75  per-second 20192.75  agree
+  cross-check wait_max_s     metrics.py 129166  per-second 129166  agree
+INFO  s0212_stock_1 (2024-02-12_1d_w1d_s3): 10947 completion records, meta.json says 10947 jobs, jobs_missing 0, trace_mismatches 0, runtimes from jobs.csv
+  jobs_measured              6654
+  users_measured             54
+  wait_mean_s                50.5989
+  wait_median_s              1
+  wait_p95_s                 498.7
+  wait_max_s                 4987
+  bsld_mean                  1.25462
+  fair_jain_bsld             0.125473
+  fair_wait_spread           inf
+  fair_wait_worst_user_s     4987
+  fair_wait_best_user_s      0
+  bal_load_sd                0.276146
+  bal_load_max               0.999722
+  util_cores                 0.635261
+  util_mem                   0.66607
+  stranded_core_h            220.307
+  makespan_s                 325344
+  throughput_per_day         1767.07
+  sched_n                    11138
+  sched_us_mean              247.757
+  sched_us_p95               759
+  sched_us_max               10457
+  bf_n                       446
+  bf_us_mean                 6774.08
+  bf_us_p95                  17484.2
+  bf_us_max                  24975
+  cross-check util_cores     metrics.py 0.635261253  per-second 0.635261253  agree
+  cross-check util_mem       metrics.py 0.666069944  per-second 0.666069944  agree
+  cross-check bal_load_sd    metrics.py 0.276146372  per-second 0.276146372  agree
+  cross-check bal_load_max   metrics.py 0.999721672  per-second 0.999721672  agree
+  cross-check stranded_core_h metrics.py 220.306944  per-second 220.306944  agree
+  cross-check wait_mean_s    metrics.py 50.5988879  per-second 50.5988879  agree
+  cross-check wait_median_s  metrics.py 1  per-second 1  agree
+  cross-check wait_p95_s     metrics.py 498.7  per-second 498.7  agree
+  cross-check wait_max_s     metrics.py 4987  per-second 4987  agree
+INFO  pr_stock_1 (p1_probe): 3028 completion records, jobs_missing —, trace_mismatches —, runtimes from jobcomp
+  jobs_measured              3028
+  users_measured             54
+  wait_mean_s                846.925
+  wait_median_s              2
+  wait_p95_s                 2136.3
+  wait_max_s                 56509
+  bsld_mean                  19.7792
+  fair_jain_bsld             0.0432435
+  fair_wait_spread           inf
+  fair_wait_worst_user_s     14840.6
+  fair_wait_best_user_s      0
+  bal_load_sd                0.250467
+  bal_load_max               0.976981
+  util_cores                 0.519104
+  util_mem                   0.625126
+  stranded_core_h            891.479
+  makespan_s                 359695
+  throughput_per_day         727.336
+  sched_n                    5784
+  sched_us_mean              442.892
+  sched_us_p95               1306.85
+  sched_us_max               11287
+  bf_n                       1137
+  bf_us_mean                 19354.8
+  bf_us_p95                  50625.4
+  bf_us_max                  135141
+  cross-check util_cores     metrics.py 0.519103574  per-second 0.519103574  agree
+  cross-check util_mem       metrics.py 0.625126445  per-second 0.625126445  agree
+  cross-check bal_load_sd    metrics.py 0.25046721  per-second 0.25046721  agree
+  cross-check bal_load_max   metrics.py 0.976980892  per-second 0.976980892  agree
+  cross-check stranded_core_h metrics.py 891.479167  per-second 891.479167  agree
+  cross-check wait_mean_s    metrics.py 846.925033  per-second 846.925033  agree
+  cross-check wait_median_s  metrics.py 2  per-second 2  agree
+  cross-check wait_p95_s     metrics.py 2136.3  per-second 2136.3  agree
+  cross-check wait_max_s     metrics.py 56509  per-second 56509  agree
+INFO  wrote results/b2/real_runs.csv (3 rows)
+
+B2 gate: PASS
+
+== unit tests
+Ran 69 tests in 0.186s
+
+OK
