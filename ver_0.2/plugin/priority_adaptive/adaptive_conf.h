@@ -1,5 +1,5 @@
 /*
- * ver_0.2: parser for adaptive.conf and policies.conf (SPEC §13.1).
+ * ver_0.2: parser for adaptive.conf, policies.conf and schedule.conf (SPEC §13.1).
  *
  * Plain C with libc only, and no Slurm headers, so it builds inside the plugin and also
  * standalone for the unit tests in plugin/tests/. The rules mirror scripts/validate.py.
@@ -11,10 +11,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "adaptive_policy.h"	/* adaptive_policy_t, ADAPTIVE_NAME_LEN (shared with slurmctld) */
+
 #define ADAPTIVE_CONF_NAME	"adaptive.conf"
 #define ADAPTIVE_TOTAL_ORDERING	100000	/* every policy's ordering weights sum to this (SPEC §5) */
 #define ADAPTIVE_MAX_POLICIES	64
-#define ADAPTIVE_NAME_LEN	64
+#define ADAPTIVE_MAX_WINDOWS	256
 #define ADAPTIVE_PATH_LEN	1024
 #define ADAPTIVE_ERR_LEN	1280
 
@@ -25,20 +27,25 @@ enum {
 	ADAPTIVE_SIG_COUNT
 };
 
-/* One line of policies.conf */
-typedef struct {
-	char name[ADAPTIVE_NAME_LEN];
-	uint32_t fairshare;	/* ordering weights, summing to ADAPTIVE_TOTAL_ORDERING */
-	uint32_t age;
-	uint32_t jobsize;	/* 0 except in BASE */
-	double spread;		/* placement weights: sum to 1, or both 0 for stock placement */
-	double fit;
-} adaptive_policy_t;
-
+/* policies.conf: one adaptive_policy_t per line */
 typedef struct {
 	int count;
 	adaptive_policy_t policy[ADAPTIVE_MAX_POLICIES];
 } adaptive_policies_t;
+
+/* One line of schedule.conf. The window covers [start, end). */
+typedef struct {
+	int daily;		/* 1: Daily=HH:MM-HH:MM, start/end in seconds after 00:00 UTC */
+	int64_t start;		/* 0: one-off, start/end in Unix seconds (UTC) */
+	int64_t end;
+	int policy;		/* index into adaptive_policies_t */
+	int line;
+} adaptive_window_t;
+
+typedef struct {
+	int count;
+	adaptive_window_t window[ADAPTIVE_MAX_WINDOWS];
+} adaptive_schedule_t;
 
 /* adaptive.conf. File paths are resolved against the directory adaptive.conf is in. */
 typedef struct {
@@ -82,11 +89,28 @@ extern const adaptive_policy_t *adaptive_find_policy(const adaptive_policies_t *
 extern int adaptive_read_file(const char *path, char **text, char *err, size_t errlen);
 
 /*
- * Read and check adaptive.conf at conf_path plus the policies.conf it points to, and pick the
- * active policy: FixedPolicy if set (mode "FIXED"), otherwise DefaultPolicy (mode "DEFAULT").
+ * Parse schedule.conf text against a policy set. src names the file in error messages.
+ * Empty text (or comments only) gives no windows.
+ */
+extern int adaptive_parse_schedule(const char *text, const char *src,
+				   const adaptive_policies_t *pols, adaptive_schedule_t *out,
+				   char *err, size_t errlen);
+
+/* Index of the window that covers simulated time now (Unix seconds), or -1 */
+extern int adaptive_window_at(const adaptive_schedule_t *sched, int64_t now);
+
+/* Index of a policy by name, or -1 */
+extern int adaptive_policy_index(const adaptive_policies_t *pols, const char *name);
+
+/*
+ * Read and check adaptive.conf at conf_path plus the policies.conf and schedule.conf it points
+ * to, and pick the policy in force at the start of the run: FixedPolicy if set (mode "FIXED"),
+ * the first ForceAlternate policy if set (mode "FORCED"), otherwise DefaultPolicy (mode
+ * "DEFAULT"). sched may be NULL to skip reading schedule.conf.
  */
 extern int adaptive_load(const char *conf_path, uint32_t calc_period_s,
 			 adaptive_conf_t *conf, adaptive_policies_t *pols,
+			 adaptive_schedule_t *sched,
 			 const adaptive_policy_t **active, const char **mode,
 			 char *err, size_t errlen);
 

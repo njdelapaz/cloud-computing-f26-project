@@ -1,5 +1,6 @@
 /*
- * ver_0.2: parser for adaptive.conf and policies.conf (SPEC §13.1). See adaptive_conf.h.
+ * ver_0.2: parser for adaptive.conf, policies.conf and schedule.conf (SPEC §13.1). See
+ * adaptive_conf.h.
  *
  * Grammar shared by both files: one entry per line, '#' starts a comment, blank lines are
  * ignored, and Key=Value tokens are separated by spaces. The checks follow scripts/validate.py,
@@ -360,6 +361,213 @@ done:
 	return rc;
 }
 
+/* ---------------------------------------------------------------- schedule.conf */
+
+/* Exactly n decimal digits at s, as a number in [lo, hi]; -1 otherwise. */
+static int _digits(const char *s, int n, int lo, int hi)
+{
+	int i, x = 0;
+
+	for (i = 0; i < n; i++) {
+		if (!isdigit((unsigned char) s[i]))
+			return -1;
+		x = x * 10 + (s[i] - '0');
+	}
+	return ((x < lo) || (x > hi)) ? -1 : x;
+}
+
+/* Days from 1970-01-01 to y-m-d in the proleptic Gregorian calendar (Hinnant's algorithm) */
+static int64_t _days_from_civil(int64_t y, int m, int d)
+{
+	int64_t era, yoe, doy, doe;
+
+	y -= (m <= 2);
+	era = (y >= 0 ? y : y - 399) / 400;
+	yoe = y - era * 400;
+	doy = (153 * (m + (m > 2 ? -3 : 9)) + 2) / 5 + d - 1;
+	doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+	return era * 146097 + doe - 719468;
+}
+
+/* YYYY-MM-DDTHH:MM:SS (UTC) to Unix seconds */
+static int _timestamp(const char *v, int64_t *out)
+{
+	static const int mdays[12] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+	int y, mo, d, h, mi, s, leap;
+
+	if ((strlen(v) != 19) || (v[4] != '-') || (v[7] != '-') || (v[10] != 'T') ||
+	    (v[13] != ':') || (v[16] != ':'))
+		return -1;
+	if (((y = _digits(v, 4, 1970, 9999)) < 0) || ((mo = _digits(v + 5, 2, 1, 12)) < 0) ||
+	    ((d = _digits(v + 8, 2, 1, 31)) < 0) || ((h = _digits(v + 11, 2, 0, 23)) < 0) ||
+	    ((mi = _digits(v + 14, 2, 0, 59)) < 0) || ((s = _digits(v + 17, 2, 0, 59)) < 0))
+		return -1;
+	leap = ((y % 4) == 0) && (((y % 100) != 0) || ((y % 400) == 0));
+	if ((d > mdays[mo - 1]) || ((mo == 2) && (d == 29) && !leap))
+		return -1;
+	*out = _days_from_civil(y, mo, d) * 86400 + h * 3600 + mi * 60 + s;
+	return 0;
+}
+
+/* HH:MM (00:00 to 23:59) to seconds after midnight */
+static int _hhmm(const char *v, size_t len, int64_t *out)
+{
+	int h, m;
+
+	if ((len != 5) || (v[2] != ':') || ((h = _digits(v, 2, 0, 23)) < 0) ||
+	    ((m = _digits(v + 3, 2, 0, 59)) < 0))
+		return -1;
+	*out = h * 3600 + m * 60;
+	return 0;
+}
+
+static int _overlap(int64_t s1, int64_t e1, int64_t s2, int64_t e2)
+{
+	return (s1 < e2) && (s2 < e1);
+}
+
+/* Does one-off window o overlap daily window w on any day it spans? */
+static int _overlaps_daily(const adaptive_window_t *o, const adaptive_window_t *w)
+{
+	int64_t day;
+
+	for (day = o->start - (o->start % 86400); day < o->end; day += 86400) {
+		if (_overlap(o->start, o->end, day + w->start, day + w->end))
+			return 1;
+	}
+	return 0;
+}
+
+extern int adaptive_policy_index(const adaptive_policies_t *pols, const char *name)
+{
+	int i;
+
+	for (i = 0; i < pols->count; i++) {
+		if (!strcmp(pols->policy[i].name, name))
+			return i;
+	}
+	return -1;
+}
+
+extern int adaptive_parse_schedule(const char *text, const char *src,
+				   const adaptive_policies_t *pols, adaptive_schedule_t *out,
+				   char *err, size_t errlen)
+{
+	line_iter_t *it;
+	kv_t kv[MAX_TOKENS];
+	int rc = -1, more, cnt, i, j;
+
+	memset(out, 0, sizeof(*out));
+	if (!(it = calloc(1, sizeof(*it))))
+		return _fail(err, errlen, "%s: out of memory", src);
+	it->p = text;
+
+	while ((more = _next_line(it)) != 0) {
+		const char *pol, *start, *end, *daily;
+		adaptive_window_t *w;
+		char *rest;
+
+		if (more < 0) {
+			_fail(err, errlen, "%s line %d: line is longer than %d bytes",
+			      src, it->n + 1, LINE_LEN - 1);
+			goto done;
+		}
+		if (strncmp(it->buf, "Window", 6) ||
+		    (it->buf[6] && !isspace((unsigned char) it->buf[6]))) {
+			_fail(err, errlen, "%s line %d: must start with 'Window'", src, it->n);
+			goto done;
+		}
+		rest = it->buf + 6;
+		if ((cnt = _tokens(rest, kv, src, it->n, err, errlen)) < 0)
+			goto done;
+		if (out->count == ADAPTIVE_MAX_WINDOWS) {
+			_fail(err, errlen, "%s line %d: more than %d windows",
+			      src, it->n, ADAPTIVE_MAX_WINDOWS);
+			goto done;
+		}
+		w = &out->window[out->count];
+		w->line = it->n;
+
+		pol = _get(kv, cnt, "Policy");
+		if (!pol || ((w->policy = adaptive_policy_index(pols, pol)) < 0)) {
+			_fail(err, errlen, "%s line %d: unknown policy '%s'",
+			      src, it->n, pol ? pol : "");
+			goto done;
+		}
+		start = _get(kv, cnt, "Start");
+		end = _get(kv, cnt, "End");
+		daily = _get(kv, cnt, "Daily");
+		if ((cnt == 3) && start && end) {
+			if (_timestamp(start, &w->start) || _timestamp(end, &w->end)) {
+				_fail(err, errlen, "%s line %d: Start/End must be YYYY-MM-DDTHH:MM:SS (UTC)",
+				      src, it->n);
+				goto done;
+			}
+			if (w->end <= w->start) {
+				_fail(err, errlen, "%s line %d: End must be after Start", src, it->n);
+				goto done;
+			}
+		} else if ((cnt == 2) && daily) {
+			const char *dash = strchr(daily, '-');
+
+			w->daily = 1;
+			if (!dash || _hhmm(daily, (size_t) (dash - daily), &w->start) ||
+			    _hhmm(dash + 1, strlen(dash + 1), &w->end)) {
+				_fail(err, errlen, "%s line %d: Daily must be HH:MM-HH:MM", src, it->n);
+				goto done;
+			}
+			if (w->end <= w->start) {
+				_fail(err, errlen, "%s line %d: Daily window must end after it starts (no crossing midnight)",
+				      src, it->n);
+				goto done;
+			}
+		} else {
+			_fail(err, errlen, "%s line %d: use either Start/End/Policy or Daily/Policy",
+			      src, it->n);
+			goto done;
+		}
+		out->count++;
+	}
+
+	for (i = 0; i < out->count; i++) {
+		for (j = i + 1; j < out->count; j++) {
+			const adaptive_window_t *a = &out->window[i], *b = &out->window[j];
+			int clash;
+
+			if (a->daily == b->daily)
+				clash = _overlap(a->start, a->end, b->start, b->end);
+			else
+				clash = a->daily ? _overlaps_daily(b, a) : _overlaps_daily(a, b);
+			if (clash) {
+				_fail(err, errlen, "%s lines %d and %d: windows overlap",
+				      src, a->line, b->line);
+				goto done;
+			}
+		}
+	}
+	if (errlen)
+		err[0] = '\0';
+	rc = 0;
+done:
+	free(it);
+	return rc;
+}
+
+extern int adaptive_window_at(const adaptive_schedule_t *sched, int64_t now)
+{
+	int64_t sod = ((now % 86400) + 86400) % 86400;
+	int i;
+
+	for (i = 0; i < sched->count; i++) {
+		const adaptive_window_t *w = &sched->window[i];
+		int64_t t = w->daily ? sod : now;
+
+		if ((w->start <= t) && (t < w->end))
+			return i;
+	}
+	return -1;
+}
+
 /* ---------------------------------------------------------------- adaptive.conf */
 
 enum {
@@ -614,6 +822,7 @@ extern int adaptive_read_file(const char *path, char **text, char *err, size_t e
 
 extern int adaptive_load(const char *conf_path, uint32_t calc_period_s,
 			 adaptive_conf_t *conf, adaptive_policies_t *pols,
+			 adaptive_schedule_t *sched,
 			 const adaptive_policy_t **active, const char **mode,
 			 char *err, size_t errlen)
 {
@@ -651,9 +860,21 @@ extern int adaptive_load(const char *conf_path, uint32_t calc_period_s,
 				     conf->policies_file);
 	}
 
+	if (sched) {
+		if (adaptive_read_file(conf->schedule_file, &text, why, sizeof(why)))
+			return _fail(err, errlen, "%s: ScheduleFile: %s", conf_path, why);
+		rc = adaptive_parse_schedule(text, conf->schedule_file, pols, sched, err, errlen);
+		free(text);
+		if (rc)
+			return -1;
+	}
+
 	if (conf->fixed_policy[0]) {
 		*active = adaptive_find_policy(pols, conf->fixed_policy);
 		*mode = "FIXED";
+	} else if (conf->force_alternate[0][0]) {
+		*active = adaptive_find_policy(pols, conf->force_alternate[0]);
+		*mode = "FORCED";
 	} else {
 		*active = adaptive_find_policy(pols, conf->default_policy);
 		*mode = "DEFAULT";

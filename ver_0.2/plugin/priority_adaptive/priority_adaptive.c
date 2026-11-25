@@ -8,6 +8,14 @@
  *     Partition, QOS and TRES weights are 0. Everything else (decay, PriorityMaxAge,
  *     PriorityFlags, ...) still comes from slurm.conf. Without an adaptive.conf the plugin
  *     uses slurm.conf's weights, exactly like multifactor. A malformed file is fatal at start-up.
+ * A2: switching (SPEC §4, §8, §13). A controller tick runs every PriorityCalcPeriod in the
+ *     decay loop (_controller_tick()). It calls adaptive_decide() (adaptive_ctl.c, a pure
+ *     function) for the mode (OVERRIDE from schedule.conf windows, AUTO with the TMin cooldown,
+ *     FIXED, FORCED), writes one decision-log row (SPEC §13.3), and on a switch hot-swaps the
+ *     policy: it publishes it to the shared policy state in slurmctld (adaptive_policy.h, read by
+ *     select/cons_tres_adaptive in A4) and, when the ordering weights differ, recomputes every
+ *     pending job's priority in one pass under the job write lock, timed with CLOCK_MONOTONIC
+ *     (swap_us). The AUTO classifier is a stub that keeps DefaultPolicy until A3.
  * Keep the names decay_handler_thread and _decay_thread: the simulator drives the decay
  * loop by matching them.
  */
@@ -86,6 +94,7 @@
 
 #include "fair_tree.h"
 #include "adaptive_conf.h"
+#include "adaptive_ctl.h"
 
 #define SECS_PER_DAY	(24 * 60 * 60)
 #define SECS_PER_WEEK	(7 * SECS_PER_DAY)
@@ -167,6 +176,21 @@ static double decay_factor = 1; /* The decay factor when decaying time. */
 /* ver_0.2 A1: the policy whose ordering weights are in use (when policy_loaded) */
 static bool policy_loaded = false;
 static adaptive_policy_t active_policy;
+
+/*
+ * ver_0.2 A2: the controller, set up by _load_policy() and run by _controller_tick().
+ * ctl_mutex guards everything here except the weights, which change under the job write lock.
+ * It is never held while taking slurmctld's locks.
+ */
+static pthread_mutex_t ctl_mutex = PTHREAD_MUTEX_INITIALIZER;
+static bool ctl_on = false;			/* an adaptive.conf is loaded: the controller ticks */
+static adaptive_conf_t *ctl_conf = NULL;	/* the loaded files (xmalloc'd) */
+static adaptive_policies_t *ctl_pols = NULL;
+static adaptive_schedule_t *ctl_sched = NULL;
+static adaptive_ctl_config_t ctl_cfg;		/* points into ctl_pols and ctl_sched */
+static adaptive_ctl_state_t ctl_state;
+static FILE *ctl_log = NULL;			/* the decision log (SPEC §13.3) */
+static char *ctl_log_path = NULL;
 
 /* variables defined in priority_multifactor.h */
 
@@ -1231,6 +1255,8 @@ static int _decay_apply_new_usage_and_weighted_factors(job_record_t *job_ptr,
 }
 
 
+static void _controller_tick(void);
+
 static void *_decay_thread(void *no_data)
 {
 	static time_t start_time = 0;
@@ -1394,6 +1420,9 @@ static void *_decay_thread(void *no_data)
 				assoc_mgr_root_assoc->usage->children_list);
 			assoc_mgr_unlock(&locks);
 		}
+
+		/* ver_0.2 A2: pick the policy for this tick, and hot-swap it on a switch */
+		_controller_tick();
 
 		if (!g_last_ran)
 			goto get_usage;
@@ -1609,46 +1638,225 @@ static void _filter_job(job_record_t *job_ptr,
 	list_iterator_destroy(job_iter);
 }
 
+/* Count pending jobs (ListForF) */
+static int _count_pending(void *x, void *arg)
+{
+	job_record_t *job_ptr = x;
+
+	if (IS_JOB_PENDING(job_ptr))
+		(*(uint32_t *) arg)++;
+	return SLURM_SUCCESS;
+}
+
+typedef struct {
+	time_t now;
+	uint32_t pending;
+} swap_pass_t;
+
+/* The swap pass: recompute one pending job's priority with the new weights (ListForF) */
+static int _swap_job(void *x, void *arg)
+{
+	job_record_t *job_ptr = x;
+	swap_pass_t *pass = arg;
+
+	if (!IS_JOB_PENDING(job_ptr))
+		return SLURM_SUCCESS;
+	pass->pending++;
+	decay_apply_weighted_factors(job_ptr, &pass->now);
+	return SLURM_SUCCESS;
+}
+
+/* Real elapsed time (CLOCK_MONOTONIC isn't simulated), in microseconds */
+static int64_t _mono_us(void)
+{
+	struct timespec ts;
+
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (int64_t) ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
+}
+
+/* The ordering weights of policy p replace slurm.conf's (A1) */
+static void _set_weights(const adaptive_policy_t *p)
+{
+	weight_age = p->age;
+	weight_fs = p->fairshare;
+	weight_js = p->jobsize;
+	weight_assoc = 0;
+	weight_part = 0;
+	weight_qos = 0;
+	xfree(weight_tres);	/* NULL: no TRES factor */
+}
+
 /*
- * ver_0.2 A1: read adaptive.conf (next to slurm.conf, found the way the simulator finds
- * users.sim) and the policies.conf it names, and remember the active policy. With no
- * adaptive.conf, use slurm.conf's weights as multifactor does. A malformed file is fatal at
- * start-up; on reconfigure the error is logged and the previous weights stay.
+ * ver_0.2 A2: one controller tick (SPEC §4). Decide, apply a switch, log one row.
+ *   1. adaptive_decide() under ctl_mutex. A2 passes no sampler: AUTO keeps DefaultPolicy until
+ *      A3 adds the snapshot and the classifier.
+ *   2. On a switch: under the job write lock, publish the new policy to the shared state, set its
+ *      ordering weights and, if they differ from the old ones, recompute every pending job's
+ *      priority in one pass. swap_us is the real time of that work, without waiting for the lock.
+ *      New placement weights need nothing else: the scorer reads them at its next node choice.
+ *      Without a switch, only count the pending jobs, under the job read lock.
+ *   3. Write the decision-log row.
+ */
+static void _controller_tick(void)
+{
+	slurmctld_lock_t job_read_lock = { .job = READ_LOCK };
+	slurmctld_lock_t job_write_lock = {
+		.job = WRITE_LOCK, .node = READ_LOCK, .part = READ_LOCK
+	};
+	time_t now = time(NULL);
+	adaptive_decision_t d;
+	adaptive_policy_t from, to;
+	swap_pass_t pass = { .now = now, .pending = 0 };
+	int64_t swap_us = -1;
+	char row[512];
+
+	slurm_mutex_lock(&ctl_mutex);
+	if (!ctl_on) {
+		slurm_mutex_unlock(&ctl_mutex);
+		return;
+	}
+	adaptive_decide(NULL, &ctl_cfg, now, &ctl_state, &d);
+	ctl_state = d.next;
+	from = ctl_pols->policy[d.active];
+	to = ctl_pols->policy[d.chosen];
+	slurm_mutex_unlock(&ctl_mutex);
+
+	if (d.switched) {
+		int64_t t0;
+
+		lock_slurmctld(job_write_lock);
+		t0 = _mono_us();
+		adaptive_policy_publish(&to, now);
+		active_policy = to;
+		_set_weights(&to);
+		if (d.reorder)
+			list_for_each(job_list, _swap_job, &pass);
+		swap_us = _mono_us() - t0;
+		if (!d.reorder)
+			list_for_each(job_list, _count_pending, &pass.pending);
+		unlock_slurmctld(job_write_lock);
+	} else {
+		lock_slurmctld(job_read_lock);
+		list_for_each(job_list, _count_pending, &pass.pending);
+		unlock_slurmctld(job_read_lock);
+	}
+
+	slurm_mutex_lock(&ctl_mutex);
+	if (ctl_log && (adaptive_decision_row(&d, from.name, to.name, now, swap_us,
+					      pass.pending, row, sizeof(row)) > 0))
+		fputs(row, ctl_log);
+	slurm_mutex_unlock(&ctl_mutex);
+
+	if (d.switched)
+		info("adaptive: switch %s -> %s at sim_time=%ld (%s): %s, %u pending jobs, swap_us=%" PRId64,
+		     from.name, to.name, (long) now, adaptive_mode_names[d.mode],
+		     d.reorder ? "ordering weights changed, priorities recomputed" :
+				 "same ordering weights, nothing recomputed",
+		     pass.pending, swap_us);
+}
+
+/*
+ * Open the decision log at path, truncated, with its header. A log already open at the same
+ * path stays as it is. Called with ctl_mutex held. Returns 0, or -1.
+ */
+static int _open_log(const char *path)
+{
+	FILE *f;
+
+	if (ctl_log && !xstrcmp(ctl_log_path, path))
+		return 0;
+	if (!(f = fopen(path, "w")))
+		return -1;
+	setvbuf(f, NULL, _IOLBF, 0);	/* line-buffered: the simulator exits without flushing */
+	fputs(adaptive_decision_header, f);
+	if (ctl_log)
+		fclose(ctl_log);
+	ctl_log = f;
+	xfree(ctl_log_path);
+	ctl_log_path = xstrdup(path);
+	return 0;
+}
+
+/*
+ * ver_0.2 A1, A2: read adaptive.conf (next to slurm.conf, found the way the simulator finds
+ * users.sim) and the policies.conf and schedule.conf it names, set up the controller and open
+ * the decision log, then put the run's first policy in force (FixedPolicy, the first
+ * ForceAlternate policy, or DefaultPolicy) and publish it to the shared state. On reconfigure the
+ * controller keeps its state, and the policy in force, if the new policies.conf still has it.
+ * With no adaptive.conf, use slurm.conf's weights as multifactor does, with no controller and
+ * nothing published. A malformed file is fatal at start-up; on reconfigure the error is logged
+ * and the previous configuration stays.
  */
 static void _load_policy(bool startup)
 {
 	char *conf_path = get_extra_conf_path(ADAPTIVE_CONF_NAME);
 	adaptive_conf_t *conf = xmalloc(sizeof(*conf));
 	adaptive_policies_t *pols = xmalloc(sizeof(*pols));
-	const adaptive_policy_t *active = NULL;
+	adaptive_schedule_t *sched = xmalloc(sizeof(*sched));
+	adaptive_ctl_config_t cfg;
+	const adaptive_policy_t *first = NULL;
 	const char *mode = NULL;
 	char err[ADAPTIVE_ERR_LEN];
 	struct stat st;
+	int keep = -1;
 
+	slurm_mutex_lock(&ctl_mutex);
 	if ((stat(conf_path, &st) != 0) && (errno == ENOENT)) {
 		policy_loaded = false;
+		ctl_on = false;
+		adaptive_policy_clear();
 		info("adaptive: no %s, so the ordering weights come from slurm.conf's PriorityWeight* (stock multifactor behaviour)",
 		     conf_path);
-	} else if (adaptive_load(conf_path, slurm_conf.priority_calc_period, conf, pols,
-				 &active, &mode, err, sizeof(err))) {
+		goto done;
+	}
+	if (adaptive_load(conf_path, slurm_conf.priority_calc_period, conf, pols, sched,
+			  &first, &mode, err, sizeof(err)) ||
+	    adaptive_ctl_config(conf, pols, sched, slurm_conf.priority_calc_period, &cfg,
+				err, sizeof(err))) {
 		if (startup)
 			fatal("adaptive: bad policy configuration: %s", err);
-		error("adaptive: bad policy configuration, keeping the previous weights: %s",
-		      err);
-	} else {
-		active_policy = *active;
-		policy_loaded = true;
-		info("adaptive: loaded policy=%s mode=%s Fairshare=%u Age=%u JobSize=%u from %s (%d policies); Assoc, Partition, QOS and TRES weights are 0 and slurm.conf's PriorityWeight* are ignored",
-		     active_policy.name, mode, active_policy.fairshare, active_policy.age,
-		     active_policy.jobsize, conf->policies_file, pols->count);
-		if (conf->force_alternate[0][0])
-			info("adaptive: ForceAlternate=%s,%s is not used yet (switching comes in A2); %s stays active",
-			     conf->force_alternate[0], conf->force_alternate[1],
-			     active_policy.name);
+		error("adaptive: bad policy configuration, keeping the previous one: %s", err);
+		goto done;
 	}
+	if (_open_log(conf->log_file)) {
+		if (startup)
+			fatal("adaptive: can't open LogFile %s: %m", conf->log_file);
+		error("adaptive: can't open LogFile %s, keeping the previous configuration: %m",
+		      conf->log_file);
+		goto done;
+	}
+
+	if (ctl_on)
+		keep = adaptive_policy_index(pols, active_policy.name);
+	SWAP(ctl_conf, conf);
+	SWAP(ctl_pols, pols);
+	SWAP(ctl_sched, sched);
+	cfg.pols = ctl_pols;
+	cfg.sched = ctl_sched;
+	ctl_cfg = cfg;
+	if (keep >= 0)
+		ctl_state.active = keep;	/* reconfigure: the controller carries on */
+	else
+		adaptive_ctl_init(&ctl_cfg, &ctl_state);
+	active_policy = ctl_pols->policy[ctl_state.active];
+	policy_loaded = true;
+	ctl_on = true;
+	adaptive_policy_publish(&active_policy, time(NULL));
+
+	info("adaptive: loaded policy=%s mode=%s Fairshare=%u Age=%u JobSize=%u from %s (%d policies); Assoc, Partition, QOS and TRES weights are 0 and slurm.conf's PriorityWeight* are ignored",
+	     active_policy.name, (keep >= 0) ? "KEPT" : mode, active_policy.fairshare,
+	     active_policy.age, active_policy.jobsize, ctl_conf->policies_file,
+	     ctl_pols->count);
+	info("adaptive: controller mode=%s TMin=%us tick=%us windows=%d from %s; decision log %s",
+	     adaptive_mode_names[adaptive_ctl_base_mode(&ctl_cfg)], ctl_cfg.tmin_s,
+	     ctl_cfg.period_s, ctl_sched->count, ctl_conf->schedule_file, ctl_log_path);
+done:
+	slurm_mutex_unlock(&ctl_mutex);
 	xfree(conf_path);
 	xfree(conf);
 	xfree(pols);
+	xfree(sched);
 }
 
 static void _internal_setup(bool startup)
@@ -1667,15 +1875,8 @@ static void _internal_setup(bool startup)
 	flags = slurm_conf.priority_flags;
 
 	_load_policy(startup);
-	if (policy_loaded) {
-		weight_age = active_policy.age;
-		weight_fs = active_policy.fairshare;
-		weight_js = active_policy.jobsize;
-		weight_assoc = 0;
-		weight_part = 0;
-		weight_qos = 0;
-		xfree(weight_tres);	/* NULL: no TRES factor */
-	}
+	if (policy_loaded)
+		_set_weights(&active_policy);
 
 	log_flag(PRIO, "priority: Damp Factor is %u", damp_factor);
 	log_flag(PRIO, "priority: AccountingStorageEnforce is %u",

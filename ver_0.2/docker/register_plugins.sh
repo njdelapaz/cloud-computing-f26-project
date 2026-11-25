@@ -7,6 +7,8 @@ SRC="$1"; PLUG="$2"
 
 cp -r "$PLUG/priority_adaptive"          "$SRC/src/plugins/priority/adaptive"
 cp -r "$PLUG/select_cons_tres_adaptive"  "$SRC/src/plugins/select/cons_tres_adaptive"
+# The shared policy state (A2) is compiled into slurmctld itself, so both plugins see one copy
+cp -r "$PLUG/adaptive_policy"            "$SRC/src/slurmctld/adaptive_policy"
 
 sed -i 's/^SUBDIRS = basic multifactor$/SUBDIRS = basic multifactor adaptive/' \
     "$SRC/src/plugins/priority/Makefile.am"
@@ -16,12 +18,15 @@ sed -i 's#^\t\t src/plugins/priority/multifactor/Makefile$#&\n\t\t src/plugins/p
     "$SRC/configure.ac"
 sed -i 's#^\t\t src/plugins/select/cons_tres/Makefile$#&\n\t\t src/plugins/select/cons_tres_adaptive/Makefile#' \
     "$SRC/configure.ac"
+sed -i 's#^slurmctld_SOURCES = *\\$#&\n\tadaptive_policy/adaptive_policy.c\t\\\n\tadaptive_policy/adaptive_policy.h\t\\#' \
+    "$SRC/src/slurmctld/Makefile.am"
 
 # Fail loudly if any edit didn't apply
 grep -q '^SUBDIRS = basic multifactor adaptive$' "$SRC/src/plugins/priority/Makefile.am"
 grep -q 'cons_tres cons_tres_adaptive' "$SRC/src/plugins/select/Makefile.am"
 grep -q 'src/plugins/priority/adaptive/Makefile' "$SRC/configure.ac"
 grep -q 'src/plugins/select/cons_tres_adaptive/Makefile' "$SRC/configure.ac"
+grep -q '^	adaptive_policy/adaptive_policy.c' "$SRC/src/slurmctld/Makefile.am"
 
 # Regenerate configure and Makefile.in (autoconf 2.71 / automake 1.16.5, the versions Slurm used).
 # The GLib/GTK stub macros sit next to this script in m4/.

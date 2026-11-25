@@ -8,7 +8,7 @@ Usage:
   validate.py jobs       FILE [--meta FILE]
   validate.py meta       FILE
   validate.py episodes   FILE
-  validate.py decisions  FILE --policies FILE [--tmin SECONDS]
+  validate.py decisions  FILE --policies FILE [--tmin SECONDS [--calc-period SECONDS]]
   validate.py placements FILE --policies FILE
   validate.py examples        check every config and example file in the repo
 Exit code 0 when valid; otherwise each problem is printed and the exit code is 1.
@@ -395,9 +395,11 @@ MODES = {"AUTO", "OVERRIDE", "FIXED", "FORCED"}
 SAMPLE_COLS = ("s_fairness", "s_balance", "s_util", "queue_pressure", "node_load_sd")
 
 
-def validate_decisions(text, policy_names, tmin=None):
+def validate_decisions(text, policy_names, tmin=None, calc_period=60):
     """Structural rules, plus the G4 rule: no sampling unless the controller could switch.
-    With tmin (seconds), also checks that 'eligible' follows the cooldown."""
+    With tmin (seconds), also checks that 'eligible' follows the cooldown: it starts at each
+    switch and at the end of each override window (SPEC §8), and it is counted in whole
+    controller ticks of calc_period seconds, so a tick within half a tick of tmin counts (A2)."""
     errors = []
     prev = None
     last_switch = None
@@ -439,11 +441,12 @@ def validate_decisions(text, policy_names, tmin=None):
         elif r["swap_us"] != "":
             errors.append(f"line {n}: swap_us must be empty when nothing switched")
         _int(r["pending_jobs"], f"line {n} pending_jobs", errors, lo=0)
+        window_end = prev is not None and prev[1]["mode"] == "OVERRIDE" and mode != "OVERRIDE"
         if tmin is not None and mode == "AUTO" and t is not None:
-            should = last_switch is None or t - last_switch >= tmin
+            should = not window_end and (last_switch is None or t - last_switch >= tmin - calc_period // 2)
             if eligible != should:
                 errors.append(f"line {n}: eligible={int(eligible)} but the cooldown says {int(should)}")
-        if switched and t is not None:
+        if (switched or window_end) and t is not None:
             last_switch = t
         prev = (n, r, t)
     return errors
@@ -526,7 +529,7 @@ def main():
             "jobs": lambda: validate_jobs(text, meta),
             "meta": lambda: validate_meta(text),
             "episodes": lambda: validate_episodes(text),
-            "decisions": lambda: validate_decisions(text, names, a.tmin),
+            "decisions": lambda: validate_decisions(text, names, a.tmin, a.calc_period),
             "placements": lambda: validate_placements(text, policies),
         }[a.kind]
         results = {a.file: fn()}

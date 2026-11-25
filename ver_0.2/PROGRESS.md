@@ -10,6 +10,7 @@ The tracker for `ver_0.2`. `SPEC.md` says what to build, `WORKFLOW.md` says how,
   - B1 (workloads): the trace filter, load-targeted sampler, simulator converter and episode finder are built and merged into `dev`.
   - A1 (ordering plugin, static): `priority/adaptive` takes its ordering weights from one policy; it matches stock exactly on the smoke trace and within 1 s on a contended trace (exact on both, and on the probe day, once the virtual clock came in). Merged into `dev`.
   - Run-to-run spread (option B, adopted): a simulator patch adds a virtual clock with fixed costs and fixes a stock bug that completed the wrong jobs. Every run now uses it. Identical runs are byte-identical on realistic days, and adaptive BASE matches stock exactly on the probe day (`scripts/check_vclock.sh`, 4 of 4; results/vclock/summary.md). The P1 and A1 gates still pass on it.
+  - A2 (switching): `priority/adaptive` switches policies at runtime: override windows, `AUTO` with the `TMin` cooldown, `FIXED` and `FORCED`. A switch hot-swaps the ordering weights and publishes the policy to a shared state in slurmctld for A4. Every tick writes a decision-log row. The gate passes 6 of 6, and G1 still holds exactly on all three traces. On branch `claude/a2-switching-c08325`, not merged yet. Two items wait for the user: whether the switch pass charges a simulated cost (recommendation: no), and a simulator finding that the Age factor is always 0 (A2 results below).
 - **Next:** A2 (switching) and B2 (metrics); they touch separate folders. A2 and A4 each decide whether their extra work charges a fixed simulated cost (SPEC §8).
 
 ## Phase tracker
@@ -20,7 +21,7 @@ The tracker for `ver_0.2`. `SPEC.md` says what to build, `WORKFLOW.md` says how,
 | P1 Simulator env | ✅ done | Gate passed: `scripts/check_p1.sh` passes 7 of 7 checks (results/p1/check_p1.txt) |
 | P2 Interfaces | ✅ done | Gate passed: `scripts/check_p2.sh` validates all 8 config and example files and passes 30 unit tests (results/p2/check_p2.txt) |
 | A1 Ordering plugin: static | ✅ done | Gate passed: `scripts/check_a1.sh` passes 5 of 5 gating checks (results/a1/check_a1.txt). Check 2 uses a contended trace instead of the probe day, because the simulator doesn't repeat itself on realistic load (results/a1/summary.md) |
-| A2 Switching | not started | |
+| A2 Switching | ✅ done | Gate passed: `scripts/check_a2.sh` passes 6 of 6 gating checks (results/a2/check_a2.txt). `check_a1.sh` (5 of 5) and `check_vclock.sh` (4 of 4) still pass on the A2 image |
 | A3 States | not started | |
 | A4 Placement plugin | not started | |
 | B1 Workloads | ✅ done | Gate passed: `scripts/check_b1.sh` (results/b1/check_b1.txt). 22,856,847 jobs kept; samples land within +2% of 0.85; episodes W1 55, W2 84 (volume floor added in review), W4 19, W6 182. Its spec follow-ups are applied |
@@ -60,6 +61,12 @@ The current decisions are listed in SPEC §11 (#1–19). This log keeps the hist
 | Simulator patches (option B) | `docker/patches/sim_determinism.patch`, applied to the pristine clone at image build. It adds the virtual clock, which ver_0.2's templates turn on, and fixes stale completion events in both clock modes. Edit it with `scripts/sim_patch.sh` | Stock simulator, unpatched |
 | Fixed simulated costs (option B) | Fitted from six real-clock runs on the fixed image, with least squares or means so the total time is kept: main pass 155 µs + 9.5 µs per job tested; backfill 421 µs per job tested; submit 997 µs; completion 130 µs; background call 291 µs; decay run 7.6 ms. slurmdbd calls are not charged (a real slurmctld runs them on other threads). In both `sim.conf.in` templates | — |
 | Regression standard (G1) | Exact (start, end and node) on the smoke trace, the contended trace and a realistic day, on the virtual clock (SPEC G1, §11 #22; WORKFLOW's A1 and A4 gates) | "Identical on the same trace", including a realistic W0 trace → exact on smoke, within 1 s on contended, a realistic day only reported as spread (A1, before the virtual clock) |
+| Sharing the policy between plugins (A2) | A module compiled into slurmctld itself (`plugin/adaptive_policy/`, added to slurmctld's sources by `docker/register_plugins.sh`). slurmctld exports its symbols, so both plugins call it as they call `lock_slurmctld()`. The controller publishes; A4's scorer reads, and falls back to stock placement while nothing is published. The A4 half is still open | SPEC §4 left the hook to A2 and A4. Considered: a shared library both plugins link (needs a build order across plugin folders), or finding the priority plugin's symbols with `dlopen(RTLD_NOLOAD)` (depends on load order) |
+| Windows in the experiment modes (A2) | A window wins in every mode. After it, the run goes back to its own policy: `DefaultPolicy` (AUTO), `FixedPolicy` (FIXED), or the first `ForceAlternate` policy, with the alternation restarting (FORCED). So the "Override only" run of SPEC §10 is `FixedPolicy=BASE` plus a schedule | SPEC §13.1 says only what happens in AUTO |
+| Cooldown details (A2) | Counted in whole controller ticks: an interval within half a tick of `TMin` (or `ForcePeriod`) reaches it. A window's end starts a fresh cooldown even when nothing switched. A switch in AUTO needs a sample, so a failed sample keeps the policy. `scripts/validate.py` now checks the same rules | `validate.py` restarted the cooldown only at switches and compared seconds exactly, so it would have rejected a correct log with a window longer than `TMin` |
+| Default schedule (A2) | `config/adaptive.conf` points at the empty `config/schedule_none.conf`. `config/schedule.conf` stays the W6 example, for runs that ask for it | It pointed at `config/schedule.conf`, which would have put a 12:00–17:00 → U window into every run, the static runs and the G1 checks included |
+| `swap_us` and `pending_jobs` (A2) | `swap_us` is the work done under the job write lock: publish, set the weights, and the recompute pass when the ordering weights differ. It excludes the wait for the lock. `pending_jobs` is counted on every tick by walking the job list, because the log needs it. That walk counts as logging, not as a state sample for G4 | — |
+| Switch pass on the virtual clock (A2, SPEC §8) | **Recommended: don't charge it** (waiting for the user's decision; nothing in SPEC changed). Measured with F ↔ U forced on every tick, so every switch recomputes priorities. On the probe day: 6,001 switches, `swap_us` median 1 µs and max 173 µs, with up to 209 pending jobs (about 5 µs + 0.4 µs per pending job). All the switches together took 28.5 ms of real time, against 197 s of simulated scheduler time charged in the same run (0.014%). The largest switch is 2.3% of the `DecayCost` charged on the same tick. That is far inside the cost model's own error (halving or doubling every cost moved mean wait about 3%), and the real cost is still measured, as `swap_us` and in the cost log | Charge a fixed cost per switch through `sim_charge()`, fitted from `swap_us` like the other costs. That needs a new config key (a SPEC change) |
 
 ## Spec changes from P1 (approved and applied to SPEC.md)
 Along with these, SPEC §8's timing note and the §11 window-length item now state what P1 measured.
@@ -180,6 +187,30 @@ Full write-up: `results/vclock/summary.md`. Image: `ver02/slurm-sim:vclock`, the
   - WORKFLOW: the A1 and A4 gates are exact on the probe day; A2 and A4 decide whether to charge their own costs; the repeatability risk is retired and a fixed-cost risk added.
 - **Earlier gates rerun on the new defaults:** P1 passes 7 of 7, with a 0 s spread across the three determinism runs (`results/p1/check_p1_vclock.txt`). A1 passes 5 of 5, with 0 exact-match differences on the contended trace (`results/a1/check_a1_vclock.txt`). The original `check_p1.txt` and `check_a1.txt` stay as they were when those phases passed.
 
+### A2: switching
+Full write-up: `results/a2/summary.md`. Image: `ver02/slurm-sim:a2`.
+- **Code:**
+  - `plugin/priority_adaptive/adaptive_ctl.c`: the pure `decide(snapshot, config, now, controller_state)`
+  - `_controller_tick()` in the decay loop: decides, hot-swaps, logs
+  - `plugin/adaptive_policy/`: the shared policy state, compiled into slurmctld
+  - `adaptive_conf.c`: now also parses `schedule.conf`
+  - `AUTO` keeps `DefaultPolicy` until A3 adds its sampler and classifier
+  - tests: `plugin/tests/test_decide.py` (26), `test_adaptive_policy.py` (2), and `test_adaptive_conf.py` with 13 more (60)
+- **Configs:** `config/adaptive.conf` defaults to the empty `config/schedule_none.conf`; `config/smoke/schedule_g2.conf` holds the G2 test windows.
+- **Gate** (`scripts/check_a2.sh`, 6 of 6, on the virtual clock):
+  - unit tests pass
+  - G1: adaptive BASE with no windows matches stock exactly on the smoke trace, the contended trace and the probe day (0 of 3,028 jobs differ), with one AUTO row per tick and no switches
+  - G2, on the contended trace: a one-off window [00:20:30, 01:00:30) → U gives OVERRIDE from 00:21:00 and AUTO from 01:01:00, both 30 s after the boundary, which falls mid-tick. A daily 01:30–01:45 → F window switches exactly on the minute
+  - the switch to U recomputed all 40 pending jobs in 9 µs. All 22 jobs that started inside the window started exactly as in a static `FixedPolicy=U` run
+  - each window's end starts a fresh 10-min cooldown, with no sampling in it
+  - `FIXED` and `FORCED` work in the plugin
+- **Earlier gates on the A2 image:** `check_a1.sh` 5 of 5 (`results/a2/check_a1_on_a2.txt`) and `check_vclock.sh` 4 of 4 (`results/a2/check_vclock_on_a2.txt`). The committed `results/a1/` and `results/vclock/` outputs are unchanged.
+- **Switch cost:** see the decisions row. The recommendation is not to charge it, and the user hasn't decided yet.
+- **Finding, for the user (not fixed):** in the simulator the Age factor is always 0, and fair-share usage never decays, in stock multifactor and the fork alike.
+  - Cause: `_decay_thread()` sets `start_time` only on its first call under `SLURM_SIMULATOR`. Fair Tree, the default, still recomputes every priority each tick, but with that frozen time, so age stays 0.
+  - Effect: every Age weight is inert, and the ten trigger policies order jobs in only two ways: FIFO for `B` and `U`, and the same fair-share ranking for all eight with `Fairshare` > 0. That would undercut P4/G5 and P5's churn.
+  - Proposed: refresh `start_time` on every call in both plugins (a simulator patch), then rerun the gates. Evidence: `results/a2/decay_probe.txt`.
+
 ## Change log
 
 | Date | Commit | Change |
@@ -199,3 +230,4 @@ Full write-up: `results/vclock/summary.md`. Image: `ver02/slurm-sim:vclock`, the
 | 2026-11-24 | `2d6b890` | A1: `ClockScaling = 0.001` tested on the probe day; runs still don't repeat (A1 session) |
 | 2026-11-24 | `2db72b9` | A1 merged into `dev` |
 | 2026-11-24 | — | Option B: simulator determinism patch (virtual clock, stale-completion fix), fitted costs, `scripts/check_vclock.sh` gate 4 of 4; adopted as the default, with SPEC (G1, §4.2, §6.2, §8, §10, §11, §12) and WORKFLOW edits that replace the interim "within 1 s" regression standard; P1 and A1 gates rerun and passing |
+| 2026-11-24 | — | A2: switching in `priority/adaptive` (controller tick, pure `decide()`, hot swap, decision log), a shared policy state compiled into slurmctld, `schedule.conf` parsing, `scripts/check_a2.sh` gate 6 of 6; `validate.py`'s cooldown check fixed; A1 and vclock gates rerun on the A2 image and passing (A2 session) |

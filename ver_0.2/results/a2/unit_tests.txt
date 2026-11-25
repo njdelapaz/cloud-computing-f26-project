@@ -1,0 +1,33 @@
+== plugin/tests/test_decide.py
+..........................
+----------------------------------------------------------------------
+Ran 26 tests in 2.154s
+
+OK
+== plugin/tests/test_adaptive_conf.py
+............................................................
+----------------------------------------------------------------------
+Ran 60 tests in 0.388s
+
+OK
+== plugin/tests/test_adaptive_policy.py
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.469s
+
+OK
+ok both plugins loaded with RTLD_LAZY and their entry points found
+ok before any publish the reader sees nothing (seq 0)
+ok and so does the host
+ok the reader sees what the writer published (k=54000 seq=1 since=1704067260)
+ok the host sees the same copy (P54000), so there is one state in the process
+ok seq counts publishes
+ok a second publish replaces the first and moves seq
+ok clear: the reader falls back to nothing, and seq still moves
+ok 1173228 reads on 4 threads during 200000 publishes, 0 torn copies
+== tests/ (scripts/validate.py and workloads)
+.......................................sssssssssss
+----------------------------------------------------------------------
+Ran 50 tests in 0.008s
+
+OK (skipped=11)

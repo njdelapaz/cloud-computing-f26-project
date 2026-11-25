@@ -1,10 +1,11 @@
 /*
- * Load adaptive.conf (and the policies.conf it names) with the plugin's own parser, outside
- * slurmctld, and print what the plugin would pick. Used by plugin/tests/test_adaptive_conf.py.
+ * Load adaptive.conf (and the policies.conf and schedule.conf it names) with the plugin's own
+ * parser, outside slurmctld, and print what the plugin would pick. Used by
+ * plugin/tests/test_adaptive_conf.py.
  *
  * Usage: adaptive_conf_cli <adaptive.conf> [PriorityCalcPeriod seconds, default 60]
- * Prints "OK policy=<name> mode=<FIXED|DEFAULT> Fairshare=<n> Age=<n> JobSize=<n> policies=<n>"
- * and exits 0, or prints "ERROR <message>" and exits 1.
+ * Prints "OK policy=<name> mode=<FIXED|FORCED|DEFAULT> Fairshare=<n> Age=<n> JobSize=<n>
+ * policies=<n> windows=<n>" and exits 0, or prints "ERROR <message>" and exits 1.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +16,7 @@ int main(int argc, char **argv)
 {
 	static adaptive_conf_t conf;
 	static adaptive_policies_t pols;
+	static adaptive_schedule_t sched;
 	const adaptive_policy_t *active;
 	const char *mode;
 	char err[ADAPTIVE_ERR_LEN];
@@ -27,12 +29,13 @@ int main(int argc, char **argv)
 	if (argc == 3)
 		calc = strtoul(argv[2], NULL, 10);
 
-	if (adaptive_load(argv[1], (uint32_t) calc, &conf, &pols, &active, &mode,
+	if (adaptive_load(argv[1], (uint32_t) calc, &conf, &pols, &sched, &active, &mode,
 			  err, sizeof(err))) {
 		printf("ERROR %s\n", err);
 		return 1;
 	}
-	printf("OK policy=%s mode=%s Fairshare=%u Age=%u JobSize=%u policies=%d\n",
-	       active->name, mode, active->fairshare, active->age, active->jobsize, pols.count);
+	printf("OK policy=%s mode=%s Fairshare=%u Age=%u JobSize=%u policies=%d windows=%d\n",
+	       active->name, mode, active->fairshare, active->age, active->jobsize, pols.count,
+	       sched.count);
 	return 0;
 }
