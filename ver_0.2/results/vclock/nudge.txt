@@ -1,0 +1,137 @@
+# Probe day on the virtual clock with every cost nudged (scripts/vclock.py scale F; F = 0.90, 0.95, 0.98, 0.99,
+# 1.01, 1.02, 1.05, 1.10), next to the fitted-cost run, the halved and doubled runs and the four real-clock runs.
+# Image ver02/slurm-sim:a2. Costs are set to the microsecond, so SchedJobCost (9 us) is unchanged from 0.95 to 1.05.
+# Waits in s. Made with scripts/vclock.py compare; stats below it computed from that table.
+
+run                                       jobs   mean median    p95     max  >60s  real s
+results/vclock/pr_stock_1                 3028    815      2   3361   52301   982     698
+results/vclock/pr_nudge_090               3028    807      2   4284   52576   999     667
+results/vclock/pr_nudge_095               3028    750      2   4027   52649   907     670
+results/vclock/pr_nudge_098               3028    814      2   4185   52598  1053     665
+results/vclock/pr_nudge_099               3028    799      2   3994   52578  1066     667
+results/vclock/pr_nudge_101               3028    731      2   4117   20118  1089     665
+results/vclock/pr_nudge_102               3028    758      1   3883   52405   991     668
+results/vclock/pr_nudge_105               3028    813      2   5295   51445  1002     671
+results/vclock/pr_nudge_110               3028    790      2   4058   52515   942     667
+results/vclock/pr_costs_half              3028    978      2   4022   52894   979     687
+results/vclock/pr_costs_double            3028    799      2   3223   52526  1016     686
+results/vclock/rf_probe_1                 3028    790      2   4201   52629  1084     714
+results/vclock/rf_probe_2                 3028    775      2   3895   52075  1082     713
+results/vclock/rf_probe_3                 3028    688      2   4316   17223  1052     711
+results/vclock/rf_probe_4                 3028    760      2   3914   52075  1068     717
+results/vclock/pr_stock_1 vs results/vclock/pr_nudge_090: jobcomp.log differs; 2308 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_stock_1 vs results/vclock/pr_nudge_095: jobcomp.log differs; 2210 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_stock_1 vs results/vclock/pr_nudge_098: jobcomp.log differs; 2188 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_stock_1 vs results/vclock/pr_nudge_099: jobcomp.log differs; 2170 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_stock_1 vs results/vclock/pr_nudge_101: jobcomp.log differs; 2113 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_stock_1 vs results/vclock/pr_nudge_102: jobcomp.log differs; 2285 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_stock_1 vs results/vclock/pr_nudge_105: jobcomp.log differs; 2348 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_stock_1 vs results/vclock/pr_nudge_110: jobcomp.log differs; 2297 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_stock_1 vs results/vclock/pr_costs_half: jobcomp.log differs; 2321 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_stock_1 vs results/vclock/pr_costs_double: jobcomp.log differs; 2104 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_stock_1 vs results/vclock/rf_probe_1: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_stock_1 vs results/vclock/rf_probe_2: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_stock_1 vs results/vclock/rf_probe_3: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_stock_1 vs results/vclock/rf_probe_4: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_090 vs results/vclock/pr_nudge_095: jobcomp.log differs; 2348 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_090 vs results/vclock/pr_nudge_098: jobcomp.log differs; 2317 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_090 vs results/vclock/pr_nudge_099: jobcomp.log differs; 2334 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_090 vs results/vclock/pr_nudge_101: jobcomp.log differs; 2367 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_090 vs results/vclock/pr_nudge_102: jobcomp.log differs; 2103 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_090 vs results/vclock/pr_nudge_105: jobcomp.log differs; 2086 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_090 vs results/vclock/pr_nudge_110: jobcomp.log differs; 2122 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_090 vs results/vclock/pr_costs_half: jobcomp.log differs; 2214 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_090 vs results/vclock/pr_costs_double: jobcomp.log differs; 2278 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_090 vs results/vclock/rf_probe_1: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_090 vs results/vclock/rf_probe_2: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_090 vs results/vclock/rf_probe_3: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_090 vs results/vclock/rf_probe_4: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_095 vs results/vclock/pr_nudge_098: jobcomp.log differs; 2136 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_095 vs results/vclock/pr_nudge_099: jobcomp.log differs; 2163 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_095 vs results/vclock/pr_nudge_101: jobcomp.log differs; 2007 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_095 vs results/vclock/pr_nudge_102: jobcomp.log differs; 2295 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_095 vs results/vclock/pr_nudge_105: jobcomp.log differs; 2304 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_095 vs results/vclock/pr_nudge_110: jobcomp.log differs; 2314 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_095 vs results/vclock/pr_costs_half: jobcomp.log differs; 2350 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_095 vs results/vclock/pr_costs_double: jobcomp.log differs; 2283 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_095 vs results/vclock/rf_probe_1: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_095 vs results/vclock/rf_probe_2: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_095 vs results/vclock/rf_probe_3: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_095 vs results/vclock/rf_probe_4: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_098 vs results/vclock/pr_nudge_099: jobcomp.log differs; 960 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_098 vs results/vclock/pr_nudge_101: jobcomp.log differs; 2088 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_098 vs results/vclock/pr_nudge_102: jobcomp.log differs; 2271 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_098 vs results/vclock/pr_nudge_105: jobcomp.log differs; 2371 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_098 vs results/vclock/pr_nudge_110: jobcomp.log differs; 2181 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_098 vs results/vclock/pr_costs_half: jobcomp.log differs; 2206 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_098 vs results/vclock/pr_costs_double: jobcomp.log differs; 2230 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_098 vs results/vclock/rf_probe_1: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_098 vs results/vclock/rf_probe_2: jobcomp.log differs; 3027 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_098 vs results/vclock/rf_probe_3: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_098 vs results/vclock/rf_probe_4: jobcomp.log differs; 3026 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_099 vs results/vclock/pr_nudge_101: jobcomp.log differs; 2075 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_099 vs results/vclock/pr_nudge_102: jobcomp.log differs; 2260 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_099 vs results/vclock/pr_nudge_105: jobcomp.log differs; 2357 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_099 vs results/vclock/pr_nudge_110: jobcomp.log differs; 2163 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_099 vs results/vclock/pr_costs_half: jobcomp.log differs; 2189 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_099 vs results/vclock/pr_costs_double: jobcomp.log differs; 2217 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_099 vs results/vclock/rf_probe_1: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_099 vs results/vclock/rf_probe_2: jobcomp.log differs; 3027 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_099 vs results/vclock/rf_probe_3: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_099 vs results/vclock/rf_probe_4: jobcomp.log differs; 3026 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_101 vs results/vclock/pr_nudge_102: jobcomp.log differs; 2360 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_101 vs results/vclock/pr_nudge_105: jobcomp.log differs; 2363 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_101 vs results/vclock/pr_nudge_110: jobcomp.log differs; 2321 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_101 vs results/vclock/pr_costs_half: jobcomp.log differs; 2337 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_101 vs results/vclock/pr_costs_double: jobcomp.log differs; 2300 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_101 vs results/vclock/rf_probe_1: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_101 vs results/vclock/rf_probe_2: jobcomp.log differs; 3027 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_101 vs results/vclock/rf_probe_3: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_101 vs results/vclock/rf_probe_4: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_102 vs results/vclock/pr_nudge_105: jobcomp.log differs; 2187 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_102 vs results/vclock/pr_nudge_110: jobcomp.log differs; 2211 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_102 vs results/vclock/pr_costs_half: jobcomp.log differs; 2180 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_102 vs results/vclock/pr_costs_double: jobcomp.log differs; 2266 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_102 vs results/vclock/rf_probe_1: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_102 vs results/vclock/rf_probe_2: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_102 vs results/vclock/rf_probe_3: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_102 vs results/vclock/rf_probe_4: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_105 vs results/vclock/pr_nudge_110: jobcomp.log differs; 2251 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_105 vs results/vclock/pr_costs_half: jobcomp.log differs; 2251 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_105 vs results/vclock/pr_costs_double: jobcomp.log differs; 2296 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_105 vs results/vclock/rf_probe_1: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_105 vs results/vclock/rf_probe_2: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_105 vs results/vclock/rf_probe_3: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_105 vs results/vclock/rf_probe_4: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_110 vs results/vclock/pr_costs_half: jobcomp.log differs; 1853 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_110 vs results/vclock/pr_costs_double: jobcomp.log differs; 2232 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_110 vs results/vclock/rf_probe_1: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_110 vs results/vclock/rf_probe_2: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_110 vs results/vclock/rf_probe_3: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_nudge_110 vs results/vclock/rf_probe_4: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_costs_half vs results/vclock/pr_costs_double: jobcomp.log differs; 2104 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_costs_half vs results/vclock/rf_probe_1: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_costs_half vs results/vclock/rf_probe_2: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_costs_half vs results/vclock/rf_probe_3: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_costs_half vs results/vclock/rf_probe_4: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_costs_double vs results/vclock/rf_probe_1: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_costs_double vs results/vclock/rf_probe_2: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_costs_double vs results/vclock/rf_probe_3: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/pr_costs_double vs results/vclock/rf_probe_4: jobcomp.log differs; 3028 of 3028 jobs differ in start, end or nodes
+results/vclock/rf_probe_1 vs results/vclock/rf_probe_2: jobcomp.log differs; 1844 of 3028 jobs differ in start, end or nodes
+results/vclock/rf_probe_1 vs results/vclock/rf_probe_3: jobcomp.log differs; 912 of 3028 jobs differ in start, end or nodes
+results/vclock/rf_probe_1 vs results/vclock/rf_probe_4: jobcomp.log differs; 1848 of 3028 jobs differ in start, end or nodes
+results/vclock/rf_probe_2 vs results/vclock/rf_probe_3: jobcomp.log differs; 1853 of 3028 jobs differ in start, end or nodes
+results/vclock/rf_probe_2 vs results/vclock/rf_probe_4: jobcomp.log differs; 864 of 3028 jobs differ in start, end or nodes
+results/vclock/rf_probe_3 vs results/vclock/rf_probe_4: jobcomp.log differs; 1858 of 3028 jobs differ in start, end or nodes
+
+virtual near the fitted costs: 9 runs (pr_stock_1, pr_nudge_090, pr_nudge_095, pr_nudge_098, pr_nudge_099, pr_nudge_101, pr_nudge_102, pr_nudge_105, pr_nudge_110)
+real clock: 4 runs
+stat   virtual mean ± SD [min, max]       real mean ± SD [min, max]           diff  Welch t
+mean       786 ±   32 [  731,   815]               753 ±   45 [  688,   790]           +4.4%     1.33
+median       2 ±    0 [    1,     2]                 2 ±    0 [    2,     2]           -5.6%    -1.00
+p95       4134 ±  509 [ 3361,  5295]              4082 ±  210 [ 3895,  4316]           +1.3%     0.26
+gt60      1003 ±   59 [  907,  1089]              1072 ±   15 [ 1052,  1084]           -6.4%    -3.26
+virtual runs inside the real-clock range on mean: 4 of 9
+virtual runs inside the real-clock range on p95: 6 of 9
+virtual runs inside the real-clock range on gt60: 2 of 9
