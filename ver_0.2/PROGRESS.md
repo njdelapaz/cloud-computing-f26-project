@@ -198,4 +198,4 @@ Full write-up: `results/vclock/summary.md`. Image: `ver02/slurm-sim:vclock`, the
 | 2026-11-24 | `bec7565` | A1 finished: contended-trace identity check, gate 5 of 5 (A1 session) |
 | 2026-11-24 | `2d6b890` | A1: `ClockScaling = 0.001` tested on the probe day; runs still don't repeat (A1 session) |
 | 2026-11-24 | `2db72b9` | A1 merged into `dev` |
-| 2026-11-24 | — | Option B: simulator determinism patch (virtual clock, stale-completion fix), fitted costs, `scripts/check_vclock.sh` gate 4 of 4; adopted as the default, with SPEC (G1, §4.2, §6.2, §8, §10, §11, §12) and WORKFLOW edits that replace the interim "within 1 s" regression standard; P1 and A1 gates rerun and passing |
+| 2026-11-24 | `7d7bbe6` | Option B: simulator determinism patch (virtual clock, stale-completion fix), fitted costs, `scripts/check_vclock.sh` gate 4 of 4; adopted as the default, with SPEC (G1, §4.2, §6.2, §8, §10, §11, §12) and WORKFLOW edits that replace the interim "within 1 s" regression standard; P1 and A1 gates rerun and passing |
