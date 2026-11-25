@@ -1,5 +1,5 @@
 # Lean image for the UB Slurm simulator v3.0 (P1).
-# Build from ver_0.2/:   docker build -f docker/Dockerfile -t ver02/slurm-sim:p1 .
+# Build from ver_0.2/:   docker build -f docker/Dockerfile -t ver02/slurm-sim:vclock .
 # Sources come from third_party/ (pinned commits recorded in PROGRESS.md):
 #   third_party/slurm_simulator  ubccr-slurm-simulator/slurm_simulator @ f99a71e (branch slurm-23-02-sim)
 #   third_party/slurm_sim_tools  ubccr-slurm-simulator/slurm_sim_tools @ 21ba58d (branch v3.0-branch)
@@ -31,8 +31,12 @@ RUN mkdir -p /run/mysqld && chown mysql:mysql /run/mysqld && \
     mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'slurm'@'localhost' WITH GRANT OPTION;" && \
     mysqladmin shutdown
 
-# Simulator source, plus the ver_0.2 plugin forks registered in its build system
+# Simulator source, the ver_0.2 patches to it (docker/patches/, applied in name order; the
+# virtual clock is off unless sim.conf sets ClockMode=virtual), and the plugin forks registered
+# in its build system
 COPY third_party/slurm_simulator /opt/src/slurm_simulator
+COPY docker/patches /opt/patches
+RUN cd /opt/src/slurm_simulator && for p in /opt/patches/*.patch; do patch -p1 --quiet < "$p"; done
 COPY docker/register_plugins.sh /opt/register_plugins.sh
 COPY docker/m4 /opt/m4
 COPY plugin /opt/ver02_plugin

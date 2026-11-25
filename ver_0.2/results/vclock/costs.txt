@@ -1,0 +1,24 @@
+# Real-clock cost samples from 6 run(s): results/vclock/rf_probe_1, results/vclock/rf_probe_2, results/vclock/rf_probe_3, results/vclock/rf_probe_4, results/vclock/rf_0130, results/vclock/rf_0212
+# kind            count   mean n   mean us median us    p99 us    max us
+# background    2520713      0.0     291.0         1       544    132010
+# bf              15243     57.3   24131.9      9993    228943    924389
+# complete        29151      0.0     130.1       122       277     14451
+# complete_ignored    29151      0.0      28.1        22        93       226
+# db_index       504265      0.0    2913.9         5     86176    209155
+# dbd_agent      251869      0.3   10377.5         1    107688    602071
+# decay           42024      0.0    7591.9      7087     15672     96966
+# other               6      0.0       2.8         3         3         3
+# registration        6      0.0     250.5       251       274       274
+# sched           86337     27.5     415.3        81      3881     10658
+# submit          29151      0.0     997.2       997      1530     38424
+# sched: 155.2 us + 9.45 us/job tested (R^2 0.84, 86337 samples)
+# bf: 0.0 us + 421.05 us/job tested (R^2 0.67, 15243 samples)
+ClockMode = virtual
+SchedPassCost = 0.000155
+SchedJobCost = 0.000009
+BfCycleCost = 0.000000
+BfJobCost = 0.000421
+SubmitCost = 0.000997
+CompleteCost = 0.000130
+BackgroundCost = 0.000291
+DecayCost = 0.007592

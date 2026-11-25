@@ -8,9 +8,9 @@ The tracker for `ver_0.2`. `SPEC.md` says what to build, `WORKFLOW.md` says how,
   - P1 (simulator environment): the simulator builds from pinned sources, runs, and enforces memory; both do-nothing plugin forks match stock exactly.
   - P2 (interfaces): every config, data and log format is defined in SPEC §13, with a validator, an example and unit tests.
   - B1 (workloads): the trace filter, load-targeted sampler, simulator converter and episode finder are built and merged into `dev`.
-  - A1 (ordering plugin, static): `priority/adaptive` takes its ordering weights from one policy; it matches stock exactly on the smoke trace and within 1 s on a contended trace. Merged into `dev`.
-- **Waiting on a decision:** whether SPEC G1 and WORKFLOW's A1 gate should say what A1 actually checks, an exact match on the smoke trace and within 1 s on a contended trace (see Decisions log).
-- **Next:** A2 (switching) and B2 (metrics); they touch separate folders. Before P4: decide how experiments handle run-to-run spread.
+  - A1 (ordering plugin, static): `priority/adaptive` takes its ordering weights from one policy; it matches stock exactly on the smoke trace and within 1 s on a contended trace (exact on both, and on the probe day, once the virtual clock came in). Merged into `dev`.
+  - Run-to-run spread (option B, adopted): a simulator patch adds a virtual clock with fixed costs and fixes a stock bug that completed the wrong jobs. Every run now uses it. Identical runs are byte-identical on realistic days, and adaptive BASE matches stock exactly on the probe day (`scripts/check_vclock.sh`, 4 of 4; results/vclock/summary.md). The P1 and A1 gates still pass on it.
+- **Next:** A2 (switching) and B2 (metrics); they touch separate folders. A2 and A4 each decide whether their extra work charges a fixed simulated cost (SPEC §8).
 
 ## Phase tracker
 
@@ -55,9 +55,11 @@ The current decisions are listed in SPEC §11 (#1–19). This log keeps the hist
 | W2 rule (B1) | Volume floor added: memory-heavy core-hours at least their median per window; 91 → 84 episodes (SPEC §9.3) | The starting rule, which flagged 11 near-idle windows |
 | Window and warm-up length | Both default to 1 day in B1's sampler; still to decide in B3/P4 | — |
 | A1 gate check 2 | A 41-job contended trace, within 1 s, with the realistic day reported as spread but not gating. The user chose to test `ClockScaling = 0.001` first, then fall back to this | Identity on a realistic W0 trace, which the simulator can't repeat |
-| `ClockScaling` | Stays 1.0. 0.001 cut the spread but didn't remove it, gave no speed-up, and stops backfill's time limits binding | — |
-| Run-to-run spread in experiments | To decide before P4. Options: repeats per seed, more seeds, or patching the simulator's event order and clock. B2/B3 should support repeat runs either way | — |
-| SPEC G1 / WORKFLOW A1 wording | Pending: no preference given yet on updating them to match A1's gate | — |
+| `ClockScaling` | No longer used: the virtual clock ignores it. On the real clock it stays 1.0, because 0.001 cut the spread but didn't remove it, gave no speed-up, and stops backfill's time limits binding | — |
+| Run-to-run spread in experiments | Adopted option B (the user's decision, after the trial passed its gate). Every run uses `ClockMode = virtual` with the fixed costs, so one run per seed is enough and seeds vary only the workload. Applied to SPEC G1, §8, §11 and §12, and to WORKFLOW | To decide before P4, among repeats per seed, more seeds, or patching the simulator. Then a trial of option B |
+| Simulator patches (option B) | `docker/patches/sim_determinism.patch`, applied to the pristine clone at image build. It adds the virtual clock, which ver_0.2's templates turn on, and fixes stale completion events in both clock modes. Edit it with `scripts/sim_patch.sh` | Stock simulator, unpatched |
+| Fixed simulated costs (option B) | Fitted from six real-clock runs on the fixed image, with least squares or means so the total time is kept: main pass 155 µs + 9.5 µs per job tested; backfill 421 µs per job tested; submit 997 µs; completion 130 µs; background call 291 µs; decay run 7.6 ms. slurmdbd calls are not charged (a real slurmctld runs them on other threads). In both `sim.conf.in` templates | — |
+| Regression standard (G1) | Exact (start, end and node) on the smoke trace, the contended trace and a realistic day, on the virtual clock (SPEC G1, §11 #22; WORKFLOW's A1 and A4 gates) | "Identical on the same trace", including a realistic W0 trace → exact on smoke, within 1 s on contended, a realistic day only reported as spread (A1, before the virtual clock) |
 
 ## Spec changes from P1 (approved and applied to SPEC.md)
 Along with these, SPEC §8's timing note and the §11 window-length item now state what P1 measured.
@@ -153,7 +155,30 @@ Trace profiling, done with one-off scripts that aren't saved in the repo. B1's g
   - Two identical stock runs of the probe day differ on about 2,100 of 3,028 jobs, with mean waits of 1,099 s and 5,727 s.
   - With `ClockScaling = 0.001` they still differ on 969 jobs (mean waits 1,975 and 1,659 s), with no speed-up, and backfill's time limits would stop binding. `ClockScaling` stays 1.0.
   - On the contended smoke trace the jitter stays at 1 s and doesn't grow.
-- **Image:** A1 built `ver02/slurm-sim:a1` from the merged `docker/Dockerfile`. The shared `ver02/slurm-sim:p1` image predates A1, so later phases should rebuild from `dev`.
+- **Image:** A1 built `ver02/slurm-sim:a1` from the merged `docker/Dockerfile`. Both it and `ver02/slurm-sim:p1` predate the simulator patch and can't read the new `sim.conf` keys. Every script now defaults to `ver02/slurm-sim:vclock`.
+
+### Option B: deterministic simulator (adopted)
+Full write-up: `results/vclock/summary.md`. Image: `ver02/slurm-sim:vclock`, the default for every script.
+- **Two causes of the spread, not one:**
+  - the real-speed clock A1 found;
+  - a stock simulator bug. Completion events held a pointer to the job's record, which is freed when the job ends. Every job gets a second completion event, and when one fired after its job had ended, it could complete whichever newer job had reused that memory. Example: `jobid_1360` ended after 15 s instead of 2,601 s. The patch passes the job id instead and ignores events whose job has ended.
+- **Patch:** `ClockMode = virtual` makes slurmctld's clock move only on time skips, main-thread sleeps and the fixed costs (decision rows above). slurmctld runs no other threads in the simulator, so with the clock and the bug both fixed, a run depends only on its inputs.
+- **Gate** (`scripts/check_vclock.sh`, 4 of 4, all on the virtual clock):
+  - two identical runs give a byte-identical `jobcomp.log` on the smoke trace, the contended trace, the probe day, and the 2024-01-30 seed 2 and 2024-02-12 seed 3 samples (6,092 and 10,947 jobs)
+  - adaptive BASE matches stock exactly on the smoke trace, the contended trace and the probe day
+  - the JobSize-only controls differ
+  - the costs are set and charged
+- **Fidelity, probe day:**
+  - virtual clock: mean wait 847 s, p95 2,137 s
+  - four real-clock runs on the fixed image: 831–902 s and 2,048–3,357 s
+  - with the bug fixed, the real clock's aggregate spread shrinks from A1's 5× to about ±4% in mean wait. But any two real-clock runs still differ on 1,751–2,319 of the 3,028 jobs; virtual-clock runs differ on none
+- **Cost sensitivity:** halving or doubling every cost changes 2,339 jobs but moves the mean wait by about 3%.
+- **Speed:** about 700 s of real time per probe day on the virtual clock, against about 745 s on the real clock. Both are dominated by synchronous slurmdbd round trips (89% of real time in a diagnostic run). Those don't affect virtual-clock results, so a faster database setup could speed up runs; that's a candidate for B3.
+- **Adopted** (the user's decision):
+  - Both `sim.conf.in` templates set `ClockMode = virtual`.
+  - SPEC edits: G1 and §11 #22 require exact matches on a realistic day; §8 covers timing on the virtual clock, with real cycle times taken from the cost log; §4.2 adds the cost log; §6.2 notes that scheduler cost is modeled; §10 runs each seed once; §11 #1 and the new #23 record the patch; §12 adds `docker/patches/`; the open spread item is closed.
+  - WORKFLOW: the A1 and A4 gates are exact on the probe day; A2 and A4 decide whether to charge their own costs; the repeatability risk is retired and a fixed-cost risk added.
+- **Earlier gates rerun on the new defaults:** P1 passes 7 of 7, with a 0 s spread across the three determinism runs (`results/p1/check_p1_vclock.txt`). A1 passes 5 of 5, with 0 exact-match differences on the contended trace (`results/a1/check_a1_vclock.txt`). The original `check_p1.txt` and `check_a1.txt` stay as they were when those phases passed.
 
 ## Change log
 
@@ -172,4 +197,5 @@ Trace profiling, done with one-off scripts that aren't saved in the repo. B1's g
 | 2026-11-24 | `e0b38e2` | A1: `priority/adaptive` takes ordering weights from `policies.conf` (A1 session) |
 | 2026-11-24 | `bec7565` | A1 finished: contended-trace identity check, gate 5 of 5 (A1 session) |
 | 2026-11-24 | `2d6b890` | A1: `ClockScaling = 0.001` tested on the probe day; runs still don't repeat (A1 session) |
-| 2026-11-24 | — | A1 merged into `dev` |
+| 2026-11-24 | `2db72b9` | A1 merged into `dev` |
+| 2026-11-24 | — | Option B: simulator determinism patch (virtual clock, stale-completion fix), fitted costs, `scripts/check_vclock.sh` gate 4 of 4; adopted as the default, with SPEC (G1, §4.2, §6.2, §8, §10, §11, §12) and WORKFLOW edits that replace the interim "within 1 s" regression standard; P1 and A1 gates rerun and passing |

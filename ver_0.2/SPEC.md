@@ -28,7 +28,7 @@ We will then measure whether this beats any single static policy, and how much t
 
 | # | Goal | Done when |
 |---|------|-----------|
-| G1 | Two plugins forked from the simulator's Slurm 23.11 source. **`priority/adaptive`**, a fork of `priority/multifactor`, takes its ordering weights from the active policy. **`select/cons_tres_adaptive`**, a fork of `select/cons_tres`, ranks candidate nodes by the active policy's placement score (§6.1). Its name has to contain "cons_tres": slurmctld turns on cons_tres-only code by checking `SelectType` for that string | With switching off and `BASE` loaded (stock ordering weights, placement weights 0), both job start order **and** node assignments are **identical** to stock multifactor + cons_tres on the same trace (regression check) |
+| G1 | Two plugins forked from the simulator's Slurm 23.11 source. **`priority/adaptive`**, a fork of `priority/multifactor`, takes its ordering weights from the active policy. **`select/cons_tres_adaptive`**, a fork of `select/cons_tres`, ranks candidate nodes by the active policy's placement score (§6.1). Its name has to contain "cons_tres": slurmctld turns on cons_tres-only code by checking `SelectType` for that string | With switching off and `BASE` loaded (stock ordering weights, placement weights 0), results match stock multifactor + cons_tres. They match **exactly** (start, end and node) on the 7-job smoke trace, the 41-job contended trace (`config/smoke/contended.events`) and a realistic day (the probe day, `workloads/traces/p1_probe`), all on the virtual clock (§8, §11 #23) |
 | G2 | Policy schedule with two modes, **override** (a scheduled window is active) and **auto** (no window, so the controller picks) | On a trace with a window `[t1, t2)`, the decision log shows override from t1 and auto from t2, both within one controller tick |
 | G3 | Policy-update mechanism (ordering and placement), overhead measurement, minimum wait time `T_min` | Switch cost, placement cost and disruption are measured (§8), and `T_min` is chosen by a rule written down **before** the sweep, with a plot supporting it |
 | G4 | System states that trigger switches, with no sampling while `T_min` blocks a switch | Decision log has zero state evaluations inside cooldown or override. Each trigger workload fires its intended state. The general workload rarely switches |
@@ -78,7 +78,7 @@ every PriorityCalcPeriod (simulator clock):
   normal multifactor recalculation continues
 ```
 
-**Why in slurmctld and not an external daemon:** the UB simulator runs slurmctld on a virtual, accelerated clock. An external process polling `squeue` would run on wall-clock time and race the simulation. Logic inside slurmctld sees the same clock as the scheduler and is deterministic for a given trace.
+**Why in slurmctld and not an external daemon:** the UB simulator runs slurmctld on a virtual, accelerated clock. An external process polling `squeue` would run on wall-clock time and race the simulation. Logic inside slurmctld sees the same clock as the scheduler. With ver_0.2's virtual clock (§8), a given trace and config always give the same run.
 
 **Sharing the policy between plugins:** both plugins are loaded into the same slurmctld process. A small shared module compiled into slurmctld holds the active policy; the controller writes it and the scorer reads it. The exact hook is settled while building the plugins (A2, A4).
 
@@ -97,6 +97,7 @@ The plugins read these at startup and on `scontrol reconfigure`. The exact gramm
 - **Placement log:** CSV, one row per job start, optional.
 - Columns and rules for both are in §13.3.
 - When a switch changes the ordering weights, the plugin can also dump the pending queue's priority order just before and after it, for churn analysis (§8).
+- **Cost log** (`log/cost.csv`, written by the patched simulator for every run): one row per main-scheduler pass, backfill cycle, event and background call, with its real duration (`CLOCK_MONOTONIC`) and the simulated time charged for it. Format in `docker/patches/README.md`.
 
 ---
 
@@ -162,6 +163,7 @@ The job goes to the highest-scoring node, and ties fall back to Slurm's stock or
 
 ### 6.2 What the simulator can and can't show
 - **No speedups:** the simulator replays each job's recorded runtime, so jobs don't run faster on emptier nodes. Balance's benefit shows in its own metric (how even node load is) and in side effects on waits. Any real-world speedup from less crowded nodes is outside what this setup can measure.
+- **Scheduler cost is modeled, not measured:** on the virtual clock, slurmctld's work moves simulated time by fixed costs fitted from real-clock runs (§8). A plugin's extra CPU time delays later events only if the plugin charges a fixed cost for it. Its real cost is measured separately.
 - **B and U pull against each other:** spreading leaves fewer whole nodes free, which can delay whole-node jobs, while fit tends to pack nodes. The composite policies explore that trade-off.
 
 ## 7. System states (G4)
@@ -192,7 +194,7 @@ All signals come from one in-memory snapshot of pending and running jobs, node s
 **Overhead, measured at five levels:**
 1. **Controller cost:** µs per switch and µs per state sample, against the number of pending jobs (scaling plot).
 2. **Placement cost:** µs per node choice with scoring vs stock selection. Scoring runs on every start and every backfill test.
-3. **Scheduler impact:** main and backfill cycle times (sdiag counters), overall and just before and after each switch.
+3. **Scheduler impact:** main and backfill cycle times in real time, from the cost log's `real_usec` (§4.2), overall and just before and after each switch. On the virtual clock, sdiag's counters show only the charged costs.
 4. **Disruption from ordering changes**, measured only when the ordering weights change:
    - queue-order churn: Kendall-τ distance between pending order just before and after a switch
    - reservation churn: pending jobs whose expected start moved later
@@ -201,7 +203,10 @@ All signals come from one in-memory snapshot of pending and running jobs, node s
    A placement change doesn't move anything already running, so its disruption shows up only in later waits and is caught by level 5.
 5. **End-to-end cost of switching:** forced alternation between two very different policies (`F` and `U`, which differ on both levers) every *P* ∈ {1 tick, 15 m, 30 m, 1 h, 2 h, 4 h}, compared with each one run statically. This isolates what switching costs from whether the decisions were any good.
 
-**Timing:** the simulator wraps `time()`, `gettimeofday()` and the sleep calls to return simulated time, but not `clock_gettime()`. So `swap_us` and `score_us` are measured with `CLOCK_MONOTONIC`, which stays real (confirmed in P1). Backfill cycles also advance the simulated clock by their real duration, so the scheduler's real CPU cost, the scorer's included, shows up in simulated time.
+**Timing:**
+- The simulator wraps `time()`, `gettimeofday()` and the sleep calls to return simulated time, but not `clock_gettime()`. So `swap_us` and `score_us` are measured with `CLOCK_MONOTONIC`, which stays real (confirmed in P1).
+- Every run uses ver_0.2's virtual clock (`ClockMode = virtual`, §11 #23). Simulated time moves only when the event loop skips ahead, when the main thread sleeps, and by fixed costs per unit of slurmctld work: per scheduler pass, per job tested, per event. The costs are fitted from real-clock runs. So identical inputs give identical runs.
+- The catch: real CPU cost no longer reaches simulated time by itself. The scorer's and the switch pass's cost show up in the real-time measures above, but they delay the schedule only if A2 and A4 charge a fixed cost for them through `sim_charge()`, fitted the same way from measured `score_us` and `swap_us`. Whether to do that is decided in A2 and A4.
 
 **T_min selection:**
 - Sweep `T_min` ∈ {1 tick, 15 m, 30 m, 1 h, 2 h, 4 h, ∞} in auto mode, on the trigger workloads plus the general workload.
@@ -321,7 +326,7 @@ The trigger workloads are windows of the trace where the pattern happens on its 
 
 **Seeds:** a seed is one random job sample of a trace window (§9.2). Each workload gets 3 calibration seeds, taken from January–February windows and used for P4 tuning and P6 thresholds. It also gets 5 evaluation seeds, taken from March–June windows and used only for reported results.
 
-Report every metric as mean ± 95% CI across the 5 evaluation seeds. All plots come from one script reading raw results.
+Runs repeat exactly (§11 #23), so each seed is run once. Report every metric as mean ± 95% CI across the 5 evaluation seeds. All plots come from one script reading raw results.
 
 ---
 
@@ -331,7 +336,7 @@ Report every metric as mean ± 95% CI across the 5 evaluation seeds. All plots c
 
 | # | Question | Decision |
 |---|---|---|
-| 1 | Simulator | UB simulator v3.0: `slurm_simulator` @ `f99a71e` and `slurm_sim_tools` @ `21ba58d`. The code is Slurm 23.11.0-0rc1 (per its `META` file), even though the branch is named `slurm-23-02-sim` |
+| 1 | Simulator | UB simulator v3.0: `slurm_simulator` @ `f99a71e` and `slurm_sim_tools` @ `21ba58d`. The code is Slurm 23.11.0-0rc1 (per its `META` file), even though the branch is named `slurm-23-02-sim`. ver_0.2 patches it at image build (`docker/patches/sim_determinism.patch`, #23) |
 | 2 | What "balance" means | Even load across nodes, achieved through placement (§6.1) |
 | 3 | Override vs T_min | Override wins; a window's end starts a fresh cooldown |
 | 4 | Device utilization | CPU cores only; no GPUs in the project |
@@ -352,18 +357,21 @@ Report every metric as mean ± 95% CI across the 5 evaluation seeds. All plots c
 | 19 | Ordering in composites | Fairshare scales with fairness's coefficient; Age takes the rest, with a 10k floor (§6) |
 | 20 | Memory tracking | Confirmed in P1: with `CR_Core_Memory`, the simulator enforces memory per node |
 | 21 | Interfaces | Config grammars, data and log formats, controller edge cases and metric definitions are in §13 (P2) |
+| 22 | Regression standard (G1) | Exact (start, end and node) on the smoke trace, the contended trace and a realistic day, on the virtual clock (#23). On the stock clock, identical runs of one day differed on most jobs (A1), and `ClockScaling = 0.001` narrowed that without removing it |
+| 23 | Run-to-run spread | Every run uses the virtual clock with fixed costs: `ClockMode = virtual`, with the costs in `config/*/sim.conf.in`, fitted by `scripts/vclock.py costs` from six real-clock calibration runs. Identical runs are byte-identical, so each seed runs once. The same patch fixes a stock bug where stale completion events ended the wrong jobs. Halving or doubling every cost moved the probe day's mean wait by about 3% (`results/vclock/summary.md`) |
 
 **Settled by later phases:**
 - How the two plugins share the active policy inside slurmctld: settled in A2 and A4.
 - `MinDemand` for the balance and utilization signals: calibrated in P6 along with the thresholds.
 - W3 and W5 can only be found from `BASE` simulation runs (P6). If either turns out not to exist in the trace, what to do about it needs a decision then.
-- Window length per run: P1 measured about 11 minutes of real time per simulated day of submissions on the project cluster (about 530×). The length gets set along with the runner and run matrix (B3, P4).
+- Window length per run: P1 measured about 11 minutes of real time per simulated day of submissions on the project cluster (about 530×). The virtual clock takes about the same, about 12 minutes per probe day, mostly spent in synchronous slurmdbd round trips, which a faster database setup might cut (B3). The length gets set along with the runner and run matrix (B3, P4).
 - X and Y for the T_min rule: set after P5.
 
 ## 12. Repository layout (all inside `ver_0.2/`)
 ```
 SPEC.md  WORKFLOW.md  PROGRESS.md
 docker/                      simulator image with priority/adaptive and select/cons_tres_adaptive compiled in
+docker/patches/              ver_0.2's patches to the pinned simulator (virtual clock, stale-event fix)
 plugin/priority_adaptive/    C source + build glue (ordering + controller)
 plugin/select_cons_tres_adaptive/  C source + build glue (placement scorer)
 plugin/tests/                unit tests for decide() and score()

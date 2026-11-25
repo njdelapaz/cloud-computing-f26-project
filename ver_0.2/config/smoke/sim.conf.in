@@ -8,3 +8,16 @@ TimeAfterAllEventsDone = 30
 FirstJobDelay = 0.0
 CompJobDelay = 0.0
 TimeLimitDelay = 0.0
+# Virtual clock (SPEC §8, §11 #23; docker/patches/README.md): identical runs repeat exactly, and
+# slurmctld's work moves simulated time by the fixed costs below (seconds). ClockMode = real gives the
+# stock clock, where the costs are ignored. Fitted by scripts/vclock.py costs from six real-clock runs
+# on the project cluster (results/vclock/costs.txt).
+ClockMode = virtual
+SchedPassCost = 0.000155
+SchedJobCost = 0.000009
+BfCycleCost = 0.000000
+BfJobCost = 0.000421
+SubmitCost = 0.000997
+CompleteCost = 0.000130
+BackgroundCost = 0.000291
+DecayCost = 0.007592

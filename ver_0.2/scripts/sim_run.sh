@@ -6,7 +6,7 @@
 #   ACCT          dir holding users.sim and sacctmgr.script (default: CONFIG)
 #   RESULTS       results dir (default results/p1)
 #   TIME_START    simulated start time, Unix seconds (default 1704067200 = 2024-01-01 UTC)
-#   IMAGE         simulator image (default ver02/slurm-sim:p1)
+#   IMAGE         simulator image (default ver02/slurm-sim:vclock, built from docker/Dockerfile)
 #   ADAPTIVE      adaptive.conf to use, relative to ver_0.2/ (plugins=adaptive only). The run's etc/
 #                 gets a copy, plus copies of the PoliciesFile and ScheduleFile it names; those paths
 #                 are pointed at etc/, and LogFile/PlacementLog at log/. priority/adaptive then takes
@@ -16,15 +16,19 @@
 #   ADAPTIVE_SET  space-separated Key=Value lines that replace or extend the adaptive.conf copy, for
 #                 example "DefaultPolicy=BASE" or "FixedPolicy=U". Applied before files are copied, so
 #                 "PoliciesFile=/work/<path>" picks a different policies.conf. Implies ADAPTIVE=config/adaptive.conf.
+#   SIM_SET       space-separated Key=Value settings that replace or extend the run's sim.conf, for
+#                 example "ClockMode=real" (the stock clock) or "SchedJobCost=0.0001" (see the virtual
+#                 clock keys in docker/patches/README.md). Every run also writes CostLog=log/cost.csv.
 # Output: <RESULTS>/<run_name>/ with etc/, log/ (slurmctld.log, jobcomp.log, ...) and out/ (run tool output)
 set -euo pipefail
 
 VER02="$(cd "$(dirname "$0")/.." && pwd)"
 NAME="$1"; WEIGHTS="$2"; EVENTS="$3"; PLUGINS="${4:-stock}"
-IMAGE="${IMAGE:-ver02/slurm-sim:p1}"
+IMAGE="${IMAGE:-ver02/slurm-sim:vclock}"
 CONFIG="${CONFIG:-config/smoke}"; ACCT="${ACCT:-$CONFIG}"; RESULTS="${RESULTS:-results/p1}"
 TIME_START="${TIME_START:-1704067200}"
 ADAPTIVE_SET="${ADAPTIVE_SET:-}"
+SIM_SET="${SIM_SET:-}"
 ADAPTIVE="${ADAPTIVE:-${ADAPTIVE_SET:+config/adaptive.conf}}"
 
 case "$PLUGINS" in
@@ -54,6 +58,16 @@ for f in slurm.conf slurmdbd.conf sim.conf; do
       "$VER02/$CONFIG/$f.in" > "$RUN_HOST/etc/$f"
 done
 chmod 600 "$RUN_HOST/etc/slurmdbd.conf"     # slurmdbd refuses to start otherwise
+
+# sim.conf overrides (its lines are "Key = Value"); the cost log always goes to log/cost.csv
+for kv in $SIM_SET "CostLog=$RUN/log/cost.csv"; do
+  k="${kv%%=*}"; v="${kv#*=}"
+  if grep -q "^[[:space:]]*$k[[:space:]]*=" "$RUN_HOST/etc/sim.conf"; then
+    sed -i "s#^[[:space:]]*$k[[:space:]]*=.*#$k = $v#" "$RUN_HOST/etc/sim.conf"
+  else
+    echo "$k = $v" >> "$RUN_HOST/etc/sim.conf"
+  fi
+done
 cp "$VER02/$ACCT/sacctmgr.script" "$VER02/$ACCT/users.sim" "$RUN_HOST/etc/"
 
 # Replace each Key=Value of $2 in file $1 (single-key lines), appending keys not present.

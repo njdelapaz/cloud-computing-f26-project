@@ -5,8 +5,9 @@ set -euo pipefail
 VER02="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$VER02"
 
-docker image inspect ver02/slurm-sim:p1 >/dev/null 2>&1 || \
-  docker build -f docker/Dockerfile -t ver02/slurm-sim:p1 .
+# IMAGE: simulator image (default ver02/slurm-sim:vclock, built from docker/Dockerfile if missing)
+export IMAGE="${IMAGE:-ver02/slurm-sim:vclock}"
+docker image inspect "$IMAGE" >/dev/null 2>&1 || docker build -f docker/Dockerfile -t "$IMAGE" .
 
 for r in 1 2 3; do scripts/sim_run.sh "priority_age_$r" age config/smoke/priority.events; done
 scripts/sim_run.sh priority_size size config/smoke/priority.events
