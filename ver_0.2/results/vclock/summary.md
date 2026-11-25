@@ -70,6 +70,24 @@ All 4 gating checks pass; see `check_vclock.txt`.
 - The costs matter for individual jobs, not much for aggregates. Halving or doubling every cost changes 2,339 jobs but moves the mean wait by about 3%.
 - Real time: about 700 s per probe day on the virtual clock against about 745 s on the real clock. Both are dominated by slurmdbd round trips.
 
+## After the decay fix (A2)
+A2 found and fixed a second stock bug (`docker/patches/sim_decay_time.patch`, SPEC §11 #24): the decay loop's time stayed at the run's first second, so the Age factor was always 0 and usage never decayed. The four real-clock probe-day runs and the two cost-sensitivity runs were redone on the fixed image (`ver02/slurm-sim:a2`). Report: `check_vclock_decay.txt`; cost fits: `costs_decay.txt`. The runs from before the fix are in `predecay/` (git-ignored). The gate still passes 4 of 4.
+
+Probe day, waits in s:
+
+| Run | mean | median | p95 | >60 s |
+|---|---|---|---|---|
+| virtual clock, fitted costs | 815 (847 before the fix) | 2 | 3,361 (2,137) | 982 (911) |
+| virtual, every cost halved | 978 (876) | 2 | 4,022 (2,346) | 979 (962) |
+| virtual, every cost doubled | 799 (874) | 2 | 3,223 (2,220) | 1,016 (885) |
+| real clock (4 runs) | 688–790 (831–902) | 2 | 3,895–4,316 (2,048–3,357) | 1,052–1,084 (845–891) |
+
+- **Fidelity got worse.** The virtual run now falls inside the real-clock range only on the median. It sits 3% above the range on mean wait, 14% below it on p95, and 7% below it on jobs waiting over 60 s. Before the fix it was inside on mean, median and p95.
+- **The costs didn't move.** Fitting the probe day's four real-clock runs before and after the fix gives close values: decay 8.7 → 8.5 ms, submit 1,026 → 997 µs, main pass 111 → 118 µs + 12.5 → 11.6 µs per job, background 305 → 320 µs, completion 129 → 138 µs. The one bigger change is backfill per job, 294 → 234 µs. So refitting would barely change the templates, and they are kept.
+- **Sensitivity grew.** Halving every cost now moves mean wait by +20% and p95 by +20%, against about 3% before; doubling moves them −2% and −4%. With Age and decay working, priorities depend on time, so the timing differences the costs set reach the job order more.
+- **The real clock still doesn't repeat.** Any two real-clock runs differ on 864–1,858 of 3,028 jobs (1,751–2,319 before). Their mean wait spans ±7%.
+- **The cause of the gap isn't established.** The leading candidate is the known structural difference: on the real clock, slurmdbd round trips (about 36,000 agent calls at 7.1 ms and 72,000 index calls at 2.3 ms per probe-day run, about 420 s of a 714 s run) move simulated time; on the virtual clock they don't. With Age live, that extra time changes priorities. Another possibility is that one virtual run is a single draw from an outcome that swings about as much as the halved-cost run shows.
+
 ## Not covered
 - **Plugin overhead.** A plugin's own extra work (A4's node scoring, A2's switch pass) costs real time but doesn't move the virtual clock, unless the plugin charges a fixed cost through `sim_charge()`. So under the virtual clock, SPEC §8's claim that the scorer's real CPU cost shows up in simulated time no longer holds.
 - **Host dependence.** The costs were fitted on this host. Another host would fit different values, but with fixed values in `sim.conf`, the results no longer depend on the host.

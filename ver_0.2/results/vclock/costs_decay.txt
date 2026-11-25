@@ -1,0 +1,55 @@
+# Fixed costs fitted from the probe day's four real-clock runs only, before and after the decay fix
+# (scripts/vclock.py costs). The templates' values come from six runs (these four plus two B1 samples; costs.txt),
+# so compare these two fits with each other, not with the templates.
+
+## before the decay fix (results/vclock/predecay/rf_probe_1..4)
+# Real-clock cost samples from 4 run(s): results/vclock/predecay/rf_probe_1, results/vclock/predecay/rf_probe_2, results/vclock/predecay/rf_probe_3, results/vclock/predecay/rf_probe_4
+# kind            count   mean n   mean us median us    p99 us    max us
+# background    1440001      0.0     305.4         1       462    120649
+# bf               8594     39.9   13888.4      8814     76565    106299
+# complete        12112      0.0     128.9       122       265     14451
+# complete_ignored    12112      0.0      27.5        22        86       201
+# db_index       288081      0.0    2287.3         5     85991    120984
+# dbd_agent      143929      0.2    7787.1         1    106589    525410
+# decay           24008      0.0    8735.0      9047     16760     81315
+# other               4      0.0       2.8         3         3         3
+# registration        4      0.0     249.5       251       274       274
+# sched           42478     15.6     305.7        63      2057      9788
+# submit          12112      0.0    1025.8      1014      2115     38424
+# sched: 111.2 us + 12.46 us/job tested (R^2 0.78, 42478 samples)
+# bf: 2147.1 us + 294.49 us/job tested (R^2 0.53, 8594 samples)
+ClockMode = virtual
+SchedPassCost = 0.000111
+SchedJobCost = 0.000012
+BfCycleCost = 0.002147
+BfJobCost = 0.000294
+SubmitCost = 0.001026
+CompleteCost = 0.000129
+BackgroundCost = 0.000305
+DecayCost = 0.008735
+
+## after the decay fix (results/vclock/rf_probe_1..4, image ver02/slurm-sim:a2)
+# Real-clock cost samples from 4 run(s): results/vclock/rf_probe_1, results/vclock/rf_probe_2, results/vclock/rf_probe_3, results/vclock/rf_probe_4
+# kind            count   mean n   mean us median us    p99 us    max us
+# background    1439953      0.0     320.4         1       467    705283
+# bf               7695     38.5   11336.0      5530     55730     97281
+# complete        12112      0.0     138.3       127       289     35002
+# complete_ignored    12112      0.0      28.5        23        90       136
+# db_index       288077      0.0    2280.3         6     83253     89691
+# dbd_agent      143936      0.2    7080.0         1     89269    368562
+# decay           24008      0.0    8455.6      9004     29593    519672
+# other               4      0.0       2.8         3         3         3
+# registration        4      0.0     243.5       253       264       264
+# sched           42570     17.7     323.6        66      2447     16987
+# submit          12112      0.0     996.7      1029      1490      1914
+# sched: 117.7 us + 11.61 us/job tested (R^2 0.72, 42570 samples)
+# bf: 2340.9 us + 233.67 us/job tested (R^2 0.71, 7695 samples)
+ClockMode = virtual
+SchedPassCost = 0.000118
+SchedJobCost = 0.000012
+BfCycleCost = 0.002341
+BfJobCost = 0.000234
+SubmitCost = 0.000997
+CompleteCost = 0.000138
+BackgroundCost = 0.000320
+DecayCost = 0.008456

@@ -1,0 +1,22 @@
+# scripts/vclock.py gate on the fixed image (ver02/slurm-sim:a2: virtual clock + decay-time fix), with the four
+# real-clock probe-day runs and the cost-sensitivity runs redone on that image. Runs from before the decay fix are in
+# results/vclock/predecay/ (git-ignored). The adoption record is check_vclock.txt.
+[PASS] 1 repeats byte-identical: smoke 7 jobs identical; contended 41 jobs identical; probe day 3028 jobs identical; 2024-01-30 s2 6092 jobs identical; 2024-02-12 s3 10947 jobs identical
+[PASS] 2 adaptive BASE == stock (start, end, nodes): smoke 0 of 7 jobs differ; contended 0 of 41 jobs differ; probe day 0 of 3028 jobs differ
+[PASS] 3 JobSize-only control differs from BASE: smoke 4 of 7 jobs differ; contended 40 of 41 jobs differ
+[PASS] 4 costs set and charged: project template SchedPassCost=155.0us, SchedJobCost=9.0us, BfCycleCost=0.0us, BfJobCost=421.0us, SubmitCost=997.0us, CompleteCost=130.0us, BackgroundCost=291.0us, DecayCost=7592.0us; probe day charged 3.1 s to main-scheduler passes
+
+INFO probe day, virtual clock vs real clock (waits in s):
+  run                                     jobs   mean median    p95  >60s  real s
+  results/vclock/pr_stock_1               3028    815      2   3361   982     698
+  results/vclock/pr_costs_half            3028    978      2   4022   979     687
+  results/vclock/pr_costs_double          3028    799      2   3223  1016     686
+  results/vclock/rf_probe_1               3028    790      2   4201  1084     714
+  results/vclock/rf_probe_2               3028    775      2   3895  1082     713
+  results/vclock/rf_probe_3               3028    688      2   4316  1052     711
+  results/vclock/rf_probe_4               3028    760      2   3914  1068     717
+  virtual run inside the real-clock range on: median (of mean, median, p95, >60s; 4 real runs)
+
+INFO real time per run (s): ct_adaptive 24, ct_size 24, ct_stock_1 24, ct_stock_2 24, pr_adaptive 698, pr_costs_double 686, pr_costs_half 687, pr_stock_1 698, pr_stock_2 696, s0130_stock_1 1638, s0130_stock_2 1639, s0212_stock_1 1738, s0212_stock_2 1739, sm_adaptive 19, sm_size 19, sm_stock_1 19, sm_stock_2 19
+
+4 of 4 gating checks pass
