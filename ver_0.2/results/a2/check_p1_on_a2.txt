@@ -1,0 +1,7 @@
+PASS  age weights: submission order                   1002 1003 1004 1005 1006 1007
+PASS  size weights: largest first                     1003 1005 1007 1004 1006 1002
+PASS  determinism: 3 age runs identical               max start-time spread 0 s
+PASS  memory: 4th 12 GB job waits for a free node     first three on ['n1', 'n2', 'n3'], 4th started 120 s after the first
+PASS  forks: identical to stock (age weights)         7 jobs compared
+PASS  forks: identical to stock (size weights)        7 jobs compared
+PASS  clocks: time() simulated, CLOCK_MONOTONIC real  18 probes: 1019 s simulated over 2.1 s real (491x)

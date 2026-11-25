@@ -1,11 +1,11 @@
 [PASS] 1 unit tests: test_decide.py 26 OK; test_adaptive_conf.py 60 OK; test_adaptive_policy.py 2 OK; tests 50 OK
-[PASS] 2 G1: adaptive BASE, no windows == stock (start, end, nodes): smoke 0 of 7 jobs differ, 18 log rows for 18 ticks, modes AUTO, 0 switches; contended 0 of 41 jobs differ, 121 log rows for 121 ticks, modes AUTO, 0 switches; probe day 0 of 3028 jobs differ, 6002 log rows for 6002 ticks, modes AUTO, 0 switches
+[PASS] 2 G1: adaptive BASE, no windows == stock (start, end, nodes): smoke 0 of 7 jobs differ, 18 log rows for 18 ticks, modes AUTO, 0 switches; contended 0 of 41 jobs differ, 127 log rows for 127 ticks, modes AUTO, 0 switches; probe day 0 of 3028 jobs differ, 6002 log rows for 6002 ticks, modes AUTO, 0 switches
 [PASS] 3 G2: windows switch within one tick: [00:20:30, 01:00:30) -> U: OVERRIDE from 00:21:00 (+30 s), AUTO from 01:01:00 (+30 s); [01:30:00, 01:45:00) -> F: OVERRIDE from 01:30:00 (+0 s), AUTO from 01:45:00 (+0 s); 128 ticks, log valid
 [PASS] 4 hot swap: priorities recomputed, window follows U: switch at 00:21:00 recomputed 40 pending jobs in 9 us; 22 jobs started in the window, 22 of them exactly as in static U; 40 of 41 jobs differ from adaptive BASE
 [PASS] 5 cooldown: window ends start a fresh TMin: after 01:00:30: 10 ticks not eligible, eligible again at 01:11:00; after 01:45:00: 10 ticks not eligible, eligible again at 01:55:00; 0 ticks sampled while not eligible
-[PASS] 6 FIXED and FORCED in the plugin: FixedPolicy=U: 123 FIXED ticks, 0 switches; ForceAlternate=F,U every tick: 125 FORCED ticks, 124 switches, 124 recomputes, alternating
-[INFO] swap cost ct_forced: 124 switches; swap_us median 5, p95 14, max 20; pending jobs median 19, max 40; fit swap_us = 2.2 + 0.193 x pending
-[INFO] swap cost pr_forced: 6001 switches; swap_us median 1, p95 25, max 173; pending jobs median 0, max 209; fit swap_us = 4.7 + 0.370 x pending
-[INFO] swap cost s0212_forced: 6864 switches; swap_us median 1, p95 60, max 173; pending jobs median 0, max 157; fit swap_us = 15.9 + 0.420 x pending
-[INFO] decay event real_usec per tick (controller included): pr_stock 9031 (median 9288, n 6002); pr_adaptive 9089 (median 9318, n 6002); pr_forced 9094 (median 9288, n 6002); s0212_adaptive 7934 (median 8658, n 6865); s0212_forced 7982 (median 8635, n 6865); charged DecayCost 7592
+[PASS] 6 FIXED and FORCED in the plugin: FixedPolicy=U: 123 FIXED ticks, 0 switches; ForceAlternate=F,U every tick: 128 FORCED ticks, 127 switches, 127 recomputes, alternating
+[INFO] swap cost ct_forced: 127 switches; swap_us median 5, p95 13, max 23; pending jobs median 18, max 40; fit swap_us = 3.3 + 0.130 x pending
+[INFO] swap cost pr_forced: 6001 switches; swap_us median 1, p95 32, max 196; pending jobs median 0, max 192; fit swap_us = 9.5 + 0.416 x pending
+[INFO] swap cost s0212_forced: 6864 switches; swap_us median 1, p95 64, max 380; pending jobs median 0, max 157; fit swap_us = 13.1 + 0.526 x pending
+[INFO] decay event real_usec per tick (controller included): pr_stock 10307 (median 9538, n 6002); pr_adaptive 10261 (median 9532, n 6002); pr_forced 10149 (median 9515, n 6002); s0212_adaptive 8609 (median 8886, n 6865); s0212_forced 8806 (median 8950, n 6865); charged DecayCost 7592
 A2 gate: PASS (6 of 6 gating checks)

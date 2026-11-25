@@ -38,18 +38,18 @@
 
 ## Gate
 
-All 6 gating checks pass; see `check_a2.txt`.
+All 6 gating checks pass; see `check_a2.txt`. These are the results on the fixed image (decay-time fix below); the gate also passed 6 of 6 before the fix (commit `87cec8d`).
 
 | Check | Result |
 |---|---|
 | 1 Unit tests | decide() table 26, parser 60, shared state 2, `tests/` 50 (11 skipped as before): all pass |
-| 2 G1: adaptive BASE, no windows == stock | 0 differences in start, end or nodes on the smoke trace (7 jobs), the contended trace (41) and the probe day (3,028). Each decision log is valid, has one row per tick (18, 121 and 6,002), is AUTO throughout, and never switches |
+| 2 G1: adaptive BASE, no windows == stock | 0 differences in start, end or nodes on the smoke trace (7 jobs), the contended trace (41) and the probe day (3,028). Each decision log is valid, has one row per tick (18, 127 and 6,002), is AUTO throughout, and never switches |
 | 3 G2: windows switch within one tick | one-off window [00:20:30, 01:00:30) → U: OVERRIDE from 00:21:00 and AUTO from 01:01:00, both 30 s after the boundary, which falls mid-tick. Daily window 01:30–01:45 → F: OVERRIDE from 01:30:00, AUTO from 01:45:00. Switches at all four boundaries |
 | 4 Hot swap works | the switch to U recomputed all 40 pending jobs (9 µs). All 22 jobs that started inside the window started at the same time, on the same nodes, as in the static `FixedPolicy=U` run. None of the 18 that started after it did, and 40 of 41 jobs differ from adaptive BASE |
 | 5 Fresh cooldown after a window | after each window: 10 ticks not eligible, then eligible (`TMin = 10min`); 0 ticks sampled while not eligible |
-| 6 FIXED and FORCED in the plugin | `FixedPolicy=U`: 123 FIXED ticks, 0 switches. `ForceAlternate=F,U` every tick: 125 FORCED ticks, 124 switches, each recomputing priorities |
+| 6 FIXED and FORCED in the plugin | `FixedPolicy=U`: 123 FIXED ticks, 0 switches. `ForceAlternate=F,U` every tick: 128 FORCED ticks, 127 switches, each recomputing priorities |
 
-The earlier gates on the new image: `scripts/check_a1.sh` passes 5 of 5 (`check_a1_on_a2.txt`), and `scripts/check_vclock.sh` passes 4 of 4: byte-identical repeats on all five traces, adaptive BASE == stock, and the probe day's mean wait is still 847 s (`check_vclock_on_a2.txt`).
+The earlier gates on the fixed image: `scripts/check_p1.sh` 7 of 7 (`check_p1_on_a2.txt`), `scripts/check_a1.sh` 5 of 5 (`check_a1_on_a2.txt`), and `scripts/check_vclock.sh` 4 of 4 (`check_vclock_on_a2.txt`). The vclock gate covers byte-identical repeats on all five traces and adaptive BASE == stock. The committed `results/p1/`, `results/a1/` and `results/vclock/` outputs are unchanged.
 
 The unit-test table covers the three groups WORKFLOW asks for: override boundaries (7 tests: on and off the tick grid, start inclusive and end exclusive, daily windows on two days, a window ending 23:59, adjacent windows, a window whose policy is already active), a cooldown with no sampling (7), and override vs cooldown (3: a window inside a cooldown, a window longer than `TMin`, a window on the first tick). The rest cover `FIXED` and `FORCED` with and without windows, the recompute flag, and the A2 stub.
 
@@ -59,19 +59,20 @@ SPEC §8 leaves it to A2 to decide whether the switch pass charges a fixed simul
 
 | Run | Switches | `swap_us` median / p95 / max | Pending jobs median / max | Fit (switches with pending > 0) |
 |---|---|---|---|---|
-| contended trace | 124 | 5 / 14 / 20 | 19 / 40 | 2.2 + 0.19 µs × pending |
-| probe day | 6,001 | 1 / 25 / 173 | 0 / 209 | 4.7 + 0.37 µs × pending |
-| 2024-02-12 seed 3 sample (10,947 jobs) | 6,864 | 1 / 60 / 173 | 0 / 157 | 15.9 + 0.42 µs × pending |
+| contended trace | 127 | 5 / 13 / 23 | 18 / 40 | 3.3 + 0.13 µs × pending |
+| probe day | 6,001 | 1 / 32 / 196 | 0 / 192 | 9.5 + 0.42 µs × pending |
+| 2024-02-12 seed 3 sample (10,947 jobs) | 6,864 | 1 / 64 / 380 | 0 / 157 | 13.1 + 0.53 µs × pending |
 
-- **Per switch:** mean 4.8 µs on the probe day, or 41 µs when 50 or more jobs are pending, which is about 0.45 µs per pending job.
-- **Per run:** on the probe day, all 6,001 switches together took 28.5 ms of real time. The same run charged 197 s of simulated scheduler time: background calls 104.8 s, decay runs 45.6 s, backfill 40.2 s, main passes 3.5 s, submissions 3.0 s and completions 0.4 s. So charging every switch in full would add 0.014% to the charged total. On the two-day sample it would add 0.031% (59 ms against 194 s).
-- **Per tick:** the largest switch (173 µs) is 2.3% of the `DecayCost` (7,592 µs) already charged on the same tick, and the mean switch is 0.06% of it.
-- **The tick itself:** the decay event's real time averaged 9,031 µs for stock, 9,089 µs for adaptive with no switches, and 9,094 µs for adaptive switching every tick (log/cost.csv). That is 0.6% more, within run-to-run noise, and the host was running other gates at the time.
+These are the runs on the fixed image (after the decay-time fix below). Before the fix the largest switch was 173 µs on both traces, and the medians were the same.
+- **Per switch:** mean 6 µs on the probe day, or 50 µs when 50 or more jobs are pending, which is about 0.6 µs per pending job.
+- **Per run:** on the probe day, all 6,001 switches together took 36 ms of real time. The same run charged 194 s of simulated scheduler time: background calls 104.8 s, decay runs 45.6 s, backfill 37.3 s, main passes 3.3 s, submissions 3.0 s and completions 0.4 s. So charging every switch in full would add 0.019% to the charged total. On the two-day sample it would add 0.032% (63 ms against 194 s).
+- **Per tick:** the largest switch (380 µs) is 5% of the `DecayCost` (7,592 µs) already charged on the same tick, and the mean switch is under 0.1% of it.
+- **The tick itself:** the decay event's real time averaged 10,307 µs for stock, 10,261 µs for adaptive with no switches, and 10,149 µs for adaptive switching every tick (log/cost.csv). Those are indistinguishable, and the host was running three other gates at the time.
 - **Context:** Fair Tree already recomputes every pending job's priority on every tick, so a switch adds one more pass of work the scheduler does each minute anyway.
 
-**Recommendation: don't charge the switch pass.** A charge would be four orders of magnitude below the simulated time the virtual clock already charges. It would also be well inside the cost model's own error, since halving or doubling every cost moved the probe day's mean wait by about 3% (`results/vclock/summary.md`). It would need a new config key, which is a SPEC change. And the real cost is reported anyway: per switch as `swap_us` (§8 level 1), and per tick in the cost log (§8 level 3), which is where P5 measures it. What a switch does to the schedule comes from the reordering itself, and that is in the results with or without a charge. If the user wants a charge anyway, the measured line is about 5 µs + 0.4 µs per pending job, as a `SwapCost`/`SwapJobCost` pair in `sim.conf`. Nothing is charged now, and SPEC is unchanged.
+**Recommendation: don't charge the switch pass.** A charge would be four orders of magnitude below the simulated time the virtual clock already charges. It would also be well inside the cost model's own error, since halving or doubling every cost moved the probe day's mean wait by about 3% (`results/vclock/summary.md`). It would need a new config key, which is a SPEC change. And the real cost is reported anyway: per switch as `swap_us` (§8 level 1), and per tick in the cost log (§8 level 3), which is where P5 measures it. What a switch does to the schedule comes from the reordering itself, and that is in the results with or without a charge. If the user wants a charge anyway, the measured line is about 10 µs + 0.5 µs per pending job, as a `SwapCost`/`SwapJobCost` pair in `sim.conf`. Nothing is charged now, and SPEC is unchanged.
 
-## Finding: in the simulator the Age factor is always 0 and usage never decays
+## Fixed: in the simulator the Age factor was always 0 and usage never decayed
 
 Found while placing the controller tick. Evidence: `decay_probe.txt` (stock `priority/multifactor`, contended trace, `DebugFlags=Priority`). The hand-over note is in the session notes folder (`a2-age-factor-frozen.md`).
 
@@ -85,7 +86,20 @@ Found while placing the controller tick. Evidence: `decay_probe.txt` (stock `pri
 
   P4's G5 check, and the churn and disruption numbers of every ordering switch (P5), would measure this artefact rather than SPEC §6's mapping.
 - **A2 itself is unaffected.** A switch recomputes priorities with the new weights, and `fair_tree_decay` recomputes them again in the same tick with the same weights. So what A2 shows (switch times, recomputes, starts matching static U) holds either way. G1 holds because stock has the same code.
-- **Proposed fix (not done; needs the user's decision).** In the simulator path of `_decay_thread()`, refresh `start_time = time(NULL)` on every call. Do it in stock multifactor (through `docker/patches/`) and in the fork, so G1 still compares like with like. Every virtual-clock baseline would change, so the vclock, A1 and A2 gates would be rerun and `DecayCost` refitted.
+- **Fixed (the user's decision, after this A2 gate first passed).** Every call after the first now sets `start_time = time(NULL)`, as real Slurm does after each sleep. Stock multifactor gets the line from a new patch, `docker/patches/sim_decay_time.patch`, and the fork has it directly, so G1 still compares like with like. `scripts/sim_patch.sh` now takes the patch's name.
+- **Checked after the fix** (`decay_probe.txt`, second part): the decay runs on every tick, running jobs accrue usage each minute, and job 1010's age term grows from 0 to 9,161 over 27.5 minutes, as `PriorityMaxAge` = 1 h and weight 20,000 predict. Stock and fork log the same values.
+- **The policies now separate.** Static runs on the contended trace, counting jobs whose start or node differ:
+
+  | Pair | Before the fix | After |
+  |---|---|---|
+  | `F` vs `EQ` | 0 of 41 | 0 of 41 |
+  | `F` vs `B>U>F` | 0 of 41 | 35 of 41 |
+  | `F` vs `B` | 36 of 41 | 39 of 41 |
+  | `B` vs `U` | 0 of 41 | 0 of 41 |
+
+  `F` and `EQ` still agree on this trace: its fair-share gaps between users outweigh its age gaps, since all 40 jobs arrive within 6 minutes. `B` and `U` have the same ordering weights and differ only in placement, which comes in A4.
+- **Every virtual-clock baseline changed.** All gates were rerun on the fixed image (gate section). The probe day with stock BASE now has mean wait 815 s, median 2 s and p95 3,361 s, with 982 jobs waiting over 60 s. Before the fix it was 847 s, 2 s, 2,137 s and 911 jobs.
+- **Fixed costs kept.** `DecayCost` (7,592 µs) was fitted on the old, nearly idle decay. On the fixed image the decay event's measured real time is 9,538 µs median on the probe day, against 9,288 µs before the fix (+3%; the means, 10,307 against 9,031 µs, were taken on a busier host). Halving or doubling every cost moved mean wait by about 3%, so a 3% change in one cost doesn't call for a refit now. Refit all costs with `scripts/vclock.py costs` the next time they're refitted anyway (B3 or a host change).
 
 ## Decisions taken in A2
 
@@ -96,12 +110,13 @@ Recorded in PROGRESS.md's decisions log.
 - **Default schedule:** `config/adaptive.conf` now points at `config/schedule_none.conf`. Before, every run, the G1 checks and static runs included, would have had `config/schedule.conf`'s 12:00–17:00 → U window, and the probe day would have failed G1.
 - **`swap_us`** covers the work under the job write lock, not the wait for it. **`pending_jobs`** is counted every tick, as logging; that count isn't a state sample.
 - **Reconfigure** keeps the controller's state and the policy in force, if the new `policies.conf` still has it. Experiments don't use it; it matters for the stretch goal.
+- **Decay-time fix (the user's decision):** a new patch, `docker/patches/sim_decay_time.patch`, for stock multifactor, plus the same line in the fork; the fixed costs are kept.
 - **The swap's recompute uses the real simulated now**, not the decay loop's frozen `start_time`. In the simulator, `fair_tree_decay` recomputes right afterwards anyway, so the choice doesn't change any result.
 
 ## SPEC gaps (proposals only)
 
 Proposals only; nothing in SPEC.md changed.
-1. **§11, the simulator finding above:** decide whether to patch the frozen `start_time` in both priority plugins before P4. This is the one that matters most.
+1. **§11 #1 and #23, the new patch:** both name only `sim_determinism.patch`. They should also list `sim_decay_time.patch` and the bug it fixes. The fix is done, by the user's decision; the SPEC text isn't.
 2. **§8, `sim_charge()` for the switch pass:** record the decision. The recommendation is not to charge.
 3. **§13.1, windows in `FIXED` and `FORCED` mode:** say that a window wins in every mode, and what the run returns to afterwards (`FixedPolicy`; the first `ForceAlternate` policy, with the alternation restarting). §10's "Override only" row could then name its configuration: `FixedPolicy=BASE` plus `schedule.conf`.
 4. **§13.1 and §13.3, the cooldown:** say that `TMin` and `ForcePeriod` are counted in whole ticks, that a window's end starts a fresh cooldown even when nothing switches, and that the window-end tick has `eligible` = 0.

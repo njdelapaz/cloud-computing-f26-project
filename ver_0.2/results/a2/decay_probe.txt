@@ -12,3 +12,16 @@
 # job ends add their whole run:
 [2024-01-01T00:30:30.016195] priority/multifactor: _apply_new_usage: job 1001 ran for 1800 seconds with TRES counts of
 [2024-01-01T00:36:45.462693] priority/multifactor: _apply_new_usage: job 1010 ran for 375 seconds with TRES counts of
+
+# After the fix (docker/patches/sim_decay_time.patch and the fork), same run, image ver02/slurm-sim:a2 rebuilt:
+# 'Decay factor over' lines: 126 (one per tick after the first)
+[2024-01-01T00:01:00.000000] priority/multifactor: _decay_thread: PRIO: Decay factor over 59 seconds goes from 0.999951875000000 -> 0.997164584081781
+# job 1010's age term now grows (PriorityMaxAge is 1 h, weight 20000):
+[2024-01-01T00:01:31.000001] priority/multifactor: _get_priority_internal: Job 1010 priority: 0 +  0 + 0.00 + 11666.67 + 6666.67 + 0.00 + 0.00 +  0 - 0 = 18333.33
+[2024-01-01T00:02:00.000000] priority/multifactor: _get_priority_internal: Job 1010 priority: 0 + 161 + 0.00 + 11666.67 + 6666.67 + 0.00 + 0.00 +  0 - 0 = 18494.44
+[2024-01-01T00:15:00.000000] priority/multifactor: _get_priority_internal: Job 1010 priority: 0 + 4494 + 0.00 + 11666.67 + 6666.67 + 0.00 + 0.00 +  0 - 0 = 22827.78
+[2024-01-01T00:29:00.000000] priority/multifactor: _get_priority_internal: Job 1010 priority: 0 + 9161 + 0.00 + 11666.67 + 6666.67 + 0.00 + 0.00 +  0 - 0 = 27494.44
+# running jobs accrue usage every tick:
+[2024-01-01T00:01:00.000000] priority/multifactor: _apply_new_usage: job 1001 ran for 30 seconds with TRES counts of
+[2024-01-01T00:02:00.000000] priority/multifactor: _apply_new_usage: job 1001 ran for 60 seconds with TRES counts of
+# priority/adaptive (BASE) logs the same values: identical

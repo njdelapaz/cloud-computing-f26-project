@@ -16,6 +16,8 @@
  *     select/cons_tres_adaptive in A4) and, when the ordering weights differ, recomputes every
  *     pending job's priority in one pass under the job write lock, timed with CLOCK_MONOTONIC
  *     (swap_us). The AUTO classifier is a stub that keeps DefaultPolicy until A3.
+ *     Also fixes the simulator's frozen decay time (start_time is refreshed on every call), as
+ *     docker/patches/sim_decay_time.patch does for stock multifactor.
  * Keep the names decay_handler_thread and _decay_thread: the simulator drives the decay
  * loop by matching them.
  */
@@ -1283,6 +1285,13 @@ static void *_decay_thread(void *no_data)
 		reset_period = slurm_conf.priority_reset_period;
 		//slurm_mutex_unlock(&decay_init_mutex);
 	} else {
+		/*
+		 * ver_0.2: each call is the next PriorityCalcPeriod. Outside the simulator the loop
+		 * sets start_time after its sleep; without this it stayed at the first call's time,
+		 * so usage never decayed and the age factor was always 0. Stock multifactor gets the
+		 * same line from docker/patches/sim_decay_time.patch.
+		 */
+		start_time = time(NULL);
 		goto while_loop_decay_thread;
 	}
 #else

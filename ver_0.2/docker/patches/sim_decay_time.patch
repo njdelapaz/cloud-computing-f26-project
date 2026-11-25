@@ -1,0 +1,18 @@
+diff --git a/src/plugins/priority/multifactor/priority_multifactor.c b/src/plugins/priority/multifactor/priority_multifactor.c
+index 21e58c9..297bbad 100644
+--- a/src/plugins/priority/multifactor/priority_multifactor.c
++++ b/src/plugins/priority/multifactor/priority_multifactor.c
+@@ -1238,6 +1238,13 @@ static void *_decay_thread(void *no_data)
+ 		reset_period = slurm_conf.priority_reset_period;
+ 		//slurm_mutex_unlock(&decay_init_mutex);
+ 	} else {
++		/*
++		 * ver_0.2 (docker/patches/sim_decay_time.patch): each call is the next
++		 * PriorityCalcPeriod. Outside the simulator the loop sets start_time after its
++		 * sleep; without this it stayed at the first call's time, so usage never decayed
++		 * and the age factor was always 0.
++		 */
++		start_time = time(NULL);
+ 		goto while_loop_decay_thread;
+ 	}
+ #else

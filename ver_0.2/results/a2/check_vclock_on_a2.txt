@@ -1,12 +1,12 @@
 [PASS] 1 repeats byte-identical: smoke 7 jobs identical; contended 41 jobs identical; probe day 3028 jobs identical; 2024-01-30 s2 6092 jobs identical; 2024-02-12 s3 10947 jobs identical
 [PASS] 2 adaptive BASE == stock (start, end, nodes): smoke 0 of 7 jobs differ; contended 0 of 41 jobs differ; probe day 0 of 3028 jobs differ
-[PASS] 3 JobSize-only control differs from BASE: smoke 4 of 7 jobs differ; contended 39 of 41 jobs differ
+[PASS] 3 JobSize-only control differs from BASE: smoke 4 of 7 jobs differ; contended 40 of 41 jobs differ
 [PASS] 4 costs set and charged: project template SchedPassCost=155.0us, SchedJobCost=9.0us, BfCycleCost=0.0us, BfJobCost=421.0us, SubmitCost=997.0us, CompleteCost=130.0us, BackgroundCost=291.0us, DecayCost=7592.0us; probe day charged 3.1 s to main-scheduler passes
 
 INFO probe day, virtual clock vs real clock (waits in s):
   run                                     jobs   mean median    p95  >60s  real s
-  results/vclock/pr_stock_1               3028    847      2   2137   911     731
+  results/vclock/pr_stock_1               3028    815      2   3361   982     741
 
-INFO real time per run (s): ct_adaptive 32, ct_size 32, ct_stock_1 31, ct_stock_2 32, pr_adaptive 732, pr_stock_1 731, pr_stock_2 729, s0130_stock_1 1583, s0130_stock_2 1585, s0212_stock_1 1775, s0212_stock_2 1775, sm_adaptive 26, sm_size 25, sm_stock_1 24, sm_stock_2 26
+INFO real time per run (s): ct_adaptive 30, ct_size 29, ct_stock_1 29, ct_stock_2 27, pr_adaptive 740, pr_stock_1 741, pr_stock_2 738, s0130_stock_1 1685, s0130_stock_2 1687, s0212_stock_1 1783, s0212_stock_2 1782, sm_adaptive 25, sm_size 24, sm_stock_1 24, sm_stock_2 24
 
 4 of 4 gating checks pass

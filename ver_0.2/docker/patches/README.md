@@ -1,6 +1,21 @@
 # Patches to the pinned simulator
 
-The Docker build copies the pristine clone `third_party/slurm_simulator` (@ `f99a71e`) and applies every `*.patch` here in name order, before the plugin forks are registered. The clone itself stays unmodified. To change a patch, run `scripts/sim_patch.sh apply`, edit the clone, then run `scripts/sim_patch.sh save`, which writes the patch back and restores the clone. `scripts/sim_patch.sh check` confirms the clone is clean before a build.
+The Docker build copies the pristine clone `third_party/slurm_simulator` (@ `f99a71e`) and applies every `*.patch` here in name order, before the plugin forks are registered. The clone itself stays unmodified. To change a patch, run `scripts/sim_patch.sh apply <patch>`, edit the clone, then run `scripts/sim_patch.sh save <patch>`, which writes the patch back and restores the clone (`<patch>` defaults to `sim_determinism.patch`; edit one patch at a time). `scripts/sim_patch.sh check` confirms the clone is clean before a build.
+
+| Patch | What it changes |
+|---|---|
+| `sim_decay_time.patch` | stock `priority/multifactor`: the decay loop's time moves with the simulated clock (below) |
+| `sim_determinism.patch` | the virtual clock and the stale completion-event fix (below) |
+
+## `sim_decay_time.patch`
+
+**The bug, in the stock simulator.** The simulator calls the priority plugin's `_decay_thread()` once per `PriorityCalcPeriod` instead of running it as a thread. In simulator builds the function sets its static `start_time = time(NULL)` only on the first call; the line that refreshes it in real Slurm comes after the loop's sleep, which the simulator path returns before. So `start_time` stayed at the run's first second, and:
+- usage never decayed (`PriorityDecayHalfLife` had no effect), and running jobs accrued no usage until they ended;
+- Fair Tree (Slurm 23.11's default) still recomputed every pending job's priority each tick, but against the frozen time, so **the age factor was always 0**. Every Age weight did nothing, and order came from fair-share alone (plus JobSize), with FIFO for ties.
+
+Found in A2 (`results/a2/decay_probe.txt`): a job that waited 29 minutes kept an age term of 0.
+
+**The fix.** Each call after the first sets `start_time = time(NULL)`, as real Slurm does after each sleep. `plugin/priority_adaptive/priority_adaptive.c` has the same line, so stock and fork still match (G1). It applies in both clock modes.
 
 ## `sim_determinism.patch`
 
