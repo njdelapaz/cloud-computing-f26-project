@@ -115,8 +115,8 @@ Recorded in PROGRESS.md's decisions log.
 
 ## SPEC gaps (proposals only)
 
-Proposals only; nothing in SPEC.md changed.
-1. **§11 #1 and #23, the new patch:** both name only `sim_determinism.patch`. They should also list `sim_decay_time.patch` and the bug it fixes. The fix is done, by the user's decision; the SPEC text isn't.
+Proposals only, except item 1, which is now in SPEC.md.
+1. **Done (the user's decision):** §11 #1 and §12 now name the decay-time patch, and a new §11 #24 records the fix.
 2. **§8, `sim_charge()` for the switch pass:** record the decision. The recommendation is not to charge.
 3. **§13.1, windows in `FIXED` and `FORCED` mode:** say that a window wins in every mode, and what the run returns to afterwards (`FixedPolicy`; the first `ForceAlternate` policy, with the alternation restarting). §10's "Override only" row could then name its configuration: `FixedPolicy=BASE` plus `schedule.conf`.
 4. **§13.1 and §13.3, the cooldown:** say that `TMin` and `ForcePeriod` are counted in whole ticks, that a window's end starts a fresh cooldown even when nothing switches, and that the window-end tick has `eligible` = 0.

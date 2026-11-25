@@ -336,7 +336,7 @@ Runs repeat exactly (§11 #23), so each seed is run once. Report every metric as
 
 | # | Question | Decision |
 |---|---|---|
-| 1 | Simulator | UB simulator v3.0: `slurm_simulator` @ `f99a71e` and `slurm_sim_tools` @ `21ba58d`. The code is Slurm 23.11.0-0rc1 (per its `META` file), even though the branch is named `slurm-23-02-sim`. ver_0.2 patches it at image build (`docker/patches/sim_determinism.patch`, #23) |
+| 1 | Simulator | UB simulator v3.0: `slurm_simulator` @ `f99a71e` and `slurm_sim_tools` @ `21ba58d`. The code is Slurm 23.11.0-0rc1 (per its `META` file), even though the branch is named `slurm-23-02-sim`. ver_0.2 patches it at image build: `docker/patches/sim_determinism.patch` (#23) and `docker/patches/sim_decay_time.patch` (#24) |
 | 2 | What "balance" means | Even load across nodes, achieved through placement (§6.1) |
 | 3 | Override vs T_min | Override wins; a window's end starts a fresh cooldown |
 | 4 | Device utilization | CPU cores only; no GPUs in the project |
@@ -359,6 +359,7 @@ Runs repeat exactly (§11 #23), so each seed is run once. Report every metric as
 | 21 | Interfaces | Config grammars, data and log formats, controller edge cases and metric definitions are in §13 (P2) |
 | 22 | Regression standard (G1) | Exact (start, end and node) on the smoke trace, the contended trace and a realistic day, on the virtual clock (#23). On the stock clock, identical runs of one day differed on most jobs (A1), and `ClockScaling = 0.001` narrowed that without removing it |
 | 23 | Run-to-run spread | Every run uses the virtual clock with fixed costs: `ClockMode = virtual`, with the costs in `config/*/sim.conf.in`, fitted by `scripts/vclock.py costs` from six real-clock calibration runs. Identical runs are byte-identical, so each seed runs once. The same patch fixes a stock bug where stale completion events ended the wrong jobs. Halving or doubling every cost moved the probe day's mean wait by about 3% (`results/vclock/summary.md`) |
+| 24 | Priority decay in the simulator | `docker/patches/sim_decay_time.patch` fixes a stock simulator bug, and `priority/adaptive` has the same fix. In simulator builds the decay loop's time stayed at the run's first second, so usage never decayed and the age factor was always 0, leaving every Age weight without effect. The loop's time now follows the simulated clock on every `PriorityCalcPeriod`. The fixed costs of #23 were kept: the decay's measured real time changed by about 3% (found and fixed in A2, `results/a2/summary.md`) |
 
 **Settled by later phases:**
 - How the two plugins share the active policy inside slurmctld: settled in A2 and A4.
@@ -371,7 +372,7 @@ Runs repeat exactly (§11 #23), so each seed is run once. Report every metric as
 ```
 SPEC.md  WORKFLOW.md  PROGRESS.md
 docker/                      simulator image with priority/adaptive and select/cons_tres_adaptive compiled in
-docker/patches/              ver_0.2's patches to the pinned simulator (virtual clock, stale-event fix)
+docker/patches/              ver_0.2's patches to the pinned simulator (virtual clock, stale-event fix, decay time)
 plugin/priority_adaptive/    C source + build glue (ordering + controller)
 plugin/select_cons_tres_adaptive/  C source + build glue (placement scorer)
 plugin/tests/                unit tests for decide() and score()
