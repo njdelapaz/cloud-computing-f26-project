@@ -181,6 +181,41 @@ class Decisions(unittest.TestCase):
         text = self.row(12, "1712556060,OVERRIDE,0,1,0.1,0.1,0.1,0.5,0.05,F,F,0,,36")
         self.assertTrue(any("never eligible and never samples" in e for e in self.errs(text)))
 
+    HEADER = TEXT.splitlines()[0] + "\n"
+
+    def test_window_end_starts_cooldown(self):
+        # A2: a window longer than TMin; the tick after it is not eligible, nor are the ticks
+        # until TMin has passed since the window ended (not since the switch at its start)
+        rows = ["0,AUTO,1,0,,,,,,BASE,BASE,0,,0",
+                "60,OVERRIDE,0,0,,,,,,BASE,U,1,5,0",
+                "600,OVERRIDE,0,0,,,,,,U,U,0,,0",
+                "660,AUTO,0,0,,,,,,U,BASE,1,5,0",
+                "900,AUTO,0,0,,,,,,BASE,BASE,0,,0",
+                "960,AUTO,1,0,,,,,,BASE,BASE,0,,0"]
+        self.assertEqual(self.errs(self.HEADER + "\n".join(rows) + "\n"), [])
+        early = rows[:4] + ["720,AUTO,1,0,,,,,,BASE,BASE,0,,0"]
+        self.assertTrue(any("cooldown says 0" in e for e in self.errs(self.HEADER + "\n".join(early) + "\n")))
+        at_end = rows[:3] + ["660,AUTO,1,0,,,,,,U,BASE,1,5,0"]
+        self.assertTrue(any("cooldown says 0" in e for e in self.errs(self.HEADER + "\n".join(at_end) + "\n")))
+
+    def test_window_end_without_switch_starts_cooldown(self):
+        # the window's policy is the default: no switch at either end, but still a fresh cooldown
+        rows = ["0,AUTO,1,0,,,,,,BASE,BASE,0,,0",
+                "60,OVERRIDE,0,0,,,,,,BASE,BASE,0,,0",
+                "120,AUTO,0,0,,,,,,BASE,BASE,0,,0",
+                "420,AUTO,1,0,,,,,,BASE,BASE,0,,0"]
+        self.assertEqual(self.errs(self.HEADER + "\n".join(rows) + "\n"), [])
+
+    def test_cooldown_counts_whole_ticks(self):
+        # a tick that lands a second early still ends a 300 s cooldown (within half a tick)
+        rows = ["1,AUTO,1,0,,,,,,BASE,BASE,0,,0",
+                "61,OVERRIDE,0,0,,,,,,BASE,U,1,5,0",
+                "121,AUTO,0,0,,,,,,U,BASE,1,5,0",
+                "420,AUTO,1,0,,,,,,BASE,BASE,0,,0"]
+        self.assertEqual(self.errs(self.HEADER + "\n".join(rows) + "\n"), [])
+        rows[3] = "390,AUTO,1,0,,,,,,BASE,BASE,0,,0"   # half a tick short: still cooling down
+        self.assertTrue(any("cooldown says 0" in e for e in self.errs(self.HEADER + "\n".join(rows) + "\n")))
+
 
 class Placements(unittest.TestCase):
     TEXT = (EX / "placements.csv").read_text()

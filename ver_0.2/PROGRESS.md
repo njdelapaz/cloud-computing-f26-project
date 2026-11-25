@@ -10,8 +10,9 @@ The tracker for `ver_0.2`. `SPEC.md` says what to build, `WORKFLOW.md` says how,
   - B1 (workloads): the trace filter, load-targeted sampler, simulator converter and episode finder are built and merged into `dev`.
   - A1 (ordering plugin, static): `priority/adaptive` takes its ordering weights from one policy; it matches stock exactly on the smoke trace and within 1 s on a contended trace (exact on both, and on the probe day, once the virtual clock came in). Merged into `dev`.
   - Run-to-run spread (option B, adopted): a simulator patch adds a virtual clock with fixed costs and fixes a stock bug that completed the wrong jobs. Every run now uses it. Identical runs are byte-identical on realistic days, and adaptive BASE matches stock exactly on the probe day (`scripts/check_vclock.sh`, 4 of 4; results/vclock/summary.md). The P1 and A1 gates still pass on it.
-  - B2 (metrics): `analysis/metrics.py` computes every SPEC §13.4 metric from one run folder, plus the CI over seeds. It matches a hand-computed trace on all 51 columns (`scripts/check_b2.sh`; results/b2/summary.md). Ten metric details SPEC leaves open are proposed there, awaiting a decision, including a queue-dump format for churn and a fix for wait spread, which is infinite on real runs.
-- **Next:** A2 (switching) and B2 (metrics); they touch separate folders. A2 and A4 each decide whether their extra work charges a fixed simulated cost (SPEC §8).
+  - B2 (metrics): `analysis/metrics.py` computes every SPEC §13.4 metric from one run folder, plus the CI over seeds. It matches a hand-computed trace on all 51 columns (`scripts/check_b2.sh`; results/b2/summary.md). Ten metric details SPEC leaves open are proposed there, awaiting a decision, including a queue-dump format for churn and a fix for wait spread, which is infinite on real runs. Merged into `dev`; its sanity numbers on real runs predate the decay fix.
+  - A2 (switching): `priority/adaptive` switches policies at runtime: override windows, `AUTO` with the `TMin` cooldown, `FIXED` and `FORCED`. A switch hot-swaps the ordering weights and publishes the policy to a shared state in slurmctld for A4. Every tick writes a decision-log row. The gate passes 6 of 6, and G1 still holds exactly on all three traces. A2 also fixed a simulator bug that kept the Age factor at 0 and stopped usage from decaying (the user's decision), and every earlier gate was rerun on the fixed image. Merged into `dev`.
+- **Next:** A3 (states) and B3 (runner); they touch separate folders. Waiting for the user: whether A2's switch pass charges a simulated cost (SPEC §8; recommendation: no), and B2's metric proposals (results/b2/summary.md). A4 decides whether scoring charges a fixed cost.
 
 ## Phase tracker
 
@@ -21,7 +22,7 @@ The tracker for `ver_0.2`. `SPEC.md` says what to build, `WORKFLOW.md` says how,
 | P1 Simulator env | ✅ done | Gate passed: `scripts/check_p1.sh` passes 7 of 7 checks (results/p1/check_p1.txt) |
 | P2 Interfaces | ✅ done | Gate passed: `scripts/check_p2.sh` validates all 8 config and example files and passes 30 unit tests (results/p2/check_p2.txt) |
 | A1 Ordering plugin: static | ✅ done | Gate passed: `scripts/check_a1.sh` passes 5 of 5 gating checks (results/a1/check_a1.txt). Check 2 uses a contended trace instead of the probe day, because the simulator doesn't repeat itself on realistic load (results/a1/summary.md) |
-| A2 Switching | not started | |
+| A2 Switching | ✅ done | Gate passed: `scripts/check_a2.sh` passes 6 of 6 gating checks (results/a2/check_a2.txt). On the A2 image, with the decay-time fix, `check_p1.sh` (7 of 7), `check_a1.sh` (5 of 5) and `check_vclock.sh` (4 of 4) still pass |
 | A3 States | not started | |
 | A4 Placement plugin | not started | |
 | B1 Workloads | ✅ done | Gate passed: `scripts/check_b1.sh` (results/b1/check_b1.txt). 22,856,847 jobs kept; samples land within +2% of 0.85; episodes W1 55, W2 84 (volume floor added in review), W4 19, W6 182. Its spec follow-ups are applied |
@@ -64,6 +65,13 @@ The current decisions are listed in SPEC §11 (#1–19). This log keeps the hist
 | Metric details SPEC §13.4 leaves open (B2) | **Proposed, awaiting the user's decision.** For now `analysis/metrics.py` does this: linear-interpolation percentiles; log rows counted in [`warmup_end`, `window_end`); `score_us` over scored node choices only; level-3 cycle times taken from the cycle just before and just after each switch; pending meaning submit ≤ t < start, with the stranded median over all pending jobs; job ids in the logs being Slurm's JobId. Details are in results/b2/summary.md, proposals 3–10 | — |
 | Queue-dump format for churn (B2) | **Proposed, awaiting the user's decision:** `log/queue_dumps.csv` with columns `sim_time,phase,rank,job_id,priority`, written by A2 at each switch that changes the ordering weights (results/b2/summary.md, proposal 3) | SPEC §4.2 mentions the dumps but gives no format |
 | Fairness metrics on real runs (B2) | **Open.** Wait spread is ∞ on every real run because 6–12 users have zero mean wait. The recommendation is worst ÷ max(best, 10 s). The Jain index over per-user mean bounded slowdown is dominated by users with one or a few short jobs (0.61 → 0.13 from one job on 02-12). For both, SPEC is unchanged until the user decides (results/b2/summary.md, proposals 1–2) | — |
+| Sharing the policy between plugins (A2) | A module compiled into slurmctld itself (`plugin/adaptive_policy/`, added to slurmctld's sources by `docker/register_plugins.sh`). slurmctld exports its symbols, so both plugins call it as they call `lock_slurmctld()`. The controller publishes; A4's scorer reads, and falls back to stock placement while nothing is published. The A4 half is still open | SPEC §4 left the hook to A2 and A4. Considered: a shared library both plugins link (needs a build order across plugin folders), or finding the priority plugin's symbols with `dlopen(RTLD_NOLOAD)` (depends on load order) |
+| Windows in the experiment modes (A2) | A window wins in every mode. After it, the run goes back to its own policy: `DefaultPolicy` (AUTO), `FixedPolicy` (FIXED), or the first `ForceAlternate` policy, with the alternation restarting (FORCED). So the "Override only" run of SPEC §10 is `FixedPolicy=BASE` plus a schedule | SPEC §13.1 says only what happens in AUTO |
+| Cooldown details (A2) | Counted in whole controller ticks: an interval within half a tick of `TMin` (or `ForcePeriod`) reaches it. A window's end starts a fresh cooldown even when nothing switched. A switch in AUTO needs a sample, so a failed sample keeps the policy. `scripts/validate.py` now checks the same rules | `validate.py` restarted the cooldown only at switches and compared seconds exactly, so it would have rejected a correct log with a window longer than `TMin` |
+| Default schedule (A2) | `config/adaptive.conf` points at the empty `config/schedule_none.conf`. `config/schedule.conf` stays the W6 example, for runs that ask for it | It pointed at `config/schedule.conf`, which would have put a 12:00–17:00 → U window into every run, the static runs and the G1 checks included |
+| `swap_us` and `pending_jobs` (A2) | `swap_us` is the work done under the job write lock: publish, set the weights, and the recompute pass when the ordering weights differ. It excludes the wait for the lock. `pending_jobs` is counted on every tick by walking the job list, because the log needs it. That walk counts as logging, not as a state sample for G4 | — |
+| Frozen decay time in the simulator (A2) | Fixed (the user's decision). The simulator path of `_decay_thread()` now sets `start_time = time(NULL)` on every call: in stock multifactor through a new patch, `docker/patches/sim_decay_time.patch`, and in the fork directly. Age now counts, usage decays, and running jobs accrue usage each tick. The fixed costs are kept: the decay's measured real time rose about 3% (median), and halving or doubling every cost moved mean wait about 3%. All gates were rerun. Recorded in SPEC (the user's decision): §11 #1 and §12 name both patches, and a new §11 #24 records the fix | Unpatched: the age factor was always 0 and usage never decayed, so the ten trigger policies ordered jobs in only two ways |
+| Switch pass on the virtual clock (A2, SPEC §8) | **Recommended: don't charge it** (waiting for the user's decision; nothing in SPEC changed). Measured with F ↔ U forced on every tick, so every switch recomputes priorities. On the probe day: 6,001 switches, `swap_us` median 1 µs and max 196 µs, with up to 192 pending jobs (about 10 µs + 0.5 µs per pending job). All the switches together took 36 ms of real time, against 194 s of simulated scheduler time charged in the same run (0.019%; 0.032% on the two-day sample). The largest switch measured, 380 µs, is 5% of the `DecayCost` charged on the same tick. That is far inside the cost model's own error (halving or doubling every cost moved mean wait about 3%), and the real cost is still measured, as `swap_us` and in the cost log | Charge a fixed cost per switch through `sim_charge()`, fitted from `swap_us` like the other costs. That needs a new config key (a SPEC change) |
 
 ## Spec changes from P1 (approved and applied to SPEC.md)
 Along with these, SPEC §8's timing note and the §11 window-length item now state what P1 measured.
@@ -214,6 +222,32 @@ Full write-up: `results/b2/summary.md`.
   - Makespan is set by the longest measured job (6.7 days on 01-30).
   - Ten metric details SPEC leaves open, including the queue-dump format for churn, are proposed in the summary and await a decision.
 
+### A2: switching
+Full write-up: `results/a2/summary.md`. Image: `ver02/slurm-sim:a2`.
+- **Code:**
+  - `plugin/priority_adaptive/adaptive_ctl.c`: the pure `decide(snapshot, config, now, controller_state)`
+  - `_controller_tick()` in the decay loop: decides, hot-swaps, logs
+  - `plugin/adaptive_policy/`: the shared policy state, compiled into slurmctld
+  - `adaptive_conf.c`: now also parses `schedule.conf`
+  - `AUTO` keeps `DefaultPolicy` until A3 adds its sampler and classifier
+  - tests: `plugin/tests/test_decide.py` (26), `test_adaptive_policy.py` (2), and `test_adaptive_conf.py` with 13 more (60)
+- **Configs:** `config/adaptive.conf` defaults to the empty `config/schedule_none.conf`; `config/smoke/schedule_g2.conf` holds the G2 test windows.
+- **Gate** (`scripts/check_a2.sh`, 6 of 6, on the virtual clock):
+  - unit tests pass
+  - G1: adaptive BASE with no windows matches stock exactly on the smoke trace, the contended trace and the probe day (0 of 3,028 jobs differ), with one AUTO row per tick and no switches
+  - G2, on the contended trace: a one-off window [00:20:30, 01:00:30) → U gives OVERRIDE from 00:21:00 and AUTO from 01:01:00, both 30 s after the boundary, which falls mid-tick. A daily 01:30–01:45 → F window switches exactly on the minute
+  - the switch to U recomputed all 40 pending jobs in 9 µs. All 22 jobs that started inside the window started exactly as in a static `FixedPolicy=U` run
+  - each window's end starts a fresh 10-min cooldown, with no sampling in it
+  - `FIXED` and `FORCED` work in the plugin
+- **Earlier gates on the A2 image, with the decay-time fix:** `check_p1.sh` 7 of 7, `check_a1.sh` 5 of 5 and `check_vclock.sh` 4 of 4 (`results/a2/check_{p1,a1,vclock}_on_a2.txt`). The committed `results/p1/`, `results/a1/` and `results/vclock/` outputs are unchanged. The gate numbers above are from the fixed image; before the fix the A2 gate also passed 6 of 6 (commit `87cec8d`).
+- **Switch cost:** see the decisions row. The recommendation is not to charge it, and the user hasn't decided yet.
+- **Simulator bug, fixed (the user's decision):** in the simulator the Age factor was always 0, and fair-share usage never decayed, in stock multifactor and the fork alike.
+  - Cause: `_decay_thread()` set `start_time` only on its first call under `SLURM_SIMULATOR`. Fair Tree, the default, still recomputed every priority each tick, but against that frozen time.
+  - Effect before the fix: every Age weight did nothing. On the contended trace `F`, `EQ` and `B>U>F` gave identical schedules.
+  - Fix: `docker/patches/sim_decay_time.patch` for stock, and the same line in the fork. A job's age term now grows as `PriorityMaxAge` predicts. `B>U>F` now differs from `F` on 35 of 41 jobs (`F` and `EQ` still agree on that small trace).
+  - New probe-day baseline (stock BASE): mean wait 815 s and p95 3,361 s, against 847 s and 2,137 s before.
+  - Evidence: `results/a2/decay_probe.txt`; write-up in `results/a2/summary.md`.
+
 ## Change log
 
 | Date | Commit | Change |
@@ -234,3 +268,8 @@ Full write-up: `results/b2/summary.md`.
 | 2026-11-24 | `2db72b9` | A1 merged into `dev` |
 | 2026-11-24 | `7d7bbe6` | Option B: simulator determinism patch (virtual clock, stale-completion fix), fitted costs, `scripts/check_vclock.sh` gate 4 of 4; adopted as the default, with SPEC (G1, §4.2, §6.2, §8, §10, §11, §12) and WORKFLOW edits that replace the interim "within 1 s" regression standard; P1 and A1 gates rerun and passing |
 | 2026-11-24 | `9b5a548` | B2 finished: `analysis/metrics.py` (SPEC §10, §13.4 metrics and the CI over seeds), the hand-computed trace in `tests/data/b2/`, `tests/test_metrics.py`, and the `scripts/check_b2.sh` gate (all 51 columns match), with a sanity check on three real runs. Metric-definition gaps proposed, with SPEC unchanged (B2 session) |
+| 2026-11-24 | `87cec8d` | A2: switching in `priority/adaptive` (controller tick, pure `decide()`, hot swap, decision log), a shared policy state compiled into slurmctld, `schedule.conf` parsing, `scripts/check_a2.sh` gate 6 of 6; `validate.py`'s cooldown check fixed; A1 and vclock gates rerun on the A2 image and passing (A2 session) |
+| 2026-11-24 | `b56f5c4` | A2: the simulator's frozen decay time is fixed (`docker/patches/sim_decay_time.patch` for stock multifactor, and the same line in the fork; `scripts/sim_patch.sh` takes a patch name). P1, A1, vclock and A2 gates rerun on the fixed image and passing (A2 session) |
+| 2026-11-24 | `3e02198` | SPEC §11 #1, new §11 #24 and §12 record the decay-time patch (the user's decision; A2 session) |
+| 2026-11-24 | `2c36c33` | B2 merged into `dev` |
+| 2026-11-24 | — | A2 merged into `dev` |

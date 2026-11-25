@@ -1,7 +1,8 @@
 """Unit tests for the plugin's config parser (plugin/priority_adaptive/adaptive_conf.c).
 
 Builds adaptive_conf_cli.c with the parser, runs it on good and broken adaptive.conf /
-policies.conf files, and checks that each broken file is rejected with the expected message.
+policies.conf / schedule.conf files, and checks that each broken file is rejected with the
+expected message.
 Every broken file is also run through scripts/validate.py, so the C parser and the Python
 validator are known to agree (two cases are marked C-only: validate.py doesn't open files and
 accepts nan).
@@ -22,9 +23,12 @@ sys.path.insert(0, str(VER02 / "scripts"))
 import validate as v  # noqa: E402
 
 SRC = VER02 / "plugin" / "priority_adaptive"
+SHARED = VER02 / "plugin" / "adaptive_policy"
 POLICIES = (VER02 / "config" / "policies.conf").read_text()
+SCHEDULE = (VER02 / "config" / "schedule.conf").read_text()   # the W6 example: 2 windows
+LOCAL = {"PoliciesFile": "policies.conf", "ScheduleFile": "schedule.conf"}
 ADAPTIVE = "\n".join(
-    "PoliciesFile=policies.conf" if line.startswith("PoliciesFile=") else line
+    f"{line.split('=')[0]}={LOCAL[line.split('=')[0]]}" if line.split("=")[0] in LOCAL else line
     for line in (VER02 / "config" / "adaptive.conf").read_text().splitlines()) + "\n"
 NAMES = set(v.parse_policies(POLICIES)[0])
 
@@ -48,7 +52,8 @@ class Parser(unittest.TestCase):
         cls.cli = cls.tmp / "adaptive_conf_cli"
         cc = os.environ.get("CC", "cc")
         subprocess.run([cc, "-std=gnu99", "-O2", "-Wall", "-Wextra", "-Werror",
-                        "-Wdeclaration-after-statement", "-I", str(SRC), "-o", str(cls.cli),
+                        "-Wdeclaration-after-statement", "-I", str(SRC), "-I", str(SHARED),
+                        "-o", str(cls.cli),
                         str(VER02 / "plugin" / "tests" / "adaptive_conf_cli.c"),
                         str(SRC / "adaptive_conf.c"), "-lm"], check=True)
 
@@ -56,11 +61,13 @@ class Parser(unittest.TestCase):
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp)
 
-    def run_cli(self, adaptive=ADAPTIVE, policies=POLICIES, calc=60, name="case"):
+    def run_cli(self, adaptive=ADAPTIVE, policies=POLICIES, calc=60, name="case", schedule=SCHEDULE):
         d = Path(tempfile.mkdtemp(dir=self.tmp, prefix=name))
         (d / "adaptive.conf").write_text(adaptive)
         if policies is not None:
             (d / "policies.conf").write_text(policies)
+        if schedule is not None:
+            (d / "schedule.conf").write_text(schedule)
         p = subprocess.run([str(self.cli), str(d / "adaptive.conf"), str(calc)],
                            capture_output=True, text=True)
         return p.returncode, p.stdout.strip()
@@ -76,6 +83,12 @@ class Parser(unittest.TestCase):
         self.assertIn(fragment, out)
         if not c_only:
             self.assertTrue(v.validate_policies(text), "validate.py accepted it")
+
+    def bad_schedule(self, text, fragment):
+        rc, out = self.run_cli(schedule=text)
+        self.assertEqual(rc, 1, out)
+        self.assertIn(fragment, out)
+        self.assertTrue(v.validate_schedule(text, NAMES), "validate.py accepted it")
 
     def bad_adaptive(self, text, fragment, calc=60, c_only=False):
         rc, out = self.run_cli(adaptive=text, calc=calc)
@@ -103,8 +116,8 @@ class Parser(unittest.TestCase):
         self.ok("policy=F>B>U mode=DEFAULT Fairshare=54000 Age=46000",
                 adaptive=edit(ADAPTIVE, "DefaultPolicy=", "DefaultPolicy=F>B>U"))
 
-    def test_force_alternate_parses(self):
-        self.ok("policy=BASE mode=DEFAULT",
+    def test_force_alternate_starts_with_first(self):
+        self.ok("policy=F mode=FORCED Fairshare=90000 Age=10000",
                 adaptive=add(add(ADAPTIVE, "ForceAlternate=F,U"), "ForcePeriod=15min"))
 
     def test_absolute_policies_path(self):
@@ -124,6 +137,68 @@ class Parser(unittest.TestCase):
 
     def test_tmin_multiple_of_calc_period(self):
         self.ok("policy=BASE", adaptive=edit(ADAPTIVE, "TMin=", "TMin=90s"), calc=30)
+
+    # ------------------------------------------------------------ schedule.conf (A2)
+    def test_repo_schedules_load(self):
+        self.ok("policy=BASE mode=DEFAULT Fairshare=70000 Age=20000 JobSize=10000 policies=11 windows=2")
+        self.ok("policy=BASE mode=DEFAULT Fairshare=70000 Age=20000 JobSize=10000 policies=11 windows=0",
+                schedule=(VER02 / "config" / "schedule_none.conf").read_text())
+
+    def test_empty_schedule(self):
+        self.ok("policy=BASE", schedule="")
+        self.ok("policy=BASE", schedule="# nothing\n\n")
+
+    def test_adjacent_windows_allowed(self):
+        self.ok("policy=BASE", schedule="Window Daily=10:00-12:00 Policy=F\nWindow Daily=12:00-13:00 Policy=U\n"
+                "Window Start=2024-01-01T13:00:00 End=2024-01-01T14:00:00 Policy=B\n")
+
+    def test_schedule_needs_window(self):
+        self.bad_schedule("Daily=10:00-11:00 Policy=F\n", "must start with 'Window'")
+        self.bad_schedule("Windows Daily=10:00-11:00 Policy=F\n", "must start with 'Window'")
+
+    def test_schedule_unknown_policy(self):
+        self.bad_schedule("Window Daily=10:00-11:00 Policy=Z\n", "unknown policy 'Z'")
+        self.bad_schedule("Window Daily=10:00-11:00\n", "unknown policy")
+
+    def test_schedule_bad_timestamp(self):
+        self.bad_schedule("Window Start=2024-01-01 End=2024-01-02T00:00:00 Policy=F\n",
+                          "Start/End must be YYYY-MM-DDTHH:MM:SS")
+        self.bad_schedule("Window Start=2024-02-30T00:00:00 End=2024-03-02T00:00:00 Policy=F\n",
+                          "Start/End must be YYYY-MM-DDTHH:MM:SS")
+        self.bad_schedule("Window Start=2023-02-29T00:00:00 End=2023-03-02T00:00:00 Policy=F\n",
+                          "Start/End must be YYYY-MM-DDTHH:MM:SS")
+
+    def test_schedule_leap_day_ok(self):
+        self.ok("policy=BASE", schedule="Window Start=2024-02-29T00:00:00 End=2024-03-01T00:00:00 Policy=F\n")
+
+    def test_schedule_end_before_start(self):
+        self.bad_schedule("Window Start=2024-01-01T10:00:00 End=2024-01-01T10:00:00 Policy=F\n",
+                          "End must be after Start")
+
+    def test_daily_format(self):
+        self.bad_schedule("Window Daily=10:00 Policy=F\n", "Daily must be HH:MM-HH:MM")
+        self.bad_schedule("Window Daily=24:00-24:30 Policy=F\n", "Daily must be HH:MM-HH:MM")
+        self.bad_schedule("Window Daily=9:00-10:00 Policy=F\n", "Daily must be HH:MM-HH:MM")
+
+    def test_daily_no_midnight_crossing(self):
+        self.bad_schedule("Window Daily=23:00-01:00 Policy=F\n", "no crossing midnight")
+
+    def test_schedule_mixed_keys(self):
+        self.bad_schedule("Window Daily=10:00-11:00 Start=2024-01-01T00:00:00 Policy=F\n",
+                          "use either Start/End/Policy or Daily/Policy")
+
+    def test_overlapping_windows(self):
+        self.bad_schedule("Window Daily=10:00-12:00 Policy=F\nWindow Daily=11:59-13:00 Policy=U\n", "overlap")
+        self.bad_schedule("Window Start=2024-01-01T00:00:00 End=2024-01-02T00:00:00 Policy=F\n"
+                          "Window Start=2024-01-01T23:00:00 End=2024-01-03T00:00:00 Policy=U\n", "overlap")
+        # a one-off window over two days that reaches a daily window only on its second day
+        self.bad_schedule("Window Start=2024-01-01T20:00:00 End=2024-01-02T10:30:00 Policy=F\n"
+                          "Window Daily=10:00-11:00 Policy=U\n", "overlap")
+
+    def test_missing_schedule_file(self):
+        rc, out = self.run_cli(schedule=None)
+        self.assertEqual(rc, 1)
+        self.assertIn("ScheduleFile: can't open", out)  # C-only: validate.py doesn't open files
 
     # ------------------------------------------------------------ broken policies.conf
     def test_weights_must_sum(self):
