@@ -1,0 +1,11 @@
+{
+  "window_start": 1704067200,
+  "window_end": 1704068300,
+  "warmup_end": 1704067300,
+  "seed": 1,
+  "sampling_rate": 1.0,
+  "target_load": 0.85,
+  "jobs": 7,
+  "users": 3,
+  "accounts": 2
+}

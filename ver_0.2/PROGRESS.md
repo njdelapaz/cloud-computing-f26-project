@@ -10,6 +10,7 @@ The tracker for `ver_0.2`. `SPEC.md` says what to build, `WORKFLOW.md` says how,
   - B1 (workloads): the trace filter, load-targeted sampler, simulator converter and episode finder are built and merged into `dev`.
   - A1 (ordering plugin, static): `priority/adaptive` takes its ordering weights from one policy; it matches stock exactly on the smoke trace and within 1 s on a contended trace (exact on both, and on the probe day, once the virtual clock came in). Merged into `dev`.
   - Run-to-run spread (option B, adopted): a simulator patch adds a virtual clock with fixed costs and fixes a stock bug that completed the wrong jobs. Every run now uses it. Identical runs are byte-identical on realistic days, and adaptive BASE matches stock exactly on the probe day (`scripts/check_vclock.sh`, 4 of 4; results/vclock/summary.md). The P1 and A1 gates still pass on it.
+  - B2 (metrics): `analysis/metrics.py` computes every SPEC §13.4 metric from one run folder, plus the CI over seeds. It matches a hand-computed trace on all 51 columns (`scripts/check_b2.sh`; results/b2/summary.md). Ten metric details SPEC leaves open are proposed there, awaiting a decision, including a queue-dump format for churn and a fix for wait spread, which is infinite on real runs.
 - **Next:** A2 (switching) and B2 (metrics); they touch separate folders. A2 and A4 each decide whether their extra work charges a fixed simulated cost (SPEC §8).
 
 ## Phase tracker
@@ -24,7 +25,7 @@ The tracker for `ver_0.2`. `SPEC.md` says what to build, `WORKFLOW.md` says how,
 | A3 States | not started | |
 | A4 Placement plugin | not started | |
 | B1 Workloads | ✅ done | Gate passed: `scripts/check_b1.sh` (results/b1/check_b1.txt). 22,856,847 jobs kept; samples land within +2% of 0.85; episodes W1 55, W2 84 (volume floor added in review), W4 19, W6 182. Its spec follow-ups are applied |
-| B2 Metrics | not started | |
+| B2 Metrics | ✅ done | Gate passed: `scripts/check_b2.sh` (results/b2/check_b2.txt). Every column of the hand-computed trace matches (51 of 51), as do the `examples/` decision and placement logs; absent logs give empty values; 69 unit tests pass. Not gating: three real runs, cross-checked independently (results/b2/summary.md) |
 | B3 Runner | not started | |
 | P4 Static policies | not started | |
 | P5 Switch overhead | not started | |
@@ -60,6 +61,9 @@ The current decisions are listed in SPEC §11 (#1–19). This log keeps the hist
 | Simulator patches (option B) | `docker/patches/sim_determinism.patch`, applied to the pristine clone at image build. It adds the virtual clock, which ver_0.2's templates turn on, and fixes stale completion events in both clock modes. Edit it with `scripts/sim_patch.sh` | Stock simulator, unpatched |
 | Fixed simulated costs (option B) | Fitted from six real-clock runs on the fixed image, with least squares or means so the total time is kept: main pass 155 µs + 9.5 µs per job tested; backfill 421 µs per job tested; submit 997 µs; completion 130 µs; background call 291 µs; decay run 7.6 ms. slurmdbd calls are not charged (a real slurmctld runs them on other threads). In both `sim.conf.in` templates | — |
 | Regression standard (G1) | Exact (start, end and node) on the smoke trace, the contended trace and a realistic day, on the virtual clock (SPEC G1, §11 #22; WORKFLOW's A1 and A4 gates) | "Identical on the same trace", including a realistic W0 trace → exact on smoke, within 1 s on contended, a realistic day only reported as spread (A1, before the virtual clock) |
+| Metric details SPEC §13.4 leaves open (B2) | **Proposed, awaiting the user's decision.** For now `analysis/metrics.py` does this: linear-interpolation percentiles; log rows counted in [`warmup_end`, `window_end`); `score_us` over scored node choices only; level-3 cycle times taken from the cycle just before and just after each switch; pending meaning submit ≤ t < start, with the stranded median over all pending jobs; job ids in the logs being Slurm's JobId. Details are in results/b2/summary.md, proposals 3–10 | — |
+| Queue-dump format for churn (B2) | **Proposed, awaiting the user's decision:** `log/queue_dumps.csv` with columns `sim_time,phase,rank,job_id,priority`, written by A2 at each switch that changes the ordering weights (results/b2/summary.md, proposal 3) | SPEC §4.2 mentions the dumps but gives no format |
+| Fairness metrics on real runs (B2) | **Open.** Wait spread is ∞ on every real run because 6–12 users have zero mean wait. The recommendation is worst ÷ max(best, 10 s). The Jain index over per-user mean bounded slowdown is dominated by users with one or a few short jobs (0.61 → 0.13 from one job on 02-12). For both, SPEC is unchanged until the user decides (results/b2/summary.md, proposals 1–2) | — |
 
 ## Spec changes from P1 (approved and applied to SPEC.md)
 Along with these, SPEC §8's timing note and the §11 window-length item now state what P1 measured.
@@ -180,6 +184,36 @@ Full write-up: `results/vclock/summary.md`. Image: `ver02/slurm-sim:vclock`, the
   - WORKFLOW: the A1 and A4 gates are exact on the probe day; A2 and A4 decide whether to charge their own costs; the repeatability risk is retired and a fixed-cost risk added.
 - **Earlier gates rerun on the new defaults:** P1 passes 7 of 7, with a 0 s spread across the three determinism runs (`results/p1/check_p1_vclock.txt`). A1 passes 5 of 5, with 0 exact-match differences on the contended trace (`results/a1/check_a1_vclock.txt`). The original `check_p1.txt` and `check_a1.txt` stay as they were when those phases passed.
 
+### B2: metrics
+Full write-up: `results/b2/summary.md`.
+- **Code:** `analysis/metrics.py` is standard-library only.
+  - One command per run: `analysis/metrics.py RUN_DIR --meta META.json`, which prints a JSON row; `--csv` appends the row to a table.
+  - `aggregate` gives the mean ± 95% CI over seed rows (t = 2.776 for 5 seeds). B3 can call `run_metrics()` and `aggregate()` directly.
+  - When a decision, placement, queue-dump or cost log is missing, its columns are empty instead of an error.
+  - It takes about 0.7 s for a 6,000-job day.
+- **Hand-computed trace:** `tests/data/b2/` holds a 7-job trace on the 3-node smoke cluster. Its `README.md` derives every value and `hand.json` holds them. The trace's files pass the SPEC §13 validators.
+- **Gate** (`scripts/check_b2.sh`):
+  - all 51 columns match the hand calculation;
+  - the `examples/` decision log (4 switches, mean `swap_us` 799.5) and placement log (3 scored node choices, mean `score_us` 12.3) match;
+  - a run with only `jobcomp.log` leaves all 24 overhead columns empty;
+  - the unit tests pass: 69, of which 22 are new in `tests/test_metrics.py`.
+- **Sanity check on real runs** (stock BASE on the virtual clock):
+
+  | Run | Mean / p95 wait (s) | Core / memory utilization | Load SD | Stranded core-h | Jain |
+  |---|---|---|---|---|---|
+  | 01-30 seed 2 | 6,525 / 20,193 | 0.75 / 0.93 | 0.06 | 3,048 | 0.10 |
+  | 02-12 seed 3 | 51 / 499 | 0.64 / 0.67 | 0.28 | 220 | 0.13 |
+  | probe day | 847 / 2,136 | 0.52 / 0.63 | 0.25 | 891 | 0.04 |
+
+  - A per-second numpy recomputation agrees to 9 digits on waits, utilization, load SD, max load and stranded core-hours.
+  - The completion records match `jobs.csv` exactly.
+- **Findings:**
+  - Wait spread is infinite on every real run.
+  - The Jain index is dominated by users with few short jobs.
+  - 01-30 is memory-bound: 93% memory against 75% core utilization at 0.85 offered core load.
+  - Makespan is set by the longest measured job (6.7 days on 01-30).
+  - Ten metric details SPEC leaves open, including the queue-dump format for churn, are proposed in the summary and await a decision.
+
 ## Change log
 
 | Date | Commit | Change |
@@ -199,3 +233,4 @@ Full write-up: `results/vclock/summary.md`. Image: `ver02/slurm-sim:vclock`, the
 | 2026-11-24 | `2d6b890` | A1: `ClockScaling = 0.001` tested on the probe day; runs still don't repeat (A1 session) |
 | 2026-11-24 | `2db72b9` | A1 merged into `dev` |
 | 2026-11-24 | `7d7bbe6` | Option B: simulator determinism patch (virtual clock, stale-completion fix), fitted costs, `scripts/check_vclock.sh` gate 4 of 4; adopted as the default, with SPEC (G1, §4.2, §6.2, §8, §10, §11, §12) and WORKFLOW edits that replace the interim "within 1 s" regression standard; P1 and A1 gates rerun and passing |
+| 2026-11-24 | `9b5a548` | B2 finished: `analysis/metrics.py` (SPEC §10, §13.4 metrics and the CI over seeds), the hand-computed trace in `tests/data/b2/`, `tests/test_metrics.py`, and the `scripts/check_b2.sh` gate (all 51 columns match), with a sanity check on three real runs. Metric-definition gaps proposed, with SPEC unchanged (B2 session) |
