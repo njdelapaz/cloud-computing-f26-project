@@ -245,6 +245,6 @@ Folders for Steps 4–6 are added when their spec is written.
 - Thresholds, tiers and weights live in `config/*.yaml`, never in code.
 - Generated data stays out of git. Manifests and summaries are committed so every result can be
   traced to a commit, seed and image.
-- One commit per finished task on `dev`, with `PROGRESS.md` updated in the same commit (status,
+- One commit per finished task on the `ver_0.3` branch, with `PROGRESS.md` updated in the same commit (status,
   decisions, results; no durations).
 - Nothing outside `ver_0.3/` is read, written or referenced.
