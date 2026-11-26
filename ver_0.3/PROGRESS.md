@@ -17,7 +17,7 @@ lengths or dates beyond the change log.
 | 1.6 Weight configurations | done | Redesigned 2026-11-26: B0 and C0–C3 (favor none / large / small / medium via one QOS per size class, then shortest time limit, then fairness; strict size) |
 | 1.7 Configuration check in the simulator | done | Pass v3c: weights and QOS factors match in all 5 runs; favored class first in 100% of cross-class pairs; time ahead of fairness within classes (`results/check/configs_v3c.json`) |
 | 2.1 Specify Steps 4–5 | done | SPEC §6–7 and PLAN 2.2–2.6 approved 2026-11-26 with default answers to Q-A to Q-C |
-| 2.2 Trigger calibration | in progress | full K-s1 week under C0 running |
+| 2.2 Trigger calibration | done | K-s1 week under C0 (1 h 19 min; mean wait 2.0 h vs 9.1 h under FIFO). Waiting-queue shares: small median 0.59, medium 0.28, large 0.09. Replay: large 31%, mix 29%, medium 22%, small 18% of time; 4.3 switches/day (`config/triggers.yaml`, `results/phase2/trigger_calibration.json`) |
 | 2.3 Policy module | done | `controller/policy.py`, `tick.py`, `replay.py` (standard library only; runs under the container's Python 3.10); 10 tests pass |
 | 2.4 Simulator hook | done | `sim/patches/policy_hook.patch` applied at build; image `slurmsim:v03` now includes it; with the hook off it matches the unpatched image (same nodes, start times within the 1 s run-to-run jitter) |
 | 2.5 Apply test | done | C0→C1→C2→C3→C0 during a standing queue: every waiting job recomputed within 2 s with the new weights and QOS factors; missing config rejected; failing command logged, no switch (`results/phase2/apply_test.json`) |
@@ -68,6 +68,7 @@ lengths or dates beyond the change log.
 | Trigger signal (SPEC §6) | Each size class's share of waiting jobs, as a percentile of its own range in a C0 run of K; enter at P80, exit below P60, 2-tick persistence, 60-min dwell, 10-min ticks | Counted by job, small is 74–94% of the waiting queue and large 0–5% (FIFO K week). A fixed share would always pick small; a ratio to the median would fire for large on 1% → 2% and never for small. |
 | Change mechanism (SPEC §7) | A patch to the simulator adds a policy tick event that writes a snapshot, runs a Python policy, and applies weights (priority plugin reconfigure) and QOS priorities (accounting manager update) in place | No RPCs mid-run (task 1.2), so control must sit inside the event loop. Both apply paths exist in the pinned Slurm source. |
 | Step 4 open questions (approved 2026-11-26) | Q-A waiting queue; Q-B count jobs; Q-C enter P80 / exit P60, 60-min dwell | Defaults approved with the Step 4–5 spec. |
+| Trigger calibration source | Neutral C0 run of K, not FIFO | The waiting queue's class mix depends on the configuration: under C0 short jobs start fast, so small falls from 0.90 (FIFO) to 0.59 of waiting jobs. |
 | Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
@@ -85,3 +86,5 @@ lengths or dates beyond the change log.
 | 2026-11-26 | `614d9e6` | Priority configurations redesigned around size-class QOS; strict size first |
 | 2026-11-26 | `ef50823` | 2.1: Step 4–5 spec (SPEC §6–7) and Phase 2 tasks |
 | 2026-11-26 | `c9430e7` | 2.3: policy module, tick command, replay |
+| 2026-11-26 | `c235b6d` | 2.4: simulator policy hook (patch, image, `--policy` run setup) |
+| 2026-11-26 | `ff274cc` | 2.5: apply test of the policy hook |

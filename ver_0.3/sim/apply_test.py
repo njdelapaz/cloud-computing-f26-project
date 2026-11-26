@@ -132,7 +132,8 @@ def main() -> None:
     lines = [l for l in (src / "events.txt").read_text().splitlines()
              if int(l.split()[1]) < a.hours * 3600]
     lines += [f"-dt {int(h * 3600)} -e set_priority_config | {c}" for h, c in SWITCHES]
-    ev_a = OUT / "apply_events.txt"
+    ev_a = OUT / "apply-input" / "apply_events.txt"   # inside an ignored folder
+    ev_a.parent.mkdir(parents=True, exist_ok=True)
     ev_a.write_text("\n".join(lines) + "\n")
     run_a = Path("results/phase2/apply-A")
     prepare_run(run_a, ev_a, src / "accounts.txt", ROOT / "config" / "priority" / "C0.conf",
