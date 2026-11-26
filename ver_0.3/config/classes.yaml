@@ -1,0 +1,21 @@
+# Job classification thresholds (SPEC §4). Upper bounds are inclusive.
+#
+# footprint f = max(cpus / node.cores, mem_mb / node.mem_mb)
+# A job is in the first size class whose bound it does not exceed, and likewise for time.
+
+node:
+  cores: 32
+  mem_mb: 128000
+
+size:            # bound on footprint, as a fraction of one node
+  sm: 0.0625     # 1/16: <= 2 cores and <= 8,000 MB
+  med: 0.25      # 1/4:  <= 8 cores and <= 32,000 MB
+  lg: 1.0        # up to a full node
+
+time_limit_s:    # bound on the requested time limit, seconds
+  short: 14400   # 4 h
+  med: 86400     # 24 h
+  long: 604800   # 7 d (partition MaxTime)
+
+# Order used in every table (SPEC §4.3).
+classes: [sm-short, sm-med, sm-long, med-short, med-med, med-long, lg-short, lg-med, lg-long]
