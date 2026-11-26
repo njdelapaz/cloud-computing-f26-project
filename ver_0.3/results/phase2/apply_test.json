@@ -1,0 +1,81 @@
+{
+  "A_scheduled_switches": {
+    "applied": [
+      {
+        "t": "2024-01-29 16:33:10.829818",
+        "from": "C0",
+        "to": "C1",
+        "why": "scheduled"
+      },
+      {
+        "t": "2024-01-29 17:33:10.829488",
+        "from": "C1",
+        "to": "C2",
+        "why": "scheduled"
+      },
+      {
+        "t": "2024-01-29 18:33:10.830310",
+        "from": "C2",
+        "to": "C3",
+        "why": "scheduled"
+      },
+      {
+        "t": "2024-01-29 19:33:10.826932",
+        "from": "C3",
+        "to": "C0",
+        "why": "scheduled"
+      }
+    ],
+    "c9_rejected": true,
+    "checks": [
+      {
+        "to": "C1",
+        "first_calc_after_s": 1.833043,
+        "jobs": 113,
+        "weights_ok": true,
+        "qos_factors_ok": true,
+        "ok": true
+      },
+      {
+        "to": "C2",
+        "first_calc_after_s": 1.8303180000000001,
+        "jobs": 113,
+        "weights_ok": true,
+        "qos_factors_ok": true,
+        "ok": true
+      },
+      {
+        "to": "C3",
+        "first_calc_after_s": 1.833418,
+        "jobs": 102,
+        "weights_ok": true,
+        "qos_factors_ok": true,
+        "ok": true
+      },
+      {
+        "to": "C0",
+        "first_calc_after_s": 1.837746,
+        "jobs": 20,
+        "weights_ok": true,
+        "qos_factors_ok": true,
+        "ok": true
+      }
+    ],
+    "recomputed_per_switch": [
+      113,
+      112,
+      102,
+      20
+    ],
+    "sequence_ok": true,
+    "ok": true,
+    "run_problems": []
+  },
+  "B_failing_command": {
+    "ticks_failed": 6,
+    "switches": 0,
+    "run_problems": [],
+    "ok": true
+  },
+  "ok": true
+}
