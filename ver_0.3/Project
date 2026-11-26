@@ -1,0 +1,70 @@
+Goal:
+Create a mechanism to update Slurm job priority weights and simulate it to determine if it can be effective at adjusting to changing workloads and providing good service.
+
+Project Constraints:
+Only work inside the ver_0.3 folder and environment. Do not reference any folder outside of ver_0.3 in the repository.
+
+Setup:
+
+Cluster:
+Nodes: 16 nodes, n01–n16, each with 32 cores (2 sockets × 16) and 128 GB of memory (RealMemory=128000 MB). That's 512 cores and 2 TB in total, with no GPUs.
+Partition: one partition, normal, with one QOS and a 7-day MaxTime
+Scheduler: Slurm default
+Priority: Recomputed every minute, can be tuned later
+
+Workload Data: Workloads from the real trace in `dataset/`: limit it to one week at first. Scale later.
+
+Simulator:
+UB Slurm Simulator
+
+
+JOB CLASSIFICATION
+Classify jobs into 9 types based on their requested resources and time limits
+
+SMALL
+1) sm-short: small resource requirements - short time limit
+2) sm-med: small resource requirements - medium time limit
+3) sm-long: small resource requirements - long time limit
+
+MEDIUM
+4) med-short: medium resource requirements - short time limit
+5) med-med: medium resource requirements - medium time limit
+6) med-long: medium resource requirements - long time limit
+
+LARGE
+4) lg-short: large resource requirements - short time limit
+5) lg-med: large resource requirements - medium time limit
+6) lg-long: large resource requirements - long time limit
+
+
+WEIGHT CONFIGURATIONS
+Create job weight configurations based on the built in priority weights in Slurm. They will prioritize certain metrics to achieve different goals
+
+1) Fairness > Utilization > Load Balance
+2) Fairness > Load Balance > Utilization
+3) Load Balance > Fairness > Utilization
+4) Load Balance > Utilization > Fairness
+5) Utilization > Fairness > Load Balance
+6) Utilization > Load Balance > Fairness
+
+Definitions:
+
+Fairness: A goal to make sure that no set of users gets priority of job placement on the cluster over others. Slurm's PriorityWeightFairshare x fairshare helps enforce this.
+Utilization: A goal to try to utilize as much of a node as possible - both cpu and memory.
+Load Balance: A goal to try and keep utilization even across all nodes.
+
+
+
+Work Steps:
+1) Create workloads from trace data that fit the cluster
+2) Classify jobs using JOB CLASSIFICATION descriptions
+3) Create priority weight configurations using WEIGHT CONFIGURATIONS descriptions
+4) Determine cluster states that trigger a configuration change
+5) Create configuration change mechanism
+6) Simulate workloads with the full setup
+
+
+Phases:
+1) Steps 1-3
+2) Steps 4-5
+3) Step 6
