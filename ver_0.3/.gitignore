@@ -19,3 +19,6 @@ __pycache__/
 
 # Session worktrees created by Claude Code
 .claude/
+
+# Parquet cache of dataset/ (rebuilt by workloads/profile_trace.py)
+workloads/cache/

@@ -27,8 +27,7 @@ stays inside `ver_0.3/`.
 
 ### 1.1 Folder setup and tooling
 - Create the layout under [Working conventions](#working-conventions).
-- Add `ver_0.3/.gitignore` for `external/`, `.venv/`, `workload/cache/`, `workload/out/` and
-  `results/raw/`.
+- Extend `ver_0.3/.gitignore` so it also covers the Parquet cache in `workloads/cache/`.
 - Create `.venv` with a pinned `requirements.txt`.
 - Create `PROGRESS.md` with a task tracker, decisions log and change log.
 
@@ -36,7 +35,7 @@ stays inside `ver_0.3/`.
 `PROGRESS.md` lists every Phase 1 task.
 
 ### 1.2 Simulator bring-up
-- Fetch the UB Slurm Simulator source into `external/` at a pinned commit, and build the
+- Fetch the UB Slurm Simulator source into `third_party/` at a pinned commit, and build the
   container image from `sim/`.
 - Write `sim/slurm.conf` for the SPEC §2 cluster (16 × 32 cores, 128,000 MB, `normal`
   partition and QOS, `cons_tres` + `CR_Core_Memory`, `priority/multifactor`,
@@ -59,7 +58,7 @@ stays inside `ver_0.3/`.
 answers are recorded in `sim/README.md` and `PROGRESS.md`.
 
 ### 1.3 Trace profiling
-- Convert `dataset/*.tsv` once to a Parquet cache in `workload/cache/`. `dataset/` is never
+- Convert `dataset/*.tsv` once to a Parquet cache in `workloads/cache/`. `dataset/` is never
   modified.
 - Check the SPEC §3.1 assumptions: memory units, UTC timestamps, `hostnames` completeness, and
   `elapsed`/`timelimit` consistency.
@@ -225,14 +224,14 @@ ver_0.3/
 ├── Project              brief (input; unchanged)
 ├── SPEC.md  PLAN.md     spec and development plan
 ├── PROGRESS.md          status tracker (created in 1.1)
-├── .gitignore           external/, .venv/, workload/cache/, workload/out/, results/raw/
+├── .gitignore           dataset/, .venv/, third_party/, workloads/traces/, workloads/cache/, raw run output
 ├── requirements.txt     pinned Python dependencies
-├── dataset/             raw trace (read-only input)
-├── external/            simulator source checkout (gitignored)
+├── dataset/             raw trace (read-only input; gitignored)
+├── third_party/         pinned simulator checkouts (gitignored)
 ├── sim/                 container build, slurm.conf, sacctmgr setup, run scripts, README
-├── workload/            profiler, builder, classifier; cache/ (Parquet), out/ (scenarios)
+├── workloads/           profiler, builder, classifier; cache/ (Parquet), traces/ (scenarios)
 ├── config/              classes.yaml, weights.yaml, priority/*.conf
-├── results/             summaries (committed); raw/ run directories (gitignored)
+├── results/             summaries (committed); results/<group>/<run>/ folders and logs (gitignored)
 └── tests/               unit and integration tests
 ```
 

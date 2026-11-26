@@ -179,7 +179,7 @@ count are near the median of all full weeks in the trace. The holiday week of Ja
 excluded. The weeks are picked in Phase 1 and recorded here.
 
 ### 3.6 Builder outputs
-For each scenario and seed, under `workload/out/<scenario>-s<seed>/`:
+For each scenario and seed, under `workloads/traces/<scenario>-s<seed>/`:
 - `jobs.parquet`: the table from §3.3.
 - `events.txt`: the job submissions in the simulator's job-trace format (below).
 - `accounts.txt`: the accounts, users and associations to create with `sacctmgr`.
