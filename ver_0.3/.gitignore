@@ -1,0 +1,21 @@
+# Source job trace (several GB; individual files exceed GitHub's 100 MB limit)
+dataset/
+
+# Local Python virtual environment
+.venv/
+
+# Third-party sources cloned for the simulator build (pinned commits recorded in PROGRESS.md)
+third_party/
+
+# Raw simulation output (one folder per run) and build/run logs; summary files are kept
+results/*/*/
+results/*/*.log
+
+# Traces generated from dataset/ by scripts
+workloads/traces/
+
+# Python bytecode
+__pycache__/
+
+# Session worktrees created by Claude Code
+.claude/
