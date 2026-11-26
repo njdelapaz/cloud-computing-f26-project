@@ -1,0 +1,169 @@
+{
+  "scenario": "K-s1",
+  "hours": 36.0,
+  "jobs": 3683,
+  "fairshare_factor_gap_median": 0.19348694551376963,
+  "fairshare_factor_gap_quartiles": [
+    0.16468670250095088,
+    0.244718736349061
+  ],
+  "corr_U_L_pending": -0.05559677375543592,
+  "configs": [
+    {
+      "config": "B0",
+      "run_problems": [],
+      "priority_rows": 3305,
+      "weights_match": true
+    },
+    {
+      "config": "C1",
+      "run_problems": [],
+      "priority_rows": 4108,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "snapshots_used": 29,
+      "pending_per_snapshot_median": 105.0,
+      "typical_gap": {
+        "F": 3744.1,
+        "U": 2349.4,
+        "L": 918.3
+      },
+      "expected_order": [
+        "F",
+        "U",
+        "L"
+      ],
+      "observed_order": [
+        "F",
+        "U",
+        "L"
+      ],
+      "order_ok": true
+    },
+    {
+      "config": "C2",
+      "run_problems": [],
+      "priority_rows": 4063,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "snapshots_used": 27,
+      "pending_per_snapshot_median": 107.0,
+      "typical_gap": {
+        "F": 4460.3,
+        "U": 983.2,
+        "L": 1650.2
+      },
+      "expected_order": [
+        "F",
+        "L",
+        "U"
+      ],
+      "observed_order": [
+        "F",
+        "L",
+        "U"
+      ],
+      "order_ok": true
+    },
+    {
+      "config": "C3",
+      "run_problems": [],
+      "priority_rows": 1356,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "snapshots_used": 13,
+      "pending_per_snapshot_median": 59.0,
+      "typical_gap": {
+        "F": 1295.8,
+        "U": 932.0,
+        "L": 3169.8
+      },
+      "expected_order": [
+        "L",
+        "F",
+        "U"
+      ],
+      "observed_order": [
+        "L",
+        "F",
+        "U"
+      ],
+      "order_ok": true
+    },
+    {
+      "config": "C4",
+      "run_problems": [],
+      "priority_rows": 1263,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "snapshots_used": 12,
+      "pending_per_snapshot_median": 78.0,
+      "typical_gap": {
+        "F": 763.5,
+        "U": 2050.5,
+        "L": 6673.1
+      },
+      "expected_order": [
+        "L",
+        "U",
+        "F"
+      ],
+      "observed_order": [
+        "L",
+        "U",
+        "F"
+      ],
+      "order_ok": true
+    },
+    {
+      "config": "C5",
+      "run_problems": [],
+      "priority_rows": 3197,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "snapshots_used": 26,
+      "pending_per_snapshot_median": 70.5,
+      "typical_gap": {
+        "F": 2753.6,
+        "U": 5164.0,
+        "L": 927.0
+      },
+      "expected_order": [
+        "U",
+        "F",
+        "L"
+      ],
+      "observed_order": [
+        "U",
+        "F",
+        "L"
+      ],
+      "order_ok": true
+    },
+    {
+      "config": "C6",
+      "run_problems": [],
+      "priority_rows": 5230,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "snapshots_used": 27,
+      "pending_per_snapshot_median": 152.0,
+      "typical_gap": {
+        "F": 847.3,
+        "U": 1848.6,
+        "L": 1752.3
+      },
+      "expected_order": [
+        "U",
+        "L",
+        "F"
+      ],
+      "observed_order": [
+        "U",
+        "L",
+        "F"
+      ],
+      "order_ok": true
+    }
+  ]
+}

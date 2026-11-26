@@ -1,0 +1,23 @@
+# Measured factor scales (Gini mean difference among pending jobs). Written by
+#   .venv/bin/python -m sim.weights calibrate --from-check pass1
+tres_cpu: 0.00269905
+tres_mem: 0.0100223
+jobsize: 1.79545e-05
+fairshare: 0.166715
+sources:
+  tres_cpu: 'median over 145 hourly pending-queue snapshots (>= 20 jobs) of check
+    ''pass1'' on K-s1: pass1-B0, pass1-C1, pass1-C2, pass1-C3, pass1-C4, pass1-C5,
+    pass1-C6'
+  tres_mem: 'median over 145 hourly pending-queue snapshots (>= 20 jobs) of check
+    ''pass1'' on K-s1: pass1-B0, pass1-C1, pass1-C2, pass1-C3, pass1-C4, pass1-C5,
+    pass1-C6'
+  jobsize: 'median over 145 hourly pending-queue snapshots (>= 20 jobs) of check ''pass1''
+    on K-s1: pass1-B0, pass1-C1, pass1-C2, pass1-C3, pass1-C4, pass1-C5, pass1-C6'
+  fairshare: 'median over 145 hourly pending-queue snapshots (>= 20 jobs) of check
+    ''pass1'' on K-s1: pass1-B0, pass1-C1, pass1-C2, pass1-C3, pass1-C4, pass1-C5,
+    pass1-C6 (C1-C6 only)'
+snapshots:
+  tres_cpu: 145
+  tres_mem: 145
+  jobsize: 145
+  fairshare: 120

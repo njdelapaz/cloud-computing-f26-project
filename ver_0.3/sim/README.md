@@ -99,6 +99,15 @@ example a new event that loads `priority_weights.conf` at a simulated time, or a
 priority recalculation. An outside controller using `scontrol reconfigure` is not possible in
 this simulator unless the RPC thread is re-enabled.
 
+## Other tools
+
+| Command | What it does |
+|---|---|
+| `.venv/bin/python -m sim.runstats RUN_DIR` | Hourly pending jobs and allocated CPU/memory fractions, mean and p95 wait, makespan, from `out/slurm_acct.out` |
+| `.venv/bin/python -m sim.weights calibrate` / `render` | Measure factor scales on scenario K; render `config/priority/*.conf` |
+| `.venv/bin/python -m sim.check_configs --hours H --tag T` | Task 1.7: run B0 and C1–C6 in parallel on the first H hours of K with priority logging, and check weights and tier order |
+| `sim/priority_log.py` | Parser for the priority debug log (hourly queue snapshots) |
+
 ## Seeing priorities without `sprio`
 
 With `DebugFlags=Priority`, `slurmctld.log` records every job's factors at every priority

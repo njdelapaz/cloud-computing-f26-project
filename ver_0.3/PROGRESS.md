@@ -3,7 +3,7 @@
 Status tracker for [PLAN.md](PLAN.md). It records status, decisions and results only; no task
 lengths or dates beyond the change log.
 
-**Current phase:** 1 — Workloads, classes, weight configurations (Steps 1–3)
+**Current phase:** 1 complete; next is 2.1 (specify Steps 4–5)
 
 ## Phase tracker
 
@@ -14,8 +14,8 @@ lengths or dates beyond the change log.
 | 1.3 Trace profiling | done | All 8 data checks pass; K = 2024-01-29 week, N = 2024-05-20 week; outputs in `results/profile/` |
 | 1.4 Job classifier | done | 22 tests pass; January shares reproduce SPEC §4.3 exactly; thresholds frozen |
 | 1.5 Workload builder | done | K, N, X × seeds 1–3 built and deterministic; K/N memory load 0.947–0.956; 54 tests pass (`results/workloads/`) |
-| 1.6 Weight configurations | done | B0, C1–C6 rendered from measured scales; fair-share scale provisional (0.3) until 1.7; 73 tests pass |
-| 1.7 Configuration check in the simulator | not started | |
+| 1.6 Weight configurations | done | B0, C1–C6 rendered from measured scales (final scales set in 1.7) |
+| 1.7 Configuration check in the simulator | done | Pass 3: weights match in all 7 runs; all six configs rank goals in tier order (C6 narrowly); U–L correlation −0.06 (`results/check/configs_pass3.json`) |
 | 2.1 Specify Steps 4–5 | not started | waits for Phase 1 |
 | 2.2 Determine trigger states | not started | |
 | 2.3 Build the change mechanism | not started | |
@@ -50,6 +50,9 @@ lengths or dates beyond the change log.
 | Job-size direction (SPEC §5.1 corrected) | `PriorityFavorSmall=NO` with `SMALL_RELATIVE_TO_TIME`: shortest time limit first | Slurm 23.11 computes `max(32, cpus)/T_min/512` for single-node jobs, so only the limit matters; `FavorSmall=YES` (the first draft) would have favored long jobs. |
 | Weight scaling (SPEC §5.4 corrected) | Gini mean difference of each factor, not P95 − P5 | Over 95% of week-K jobs ask for 1 core, so the CPU factor's P95 − P5 is 0. U–L correlation on K: Pearson −0.006. |
 | Scenario Y (added on request) | Natural background at 0.6·ρ* plus 22 random 3–12 h bursts of X's patterns at 0.4·ρ* each; ≥1 job per burst | Tests overlapping, hour-scale changes. Week memory load 0.88–0.96 across seeds; 47k–56k jobs. |
+| Weight calibration (SPEC §5.4 revised) | Scales = Gini mean difference among *waiting* jobs, measured per configuration on the queue it produces | Pass 1 (all jobs): 1/6 configs in order; pass 2 (pooled waiting jobs): 4/6; pass 3 (per configuration): 6/6. Large jobs pile up in the queue and short-limit jobs leave it, so the waiting queue differs from the workload. |
+| Factor formulas verified | TRES = request / partition total; job size = 32/T_min/512 | Computed factors match Slurm's logged values to 5×10⁻⁷. |
+| C6 margin | U 1,849 vs L 1,752 among waiting jobs | In order but narrow; worth watching when Step 6 compares configurations. |
 | Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
@@ -62,3 +65,4 @@ lengths or dates beyond the change log.
 | 2026-11-26 | `6b17bb7` | 1.2: simulator image, smoke test, mid-run probe |
 | 2026-11-26 | `67df735` | 1.5: workload builder; scenarios K, N, X × 3 seeds |
 | 2026-11-26 | `f2ed7da` | 1.6: weight configurations B0, C1–C6; SPEC §5 corrections |
+| 2026-11-26 | `c319cc4` | Scenario Y (overlapping bursts) |

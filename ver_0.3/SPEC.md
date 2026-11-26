@@ -364,27 +364,55 @@ applies.
 Slurm normalizes each factor to 0–1, but the spread across real jobs is very different by
 factor. Fair-share spans most of 0–1. The TRES factor is a request divided by the *partition*
 total, so a full-node job scores only 1/16. Raw tier numbers would therefore let fair-share
-swamp everything. Weights are scaled by each factor's typical gap between two jobs, its Gini
-mean difference:
+swamp everything. Weights are scaled by each factor's typical gap between two **waiting**
+jobs, its Gini mean difference:
 
 ```
-s_g = mean |φ_g(i) − φ_g(j)| over pairs of jobs i ≠ j
+s_g = median over hourly queue snapshots of  mean |φ_g(i) − φ_g(j)|  over pending jobs i ≠ j
 W_g = round(T_tier(g) / s_g)
 TRES split: W_cpu = round(0.5 · T / s_cpu),  W_mem = round(0.5 · T / s_mem)
 ```
 
-So in every configuration, two typical jobs differ by about `T_tier` points on each goal. A
-first draft used `P95 − P5`, but in week `K` over 95% of jobs ask for 1 core. That makes the
-CPU factor's `P95 − P5` exactly 0. Factors with long tails still give their extreme jobs many
-times the tier swing:
-- a 1-minute limit gets about 300× on job size;
-- a 22-core job gets about 90× on CPU.
+So two typical waiting jobs differ by about `T_tier` points on each goal. Factors with long
+tails still give their extreme jobs many times the tier swing. For example, a 1-minute limit
+far outranks other jobs on job size.
 
-TRES and job-size scales come from the workload, because they are fixed per job
-(`config/factor_scales.yaml`, written by `sim/weights.py calibrate`). Fair-share
-spread comes from the priority debug log (`DebugFlags=Priority`) of calibration runs. Calibration uses scenario `K` only.
+**Why the waiting queue.** Priority only orders jobs that are waiting, and the queue is not a
+random sample of the workload: large jobs pile up, and short-limit jobs backfill and leave.
+Over the queue, the TRES factors vary about 6× more than over all jobs and the job-size factor
+about 12× less.
+
+**Why per configuration.** A configuration changes its own queue. Load-balance-first
+configurations clear short jobs, which shrinks the job-size spread among the jobs still
+waiting. So each of C1–C6 uses scales measured on the queue it produces.
+
+**Procedure (Phase 1).** Each pass runs B0 and C1–C6 on the first 36 h of `K-s1` with
+`DebugFlags=Priority` (`sim/check_configs.py`). TRES and job-size factors are computed from
+each pending job's request; they match Slurm's logged values to 5×10⁻⁷. Fair-share values are
+read from the log.
+
+| Pass | Scales from | Configurations in tier order |
+|---|---|---|
+| 1 | all jobs of `K` | 1 of 6 |
+| 2 | pending queues of pass 1, pooled | 4 of 6 (C3, C4 failed) |
+| 3 | each configuration's own pass-2 queue | **6 of 6** (final) |
+
+The first draft used `P95 − P5` as the spread. Over 95% of jobs ask for 1 core, so that is 0
+for the CPU factor; the Gini mean difference never is. Scales are in
+`config/factor_scales.yaml` (`sim/weights.py calibrate`). Calibration uses scenario `K` only.
 The CPU/memory split defaults to 50/50. A CPU-leaning split is worth testing later because
 memory is the bottleneck (§3.1).
+
+**Final weights** (`config/priority/*.conf`; age weight 500 in all):
+
+| Id | Order | Fair-share | TRES CPU / Mem | Job size |
+|---|---|---|---|---|
+| C1 | F > U > L | 19,756 | 333,778 / 81,498 | 73,391,802 |
+| C2 | F > L > U | 21,704 | 145,680 / 35,256 | 151,156,727 |
+| C3 | L > F > U | 6,391 | 92,657 / 25,791 | 327,632,527 |
+| C4 | L > U > F | 3,342 | 198,936 / 65,746 | 404,416,225 |
+| C5 | U > F > L | 10,867 | 586,495 / 165,390 | 76,057,773 |
+| C6 | U > L > F | 6,425 | 875,178 / 209,234 | 186,521,926 |
 
 ### 5.5 Source of truth and verification
 - `config/weights.yaml` holds the tiers, goal-to-factor map, split and the six orderings.
@@ -398,4 +426,21 @@ memory is the bottleneck (§3.1).
 - Pearson correlation between the U and L contributions over the pending queue is recorded. If
   `|r| > 0.8`, configurations that differ only in the order of U and L may behave alike; this
   is recorded as a finding.
+
+**Result (Phase 1, pass 3; `results/check/configs_pass3.json`).** In all seven runs, Slurm's
+logged weights match the rendered files and every job ran as specified. Typical contribution
+gaps among waiting jobs (median of hourly snapshots):
+
+| Id | Order | F | U | L | In order |
+|---|---|---|---|---|---|
+| C1 | F > U > L | 3,744 | 2,349 | 918 | yes |
+| C2 | F > L > U | 4,460 | 983 | 1,650 | yes |
+| C3 | L > F > U | 1,296 | 932 | 3,170 | yes |
+| C4 | L > U > F | 764 | 2,051 | 6,673 | yes |
+| C5 | U > F > L | 2,754 | 5,164 | 927 | yes |
+| C6 | U > L > F | 847 | 1,849 | 1,752 | yes, narrowly |
+
+U–L correlation among waiting jobs is −0.06, so the six configurations behave differently.
+The gaps are not exactly 4000 / 2000 / 1000, because each configuration reshapes its own
+queue. C6's margin between U and L is thin.
 

@@ -32,6 +32,13 @@ def test_job_factors_match_slurm_formulas():
     assert f["jobsize"].tolist() == pytest.approx([32 / 60 / 512, 32 / 1 / 512])
 
 
+def test_scales_for_prefers_per_config():
+    sc = {"jobsize": 1.0, "fairshare": 0.2, "per_config": {"C3": {"jobsize": 0.5}}}
+    assert weights.scales_for("C3", sc)["jobsize"] == 0.5
+    assert weights.scales_for("C3", sc)["fairshare"] == 0.2
+    assert weights.scales_for("C1", sc)["jobsize"] == 1.0
+
+
 def test_configs_are_all_orderings():
     orders = sorted(map(tuple, CFG["configs"].values()))
     assert orders == sorted(itertools.permutations(CFG["goals"]))
@@ -39,8 +46,9 @@ def test_configs_are_all_orderings():
 
 @pytest.mark.parametrize("name", list(CFG["configs"]))
 def test_tier_swings_follow_order(name):
-    w = weights.weights_for(CFG["configs"][name], CFG, SCALES)
-    swing = {g: sum(w[k] * SCALES[SCALE_KEYS[k]] for k in FACTOR_KEYS[g]) for g in FACTOR_KEYS}
+    sc = weights.scales_for(name, SCALES)
+    w = weights.weights_for(CFG["configs"][name], CFG, sc)
+    swing = {g: sum(w[k] * sc[SCALE_KEYS[k]] for k in FACTOR_KEYS[g]) for g in FACTOR_KEYS}
     for goal, tier in zip(CFG["configs"][name], CFG["tiers"]):
         assert swing[goal] == pytest.approx(tier, rel=0.01)
     assert w["Age"] == CFG["age_weight"]
@@ -55,5 +63,8 @@ def test_rendered_files_are_current(name):
     if name == "B0":
         assert all(l.split("=", 1)[1] in ("0", "CPU=0,Mem=0") for l in body)
     else:
-        w = weights.weights_for(CFG["configs"][name], CFG, SCALES)
+        w = weights.weights_for(CFG["configs"][name], CFG, weights.scales_for(name, SCALES))
         assert body == weights.conf_text(name, "", w).splitlines()[2:]
+        # Slurm stores weights and the total priority as 32-bit unsigned integers; every
+        # factor is at most 1, so the sum of weights bounds the priority.
+        assert sum(w.values()) < 2**32

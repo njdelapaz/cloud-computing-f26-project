@@ -1,12 +1,67 @@
-# Measured factor scales (Gini mean difference). Written by
-#   .venv/bin/python -m sim.weights calibrate
-tres_cpu: 0.000476761
-tres_mem: 0.00159569
-jobsize: 0.000207947
-fairshare: 0.3
+# Measured factor scales (Gini mean difference among pending jobs).
+# Top level: pooled over all configurations (calibrate --from-check TAG).
+# per_config: each configuration's own queue (calibrate --per-config-from TAG).
+tres_cpu: 0.00269905
+tres_mem: 0.0100223
+jobsize: 1.79545e-05
+fairshare: 0.166715
 sources:
-  tres_cpu: Gini mean difference over 80783 jobs of K seeds [1, 2, 3]
-  tres_mem: Gini mean difference over 80783 jobs of K seeds [1, 2, 3]
-  jobsize: Gini mean difference over 80783 jobs of K seeds [1, 2, 3]
-  fairshare: provisional until task 1.7
-correlation_U_L: -0.006
+  tres_cpu: 'median over 145 hourly pending-queue snapshots (>= 20 jobs) of check
+    ''pass1'' on K-s1: pass1-B0, pass1-C1, pass1-C2, pass1-C3, pass1-C4, pass1-C5,
+    pass1-C6'
+  tres_mem: 'median over 145 hourly pending-queue snapshots (>= 20 jobs) of check
+    ''pass1'' on K-s1: pass1-B0, pass1-C1, pass1-C2, pass1-C3, pass1-C4, pass1-C5,
+    pass1-C6'
+  jobsize: 'median over 145 hourly pending-queue snapshots (>= 20 jobs) of check ''pass1''
+    on K-s1: pass1-B0, pass1-C1, pass1-C2, pass1-C3, pass1-C4, pass1-C5, pass1-C6'
+  fairshare: 'median over 145 hourly pending-queue snapshots (>= 20 jobs) of check
+    ''pass1'' on K-s1: pass1-B0, pass1-C1, pass1-C2, pass1-C3, pass1-C4, pass1-C5,
+    pass1-C6 (C1-C6 only)'
+snapshots:
+  tres_cpu: 145
+  tres_mem: 145
+  jobsize: 145
+  fairshare: 120
+per_config:
+  C1:
+    tres_cpu: 0.002996
+    tres_mem: 0.0122702
+    jobsize: 1.36255e-05
+    fairshare: 0.20247
+    snapshots: 27
+    source: check 'pass2' on K-s1
+  C2:
+    tres_cpu: 0.00343217
+    tres_mem: 0.0141819
+    jobsize: 1.32313e-05
+    fairshare: 0.1843
+    snapshots: 27
+    source: check 'pass2' on K-s1
+  C3:
+    tres_cpu: 0.00539627
+    tres_mem: 0.0193868
+    jobsize: 1.22088e-05
+    fairshare: 0.312923
+    snapshots: 14
+    source: check 'pass2' on K-s1
+  C4:
+    tres_cpu: 0.00502673
+    tres_mem: 0.0152101
+    jobsize: 9.8908e-06
+    fairshare: 0.299237
+    snapshots: 13
+    source: check 'pass2' on K-s1
+  C5:
+    tres_cpu: 0.00341009
+    tres_mem: 0.0120926
+    jobsize: 1.31479e-05
+    fairshare: 0.184042
+    snapshots: 28
+    source: check 'pass2' on K-s1
+  C6:
+    tres_cpu: 0.00228525
+    tres_mem: 0.00955866
+    jobsize: 1.07226e-05
+    fairshare: 0.155646
+    snapshots: 29
+    source: check 'pass2' on K-s1
