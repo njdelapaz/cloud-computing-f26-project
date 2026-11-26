@@ -1,0 +1,532 @@
+diff --git a/contribs/sim/sim_conf.c b/contribs/sim/sim_conf.c
+index cf56aa320d..469da5adde 100644
+--- a/contribs/sim/sim_conf.c
++++ b/contribs/sim/sim_conf.c
+@@ -36,6 +36,10 @@ int read_sim_conf(void) {
+ 			{"FirstJobDelay", S_P_DOUBLE },
+ 			{"CompJobDelay", S_P_DOUBLE },
+ 			{"TimeLimitDelay", S_P_DOUBLE },
++			{"PolicyTickSeconds", S_P_DOUBLE },
++			{"PolicyCommand", S_P_STRING },
++			{"PolicyDir", S_P_STRING },
++			{"InitialConfig", S_P_STRING },
+ 			{ NULL } };
+ 	s_p_hashtbl_t *tbl = NULL;
+ 	char *conf_path = NULL;
+@@ -47,6 +51,7 @@ int read_sim_conf(void) {
+ 	double timelimit_delay;
+ 	double time_start;
+ 	double time_stop;
++	double policy_tick_seconds;
+ 
+ 	/* Set initial values */
+ 	if (slurm_sim_conf == NULL) {
+@@ -58,6 +63,10 @@ int read_sim_conf(void) {
+ 
+ 	slurm_sim_conf->shared_memory_name = NULL;
+ 	slurm_sim_conf->events_file = NULL;
++	slurm_sim_conf->policy_tick_usec = 0;
++	slurm_sim_conf->policy_command = NULL;
++	slurm_sim_conf->policy_dir = NULL;
++	slurm_sim_conf->initial_config = NULL;
+ 
+ 
+ 	/* Get the slurmdbd.conf path and validate the file */
+@@ -110,6 +119,12 @@ int read_sim_conf(void) {
+ 		if (s_p_get_double(&timelimit_delay, "TimeLimitDelay", tbl)) {
+ 			slurm_sim_conf->timelimit_delay = (int64_t)(timelimit_delay*1.0e6);
+ 		}
++		if (s_p_get_double(&policy_tick_seconds, "PolicyTickSeconds", tbl)) {
++			slurm_sim_conf->policy_tick_usec = (int64_t)(policy_tick_seconds*1.0e6);
++		}
++		s_p_get_string(&slurm_sim_conf->policy_command, "PolicyCommand", tbl);
++		s_p_get_string(&slurm_sim_conf->policy_dir, "PolicyDir", tbl);
++		s_p_get_string(&slurm_sim_conf->initial_config, "InitialConfig", tbl);
+ 
+ 		s_p_hashtbl_destroy(tbl);
+ 	}
+diff --git a/contribs/sim/sim_conf.h b/contribs/sim/sim_conf.h
+index 5603efb2d6..9fabb0cdef 100644
+--- a/contribs/sim/sim_conf.h
++++ b/contribs/sim/sim_conf.h
+@@ -26,6 +26,12 @@ typedef struct slurm_sim_conf {
+ 	int64_t    comp_job_delay; /* delay between job is complete and epilog complete, usec*/
+ 	int64_t    timelimit_delay; /* delay between job reaching timelimit is complete and epilog complete, usec*/
+ 
++	/* ver_0.3 policy hook (contribs/sim/sim_policy.c) */
++	int64_t    policy_tick_usec;	/* policy tick interval, usec; 0 = no ticks */
++	char *     policy_command;	/* command run at each tick */
++	char *     policy_dir;		/* state.json, decision.json, configs/<id>.{conf,qos} */
++	char *     initial_config;	/* configuration the run starts with */
++
+ } slurm_sim_conf_t;
+ 
+ /* simulator configuration */
+diff --git a/contribs/sim/sim_events.c b/contribs/sim/sim_events.c
+index 6bd53ffe45..46a1aaf547 100644
+--- a/contribs/sim/sim_events.c
++++ b/contribs/sim/sim_events.c
+@@ -56,6 +56,7 @@ void sim_insert_event2(sim_event_t * event)
+         //case SIM_RUN_BACKFILL_SCHEDULER:
+ 		case SIM_PRIORITY_DECAY:
+ 		case SIM_SET_DB_INDEX:
++		case SIM_POLICY_TICK:
+             sim_n_cyclic_events++;
+             break;
+         default:
+@@ -81,6 +82,7 @@ extern sim_event_t * sim_pop_next_event()
+         //case SIM_RUN_BACKFILL_SCHEDULER:
+ 		case SIM_PRIORITY_DECAY:
+ 		case SIM_SET_DB_INDEX:
++		case SIM_POLICY_TICK:
+             sim_n_cyclic_events--;
+             break;
+         default:
+@@ -379,6 +381,8 @@ int sim_insert_event_by_cmdline(char *cmdline) {
+ 			++iarg;
+ 			if(xstrcmp(event_argv[iarg], "submit_batch_job")==0) {
+ 				event->type = SIM_SUBMIT_BATCH_JOB;
++			} else if(xstrcmp(event_argv[iarg], "set_priority_config")==0) {
++				event->type = SIM_SET_PRIORITY_CONFIG;
+ 			}
+ 		}
+ 	}
+@@ -410,6 +414,17 @@ int sim_insert_event_by_cmdline(char *cmdline) {
+ 	// parse event details
+ 	if(event->type == SIM_SUBMIT_BATCH_JOB) {
+ 		event->payload = sim_submit_batch_job_get_payload(event_details);
++	} else if(event->type == SIM_SET_PRIORITY_CONFIG) {
++		/* payload: configuration id, trimmed */
++		char *id = xstrdup(event_details ? event_details : "");
++		char *p = id, *e;
++		while (*p == ' ' || *p == '\t')
++			p++;
++		e = p + strlen(p);
++		while (e > p && (e[-1] == ' ' || e[-1] == '\t' || e[-1] == '\n' || e[-1] == '\r'))
++			*--e = '\0';
++		event->payload = xstrdup(p);
++		xfree(id);
+ 	}
+ 
+ 	//xfree(event_details);
+diff --git a/contribs/sim/sim_events.h b/contribs/sim/sim_events.h
+index 6d6440413f..5a75feb443 100644
+--- a/contribs/sim/sim_events.h
++++ b/contribs/sim/sim_events.h
+@@ -18,6 +18,8 @@ typedef enum {
+ 	SIM_ACCOUNTING_UPDATE,
+ 	SIM_PRIORITY_DECAY,
+ 	SIM_SET_DB_INDEX,
++	SIM_POLICY_TICK,		/* ver_0.3 policy hook: periodic tick (cyclic) */
++	SIM_SET_PRIORITY_CONFIG,	/* ver_0.3 policy hook: fixed-time switch */
+ } sim_event_type_t;
+ 
+ typedef struct sim_event_submit_batch_job {
+diff --git a/contribs/sim/sim_policy.c b/contribs/sim/sim_policy.c
+new file mode 100644
+index 0000000000..5260f58f4f
+--- /dev/null
++++ b/contribs/sim/sim_policy.c
+@@ -0,0 +1,366 @@
++/*
++ * ver_0.3 policy hook (SPEC §7): a periodic policy tick and an in-place switch of the
++ * priority configuration (PriorityWeight* values and the size-QOS priorities).
++ *
++ * Included from slurmctld_controller.c, so it sees slurmctld's globals (job_list,
++ * slurm_conf, node table, locks). Settings come from sim.conf:
++ *   PolicyTickSeconds  tick interval in simulated seconds (0 = no ticks)
++ *   PolicyCommand      command run at each tick (blocking); reads PolicyDir/state.json and
++ *                      writes PolicyDir/decision.json
++ *   PolicyDir          directory for state.json, decision.json and configs/<id>.{conf,qos}
++ *   InitialConfig      id of the configuration the run starts with
++ * Events file: "-dt <s> -e set_priority_config | <id>" applies <id> at a fixed time.
++ */
++
++extern int64_t simulator_start_time;
++
++#define POLICY_MAX_QOS 8
++#define POLICY_NAME_LEN 64
++
++static char *sim_policy_current = NULL;	/* active configuration id */
++
++static char *_policy_path(const char *name)
++{
++	return xstrdup_printf("%s/%s", slurm_sim_conf->policy_dir, name);
++}
++
++/* Read the five PriorityWeight* lines of a configuration's .conf file. */
++static int _policy_read_weights(const char *path, uint32_t *age, uint32_t *qos,
++				uint32_t *fs, uint32_t *js, char **tres)
++{
++	FILE *f = fopen(path, "r");
++	char line[512];
++	int found = 0;
++
++	if (!f) {
++		error("policy: cannot open %s", path);
++		return -1;
++	}
++	while (fgets(line, sizeof(line), f)) {
++		char *nl = strchr(line, '\n');
++		if (nl)
++			*nl = '\0';
++		if (line[0] == '#' || line[0] == '\0')
++			continue;
++		if (!strncmp(line, "PriorityWeightAge=", 18)) {
++			*age = strtoul(line + 18, NULL, 10);
++			found |= 1;
++		} else if (!strncmp(line, "PriorityWeightQOS=", 18)) {
++			*qos = strtoul(line + 18, NULL, 10);
++			found |= 2;
++		} else if (!strncmp(line, "PriorityWeightFairshare=", 24)) {
++			*fs = strtoul(line + 24, NULL, 10);
++			found |= 4;
++		} else if (!strncmp(line, "PriorityWeightJobSize=", 22)) {
++			*js = strtoul(line + 22, NULL, 10);
++			found |= 8;
++		} else if (!strncmp(line, "PriorityWeightTRES=", 19)) {
++			xfree(*tres);
++			*tres = xstrdup(line + 19);
++			found |= 16;
++		}
++	}
++	fclose(f);
++	if (found != 31) {
++		error("policy: %s lacks some PriorityWeight lines (found mask %d)", path, found);
++		return -1;
++	}
++	return 0;
++}
++
++/* Read "name priority" lines of a configuration's .qos file. */
++static int _policy_read_qos(const char *path, char names[][POLICY_NAME_LEN],
++			    uint32_t *prio, int *n)
++{
++	FILE *f = fopen(path, "r");
++	char line[256], name[POLICY_NAME_LEN];
++	unsigned long p;
++
++	*n = 0;
++	if (!f) {
++		error("policy: cannot open %s", path);
++		return -1;
++	}
++	while (fgets(line, sizeof(line), f)) {
++		if (line[0] == '#' || line[0] == '\n')
++			continue;
++		if (sscanf(line, "%63s %lu", name, &p) == 2 && *n < POLICY_MAX_QOS) {
++			snprintf(names[*n], POLICY_NAME_LEN, "%s", name);
++			prio[*n] = (uint32_t) p;
++			(*n)++;
++		}
++	}
++	fclose(f);
++	if (*n == 0) {
++		error("policy: %s has no QOS priorities", path);
++		return -1;
++	}
++	return 0;
++}
++
++/* Set QOS priorities through the accounting manager (recomputes normalized priorities). */
++static int _policy_apply_qos(char names[][POLICY_NAME_LEN], uint32_t *prio, int n)
++{
++	assoc_mgr_lock_t read_locks = { .qos = READ_LOCK };
++	List update_list = list_create(slurmdb_destroy_update_object);
++	slurmdb_update_object_t *obj = xmalloc(sizeof(*obj));
++	int rc;
++
++	obj->type = SLURMDB_MODIFY_QOS;
++	obj->objects = list_create(slurmdb_destroy_qos_rec);
++	list_append(update_list, obj);
++
++	assoc_mgr_lock(&read_locks);
++	for (int i = 0; i < n; i++) {
++		slurmdb_qos_rec_t *found = list_find_first(assoc_mgr_qos_list,
++						slurmdb_find_qos_in_list_by_name, names[i]);
++		slurmdb_qos_rec_t *q;
++		if (!found) {
++			assoc_mgr_unlock(&read_locks);
++			error("policy: QOS %s not found", names[i]);
++			FREE_NULL_LIST(update_list);
++			return -1;
++		}
++		q = xmalloc(sizeof(*q));
++		slurmdb_init_qos_rec(q, 0, NO_VAL);
++		q->id = found->id;
++		q->name = xstrdup(found->name);
++		q->priority = prio[i];
++		list_append(obj->objects, q);
++	}
++	assoc_mgr_unlock(&read_locks);
++
++	rc = assoc_mgr_update(update_list, false);
++	FREE_NULL_LIST(update_list);
++	return rc;
++}
++
++/* Recompute the priority of every pending job now (instead of at the next calc period). */
++static void _policy_reprioritize(void)
++{
++	slurmctld_lock_t job_write_lock = { .job = WRITE_LOCK, .node = READ_LOCK,
++					    .part = READ_LOCK };
++	ListIterator itr;
++	job_record_t *job_ptr;
++	int n = 0;
++
++	lock_slurmctld(job_write_lock);
++	itr = list_iterator_create(job_list);
++	while ((job_ptr = list_next(itr))) {
++		if (IS_JOB_PENDING(job_ptr)) {
++			set_job_prio(job_ptr);
++			n++;
++		}
++	}
++	list_iterator_destroy(itr);
++	unlock_slurmctld(job_write_lock);
++	info("policy: recomputed priority of %d pending jobs", n);
++}
++
++/* Apply configuration <id> (PolicyDir/configs/<id>.conf and .qos). 0 on success. */
++extern int sim_policy_apply_config(const char *id, const char *why)
++{
++	char *conf_path, *qos_path, *tres = NULL;
++	uint32_t age = 0, qos = 0, fs = 0, js = 0;
++	char names[POLICY_MAX_QOS][POLICY_NAME_LEN];
++	uint32_t prio[POLICY_MAX_QOS];
++	int n = 0, rc = -1;
++
++	if (!slurm_sim_conf->policy_dir || !id || !id[0]) {
++		error("policy: cannot apply '%s' (PolicyDir unset or empty id)", id ? id : "");
++		return -1;
++	}
++	conf_path = xstrdup_printf("%s/configs/%s.conf", slurm_sim_conf->policy_dir, id);
++	qos_path = xstrdup_printf("%s/configs/%s.qos", slurm_sim_conf->policy_dir, id);
++
++	/* Validate both files before changing anything. */
++	if (_policy_read_weights(conf_path, &age, &qos, &fs, &js, &tres) ||
++	    _policy_read_qos(qos_path, names, prio, &n)) {
++		error("policy: keeping %s; cannot load %s",
++		      sim_policy_current ? sim_policy_current : "?", id);
++		goto done;
++	}
++	if (_policy_apply_qos(names, prio, n) != SLURM_SUCCESS) {
++		error("policy: keeping %s; QOS update for %s failed",
++		      sim_policy_current ? sim_policy_current : "?", id);
++		goto done;
++	}
++	slurm_conf.priority_weight_age = age;
++	slurm_conf.priority_weight_qos = qos;
++	slurm_conf.priority_weight_fs = fs;
++	slurm_conf.priority_weight_js = js;
++	xfree(slurm_conf.priority_weight_tres);
++	slurm_conf.priority_weight_tres = tres;
++	tres = NULL;
++	priority_g_reconfig(false);
++	_policy_reprioritize();
++
++	info("policy: switch %s -> %s (%s) weights age=%u qos=%u fairshare=%u jobsize=%u",
++	     sim_policy_current ? sim_policy_current : "?", id, why, age, qos, fs, js);
++	xfree(sim_policy_current);
++	sim_policy_current = xstrdup(id);
++	rc = 0;
++done:
++	xfree(tres);
++	xfree(conf_path);
++	xfree(qos_path);
++	return rc;
++}
++
++/* Write PolicyDir/state.json: waiting jobs and per-node allocation (SPEC §7.2). */
++static int _policy_write_state(const char *path, time_t now)
++{
++	slurmctld_lock_t job_read_lock = { .job = READ_LOCK, .node = READ_LOCK };
++	char *tmp = xstrdup_printf("%s.tmp", path);
++	FILE *f = fopen(tmp, "w");
++	uint32_t *ncpu;
++	uint64_t *nmem;
++	ListIterator itr;
++	job_record_t *job_ptr;
++	node_record_t *node_ptr;
++	bool first = true;
++
++	if (!f) {
++		error("policy: cannot write %s", tmp);
++		xfree(tmp);
++		return -1;
++	}
++	ncpu = xcalloc(node_record_count, sizeof(uint32_t));
++	nmem = xcalloc(node_record_count, sizeof(uint64_t));
++
++	fprintf(f, "{\"t_sim\":%ld,\"config\":\"%s\",\"waiting\":[", (long) now,
++		sim_policy_current ? sim_policy_current : "");
++	lock_slurmctld(job_read_lock);
++	itr = list_iterator_create(job_list);
++	while ((job_ptr = list_next(itr))) {
++		uint64_t mem = 0;
++		uint32_t cpus = 0;
++		if (job_ptr->details) {
++			mem = job_ptr->details->pn_min_memory;
++			cpus = job_ptr->details->min_cpus;
++		}
++		if (mem & MEM_PER_CPU)
++			mem = (mem & (~MEM_PER_CPU)) * cpus;
++		if (IS_JOB_PENDING(job_ptr)) {
++			time_t submit = (job_ptr->details && job_ptr->details->submit_time) ?
++					job_ptr->details->submit_time : now;
++			fprintf(f, "%s{\"id\":%u,\"qos\":\"%s\",\"cpus\":%u,\"mem_mb\":%" PRIu64
++				",\"timelimit_min\":%u,\"account\":\"%s\",\"waited_s\":%ld}",
++				first ? "" : ",", job_ptr->job_id,
++				(job_ptr->qos_ptr && job_ptr->qos_ptr->name) ?
++					job_ptr->qos_ptr->name : "",
++				cpus, mem, job_ptr->time_limit,
++				job_ptr->account ? job_ptr->account : "",
++				(long) (now - submit));
++			first = false;
++		} else if (IS_JOB_RUNNING(job_ptr) && job_ptr->node_bitmap) {
++			int idx = bit_ffs(job_ptr->node_bitmap);
++			if (idx >= 0 && idx < node_record_count) {
++				ncpu[idx] += job_ptr->total_cpus;
++				nmem[idx] += mem;
++			}
++		}
++	}
++	list_iterator_destroy(itr);
++	fprintf(f, "],\"nodes\":[");
++	first = true;
++	for (int i = 0; (node_ptr = next_node(&i)); i++) {
++		fprintf(f, "%s{\"name\":\"%s\",\"alloc_cpus\":%u,\"alloc_mem_mb\":%" PRIu64 "}",
++			first ? "" : ",", node_ptr->name, ncpu[i], nmem[i]);
++		first = false;
++	}
++	unlock_slurmctld(job_read_lock);
++	fprintf(f, "]}\n");
++	fclose(f);
++	xfree(ncpu);
++	xfree(nmem);
++	if (rename(tmp, path)) {
++		error("policy: cannot rename %s", tmp);
++		xfree(tmp);
++		return -1;
++	}
++	xfree(tmp);
++	return 0;
++}
++
++/* Read the "config" field of decision.json: NULL for null or a missing file. */
++static char *_policy_read_decision(const char *path)
++{
++	FILE *f = fopen(path, "r");
++	char buf[4096], *p, *q;
++	size_t len;
++
++	if (!f)
++		return NULL;
++	len = fread(buf, 1, sizeof(buf) - 1, f);
++	fclose(f);
++	buf[len] = '\0';
++	p = strstr(buf, "\"config\":");
++	if (!p)
++		return NULL;
++	p += 9;
++	while (*p == ' ')
++		p++;
++	if (*p != '"')
++		return NULL;	/* null: no switch */
++	p++;
++	q = strchr(p, '"');
++	if (!q || q == p)
++		return NULL;
++	*q = '\0';
++	return xstrdup(p);
++}
++
++/* One policy tick (SPEC §7.2): snapshot, run the command, apply a switch if asked. */
++extern void sim_policy_tick(void)
++{
++	time_t now = (time_t) (get_sim_utime() / 1000000);
++	char *state = _policy_path("state.json");
++	char *decision = _policy_path("decision.json");
++	char *cfg = NULL;
++	int64_t t0, t1;
++	int status;
++
++	(void) unlink(decision);
++	if (_policy_write_state(state, now))
++		goto done;
++	t0 = get_real_utime();
++	status = system(slurm_sim_conf->policy_command);
++	t1 = get_real_utime();
++	if (status != 0) {
++		error("policy: tick t=%ld command failed (status %d); keeping %s", (long) now,
++		      status, sim_policy_current ? sim_policy_current : "?");
++		goto done;
++	}
++	cfg = _policy_read_decision(decision);
++	if (cfg && xstrcmp(cfg, sim_policy_current))
++		(void) sim_policy_apply_config(cfg, "policy");
++	info("policy: tick t=%ld config=%s decision=%s command_ms=%.1f", (long) now,
++	     sim_policy_current ? sim_policy_current : "?", cfg ? cfg : "hold",
++	     (t1 - t0) / 1000.0);
++done:
++	xfree(cfg);
++	xfree(state);
++	xfree(decision);
++}
++
++/* Called once at the start of the event loop: set the initial config, schedule ticks. */
++extern void sim_policy_init(void)
++{
++	sim_policy_current = xstrdup(slurm_sim_conf->initial_config ?
++				     slurm_sim_conf->initial_config : "");
++	if (slurm_sim_conf->policy_tick_usec > 0 && slurm_sim_conf->policy_command &&
++	    slurm_sim_conf->policy_dir) {
++		int64_t first = simulator_start_time +
++				slurm_sim_conf->microseconds_before_first_job +
++				slurm_sim_conf->first_job_delay +
++				slurm_sim_conf->policy_tick_usec;
++		sim_insert_event(first, SIM_POLICY_TICK, NULL);
++		info("policy: ticks every %.0f s from %" PRId64 ", command %s, start config %s",
++		     slurm_sim_conf->policy_tick_usec / 1.0e6, first,
++		     slurm_sim_conf->policy_command, sim_policy_current);
++	} else if (slurm_sim_conf->policy_dir) {
++		info("policy: no ticks; scheduled switches only; start config %s",
++		     sim_policy_current);
++	}
++}
+diff --git a/contribs/sim/slurmctld_controller.c b/contribs/sim/slurmctld_controller.c
+index 7fdd5867ea..2084c6f1a5 100644
+--- a/contribs/sim/slurmctld_controller.c
++++ b/contribs/sim/slurmctld_controller.c
+@@ -29,6 +29,7 @@ extern void sim_slurmctld_event_main_loop();
+ #include "../../contribs/sim/sim.h"
+ #include "../../contribs/sim/slurmctld_sim.h"
+ #include "../../contribs/sim/sim_comm.h"
++#include "../../contribs/sim/sim_policy.c"	/* ver_0.3 policy hook */
+ 
+ #include <inttypes.h>
+ #include <signal.h>
+@@ -416,6 +417,7 @@ int _event_ended(slurm_sim_rt_event_t event_type, const char *s_event_type, cons
+ 
+ void sim_events_first_loop()
+ {
++	sim_policy_init();	/* ver_0.3 policy hook */
+ 	//time_t start_time;
+ 	//int jobs_submit_count=0;
+ 
+@@ -540,6 +542,15 @@ int64_t sim_events_loop()
+ 				}
+ 				sim_insert_event(event->when + 5*USEC_IN_SEC, SIM_SET_DB_INDEX,NULL);
+ 				break;
++			case SIM_POLICY_TICK:
++				sim_policy_tick();
++				sim_insert_event(event->when + slurm_sim_conf->policy_tick_usec,
++						 SIM_POLICY_TICK, NULL);
++				break;
++			case SIM_SET_PRIORITY_CONFIG:
++				(void) sim_policy_apply_config((char *) event->payload, "scheduled");
++				xfree(event->payload);
++				break;
+ 			default:
+ 				break;
+ 			}

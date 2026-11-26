@@ -19,8 +19,8 @@ lengths or dates beyond the change log.
 | 2.1 Specify Steps 4–5 | done | SPEC §6–7 and PLAN 2.2–2.6 approved 2026-11-26 with default answers to Q-A to Q-C |
 | 2.2 Trigger calibration | in progress | full K-s1 week under C0 running |
 | 2.3 Policy module | done | `controller/policy.py`, `tick.py`, `replay.py` (standard library only; runs under the container's Python 3.10); 10 tests pass |
-| 2.4 Simulator hook | not started | |
-| 2.5 Apply test | not started | |
+| 2.4 Simulator hook | done | `sim/patches/policy_hook.patch` applied at build; image `slurmsim:v03` now includes it; with the hook off it matches the unpatched image (same nodes, start times within the 1 s run-to-run jitter) |
+| 2.5 Apply test | done | C0→C1→C2→C3→C0 during a standing queue: every waiting job recomputed within 2 s with the new weights and QOS factors; missing config rejected; failing command logged, no switch (`results/phase2/apply_test.json`) |
 | 2.6 Adaptive week | not started | |
 | 3.1 Specify Step 6 | not started | waits for Phase 2 |
 | 3.2 Run the simulations | not started | |
@@ -84,3 +84,4 @@ lengths or dates beyond the change log.
 | 2026-11-26 | `318cb1d` | 1.7: configuration check (six-configuration design, since superseded) |
 | 2026-11-26 | `614d9e6` | Priority configurations redesigned around size-class QOS; strict size first |
 | 2026-11-26 | `ef50823` | 2.1: Step 4–5 spec (SPEC §6–7) and Phase 2 tasks |
+| 2026-11-26 | `c9430e7` | 2.3: policy module, tick command, replay |

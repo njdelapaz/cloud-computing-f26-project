@@ -23,6 +23,8 @@ def parse_events(path: Path) -> pd.DataFrame:
         if not line.strip() or line.startswith("#"):
             continue
         head, body = line.split("|", 1)
+        if "submit_batch_job" not in head:      # e.g. set_priority_config switches
+            continue
         dt = float(re.search(r"-dt\s+(\S+)", head).group(1))
 
         def opt(pattern, cast=str):

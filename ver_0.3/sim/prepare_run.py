@@ -15,6 +15,7 @@ Then sim/run_sim.sh RUN_DIR runs it; the runner's outputs go to RUN_DIR/out/.
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 from pathlib import Path
 
@@ -23,6 +24,8 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATES = ROOT / "sim" / "etc"
 WEIGHTS = ROOT / "config" / "weights.yaml"
+PRIORITY_DIR = ROOT / "config" / "priority"
+TRIGGERS = ROOT / "config" / "triggers.yaml"
 CONTAINER_ROOT = Path("/work")
 CONTAINER_LOG = "/home/slurm/simrun/log"
 CONTAINER_VAR = "/home/slurm/simrun/var"
@@ -104,9 +107,44 @@ def render(template: Path, values: dict[str, str]) -> str:
     return text
 
 
+def write_policy_dir(run_dir: Path, c_run: Path, initial: str, adaptive: bool) -> list[str]:
+    """Set up RUN_DIR/policy for the simulator's policy hook (SPEC §7.2).
+
+    Copies every configuration (config/priority/*.conf, *.qos) to policy/configs/. With
+    adaptive, also writes policy/params.json from config/triggers.yaml and policy/tick.sh,
+    the command the simulator runs at each tick. Returns the sim.conf lines to add.
+    """
+    pol = run_dir / "policy"
+    (pol / "configs").mkdir(parents=True)
+    for f in sorted(PRIORITY_DIR.glob("*.conf")) + sorted(PRIORITY_DIR.glob("*.qos")):
+        shutil.copy(f, pol / "configs" / f.name)
+    lines = ["", "## ver_0.3 policy hook (SPEC §7)", f"PolicyDir = {c_run / 'policy'}",
+             f"InitialConfig = {initial}"]
+    if adaptive:
+        trig = yaml.safe_load(TRIGGERS.read_text())
+        params = {k: trig[k] for k in ("n_min", "p_enter", "p_exit", "persist_ticks",
+                                       "dwell_s", "state_config", "quantiles")}
+        if trig["state_config"].get(trig.get("initial_state", "mix")) != initial:
+            raise ValueError(f"initial config {initial} does not match the initial state's "
+                             f"config in {TRIGGERS}")
+        params["initial_state"] = trig.get("initial_state", "mix")
+        (pol / "params.json").write_text(json.dumps(params, indent=1) + "\n")
+        tick = pol / "tick.sh"
+        tick.write_text("#!/bin/sh\n# Run by the simulator at every policy tick.\n"
+                        f"cd /work && exec python3 -m controller.tick --dir {c_run / 'policy'}\n")
+        tick.chmod(0o755)
+        lines += [f"PolicyTickSeconds = {trig['tick_s']}", f"PolicyCommand = {c_run / 'policy' / 'tick.sh'}"]
+    return lines
+
+
 def prepare_run(run_dir: Path, events: Path, accounts: Path, priority: Path,
-                time_start: int = 1_704_067_200, extra_conf: list[str] | None = None) -> Path:
-    """extra_conf: lines appended to slurm.conf (e.g. 'DebugFlags=Priority')."""
+                time_start: int = 1_704_067_200, extra_conf: list[str] | None = None,
+                policy: str | None = None) -> Path:
+    """extra_conf: lines appended to slurm.conf (e.g. 'DebugFlags=Priority').
+
+    policy: None (no hook), "scheduled" (configurations available for set_priority_config
+    events) or "adaptive" (policy ticks too). The run starts in the --priority configuration.
+    """
     run_dir = (ROOT / run_dir).resolve()
     if ROOT not in run_dir.parents:
         raise ValueError("run directory must be inside ver_0.3")
@@ -129,6 +167,12 @@ def prepare_run(run_dir: Path, events: Path, accounts: Path, priority: Path,
     (etc / "sacctmgr.script").write_text(sacctmgr_script(pairs, qos_priority))
     shutil.copy(priority, etc / "priority_weights.conf")
     shutil.copy(events, run_dir / "events.txt")
+    if policy:
+        if policy not in ("scheduled", "adaptive"):
+            raise ValueError(f"unknown policy mode {policy}")
+        lines = write_policy_dir(run_dir, c_run, Path(priority).stem, policy == "adaptive")
+        with open(etc / "sim.conf", "a") as f:
+            f.write("\n".join(lines) + "\n")
     return run_dir
 
 
@@ -141,8 +185,11 @@ def main() -> None:
     p.add_argument("--time-start", type=int, default=1_704_067_200)
     p.add_argument("--extra-conf", action="append", default=[],
                    help="line to append to slurm.conf; repeatable")
+    p.add_argument("--policy", choices=["scheduled", "adaptive"],
+                   help="enable the policy hook: fixed-time switches only, or policy ticks")
     a = p.parse_args()
-    print(prepare_run(a.run_dir, a.events, a.accounts, a.priority, a.time_start, a.extra_conf))
+    print(prepare_run(a.run_dir, a.events, a.accounts, a.priority, a.time_start, a.extra_conf,
+                      a.policy))
 
 
 if __name__ == "__main__":

@@ -40,6 +40,11 @@ RUN mkdir -p /run/mysqld && chown mysql:mysql /run/mysqld && \
 COPY --chown=slurm:slurm third_party/slurm_sim_tools /opt/slurm_sim_tools
 COPY --chown=slurm:slurm third_party/slurm_simulator /opt/slurm_sim_src
 
+# ver_0.3 policy hook (SPEC §7): periodic policy tick and in-place configuration switch.
+# Inactive unless sim.conf sets PolicyDir (and PolicyTickSeconds/PolicyCommand for ticks).
+COPY --chown=slurm:slurm sim/patches /opt/slurm_sim_patches
+RUN cd /opt/slurm_sim_src && sudo -u slurm patch -p1 < /opt/slurm_sim_patches/policy_hook.patch
+
 RUN mkdir -p /opt/slurm_sim_bld /opt/slurm_sim && \
     chown slurm:slurm /opt/slurm_sim_bld /opt/slurm_sim && \
     cd /opt/slurm_sim_bld && \
@@ -47,7 +52,8 @@ RUN mkdir -p /opt/slurm_sim_bld /opt/slurm_sim && \
         --disable-x11 --enable-front-end --with-hdf5=no --enable-simulator \
         CFLAGS='-O3 -Wno-error=unused-variable -Wno-error=implicit-function-declaration' \
         > /opt/slurm_sim_bld/configure.log 2>&1 && \
-    sudo -u slurm make -j"$(nproc)" > /opt/slurm_sim_bld/make.log 2>&1 && \
+    { sudo -u slurm make -j"$(nproc)" > /opt/slurm_sim_bld/make.log 2>&1 || \
+      { grep -n 'error' /opt/slurm_sim_bld/make.log | tail -40; exit 1; }; } && \
     sudo -u slurm make install > /opt/slurm_sim_bld/install.log 2>&1
 
 ENV PATH="/opt/slurm_sim/bin:/opt/slurm_sim/sbin:/opt/slurm_sim_tools/bin:${PATH}" \

@@ -9,8 +9,9 @@ Everything here runs from `ver_0.3/`.
 | `third_party/slurm_simulator` | branch `slurm-23-02-sim`, commit `f99a71eb2073266bba3869aa2a0ccd51c58c9bb7` |
 | `third_party/slurm_sim_tools` | branch `v3.0-branch`, commit `21ba58d5b88b2a208a4b2db8b2b31c86d41a3847` |
 | Slurm version (from `slurmctld.log`) | `23.11.0-0rc1` (the branch name says 23-02; the binary reports 23.11.0rc1) |
-| Image | `slurmsim:v03`, id `sha256:daeb30c6e3f2261f7e8b654fa6fce2a3a45f73225aba4c33c16cc5aa6a444d53` |
+| Image | `slurmsim:v03`, id `sha256:03f8899bf9eb4f6c11aa5b40cd08ded2e2e4b61bcd89288e5c55f51643a592aa` (with the policy hook, since task 2.4; the Phase 1 runs used `sha256:daeb30c6…`, the same build without the patch) |
 | Image contents | Ubuntu 22.04, MariaDB, Python 3.10 with the `slurmsim` runner, Slurm built with `--enable-simulator` |
+| Patch | `sim/patches/policy_hook.patch` (policy hook, SPEC §7), applied to the pinned source during the build |
 
 Fetch the sources (gitignored) and build the image:
 
@@ -98,6 +99,33 @@ state, has to happen inside the simulator's event loop. That means a simulator p
 example a new event that loads `priority_weights.conf` at a simulated time, or a hook at
 priority recalculation. An outside controller using `scontrol reconfigure` is not possible in
 this simulator unless the RPC thread is re-enabled.
+
+## Policy hook (SPEC §7, tasks 2.4–2.5)
+
+`sim/patches/policy_hook.patch` adds to the simulator:
+- a cyclic `SIM_POLICY_TICK` event, which writes `policy/state.json` (waiting jobs and
+  per-node allocation), runs `PolicyCommand` and applies the configuration it returns;
+- a `-dt <s> -e set_priority_config | <id>` event, for fixed-time switches;
+- an apply step. It validates `policy/configs/<id>.{conf,qos}`, sets the QOS priorities
+  through the accounting manager, sets the `PriorityWeight*` values and reloads the priority
+  plugin, then recomputes every waiting job's priority at once.
+
+`sim.conf` settings: `PolicyDir`, `InitialConfig`, `PolicyTickSeconds` and `PolicyCommand`.
+`sim/prepare_run.py` writes them:
+- `--policy scheduled`: fixed-time switches only;
+- `--policy adaptive`: policy ticks, with `params.json` from `config/triggers.yaml` and a
+  `tick.sh` that runs `controller.tick`.
+
+Without `PolicyDir`, nothing changes. A smoke run on the patched image matched the unpatched
+one: same nodes, and start times within the 1 s jitter between repeat runs.
+
+**Apply test** (`sim/apply_test.py`, `results/phase2/apply_test.json`):
+- Scheduled switches C0 → C1 → C2 → C3 → C0 during K's first standing queue each recomputed
+  every waiting job (113, 112, 102 and 20 jobs) within 2 simulated seconds.
+- The logged weights and every job's QOS factor matched the new configuration.
+- A switch to a missing configuration (C9) was rejected and C1 kept.
+- A run whose policy command always fails logged every failed tick, never switched, and ran
+  every job as specified.
 
 ## Known simulator issue: rare lost finish event
 
