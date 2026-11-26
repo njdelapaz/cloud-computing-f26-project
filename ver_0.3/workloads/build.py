@@ -73,8 +73,8 @@ def rho(cpu_s: float, mem_s: float, window_s: float) -> float:
 
 
 def thin(cand: pd.DataFrame, rng: np.random.Generator, target: float, window_s: float,
-         base_cpu_s: float = 0.0, base_mem_s: float = 0.0, quota: int | None = None
-         ) -> tuple[pd.DataFrame, float]:
+         base_cpu_s: float = 0.0, base_mem_s: float = 0.0, quota: int | None = None,
+         min_jobs: int = 0) -> tuple[pd.DataFrame, float]:
     """Keep a seeded random subset so that load over window_s is as close to target as possible.
 
     Jobs are ordered by a seeded uniform draw u; the kept set is every job with u below a
@@ -108,6 +108,7 @@ def thin(cand: pd.DataFrame, rng: np.random.Generator, target: float, window_s: 
         n_keep = 0
     else:
         n_keep = k + 1
+    n_keep = max(n_keep, min(min_jobs, len(r)))
     keep = forced.copy()
     keep[:n_keep] |= rest[:n_keep]
     p = float(us[n_keep - 1]) if n_keep else 0.0
@@ -200,6 +201,76 @@ def shifting_week(jobs: pd.DataFrame, name: str, cfg: dict, seed: int, target: f
     return kept, info
 
 
+def place_window(pool: pd.DataFrame, t0: int, t1: int, rho_target: float, seed: int, name: str,
+                 part: int, label: str, min_jobs: int = 0) -> pd.DataFrame:
+    """Thin pool jobs whose time of day falls in [t0, t1) to rho_target and re-time them there.
+
+    Windows that cross midnight are split at the day boundary; each piece is thinned on its
+    own length, so load is spread evenly over the window.
+    """
+    pieces = []
+    t = t0
+    while t < t1:
+        end = min(t1, (t // DAY_S + 1) * DAY_S)
+        tod0, tod1 = t % DAY_S, (end - 1) % DAY_S + 1
+        cand = pool[(pool["tod"] >= tod0) & (pool["tod"] < tod1)]
+        kept, _ = thin(cand, rng_for(seed, name, part * 10 + len(pieces)), rho_target, end - t,
+                       min_jobs=min_jobs if not pieces else 0)
+        pieces.append(kept.assign(submit_s=(t // DAY_S) * DAY_S + kept["tod"], segment=label))
+        t = end
+    return pd.concat(pieces) if pieces else pool.iloc[:0]
+
+
+def overlay_week(jobs: pd.DataFrame, name: str, cfg: dict, seed: int, target: float
+                 ) -> tuple[pd.DataFrame, dict]:
+    """Scenario Y: natural background all week plus overlapping bursts at random times.
+
+    The background is thinned to base_share * target per day. Each burst is a window of
+    burst_hours, starting at a seeded random whole hour, filled with one pattern's jobs at
+    burst_share * target. Patterns are used in turn from a seeded order, so each appears about
+    equally often. Bursts may overlap (load above target) or leave gaps (load below).
+    """
+    pool = jobs[jobs["week"].isin(cfg["pool_weeks"])]
+    burst_account = top_account(pool)
+    rng = rng_for(seed, name, 999_999)
+    week_h = trace.WEEK_S // 3600
+
+    parts = [place_window(pool, d * DAY_S, (d + 1) * DAY_S, target * cfg["base_share"], seed,
+                          name, 1 + d, "base") for d in range(7)]
+    patterns = cfg["patterns"]
+    order = rng.permutation(len(patterns))
+    lo, hi = cfg["burst_hours"]
+    bursts = []
+    for b in range(cfg["burst_count"]):
+        spec = patterns[order[b % len(patterns)]]
+        hours = int(rng.integers(lo, hi + 1))
+        start_h = int(rng.integers(0, week_h - hours + 1))
+        cand = segment_candidates(pool, spec)
+        if spec.get("account") == "top":
+            cand = cand[cand["account"] == burst_account]
+        label = f"burst{b:02d}:{spec['name']}"
+        # At least one job per burst: one multi-day large job can exceed a short burst's
+        # whole target, and thinning would otherwise keep nothing.
+        k = place_window(cand, start_h * 3600, (start_h + hours) * 3600,
+                         target * cfg["burst_share"], seed, name, 100 + b, label, min_jobs=1)
+        parts.append(k)
+        bursts.append({"burst": b, "name": spec["name"], "start_h": start_h, "hours": hours,
+                       "jobs": int(len(k)),
+                       "rho_cpu": k["cpu_s"].sum() / (CAP_CPU * hours * 3600),
+                       "rho_mem": k["mem_s"].sum() / (CAP_MEM * hours * 3600)})
+
+    active = np.zeros(week_h, dtype=int)
+    for bi in bursts:
+        active[bi["start_h"]:bi["start_h"] + bi["hours"]] += 1
+    info = {"pool_weeks": cfg["pool_weeks"], "burst_account": burst_account,
+            "base_share": cfg["base_share"], "burst_share": cfg["burst_share"],
+            "hours_with_0_bursts": int((active == 0).sum()),
+            "hours_with_1_burst": int((active == 1).sum()),
+            "hours_with_2plus_bursts": int((active >= 2).sum()),
+            "bursts": bursts}
+    return pd.concat(parts), info
+
+
 # --------------------------------------------------------------------------- output
 
 def iso(ts: int) -> str:
@@ -272,7 +343,7 @@ def build(names: list[str] | None = None, seeds: list[int] | None = None) -> lis
     cfg = yaml.safe_load(CONFIG.read_text())
     target, quota = cfg["target_rho"], cfg.get("class_quota")
     seeds = seeds or cfg["seeds"]
-    all_names = list(cfg["natural"]) + list(cfg["shifting"])
+    all_names = list(cfg["natural"]) + list(cfg["shifting"]) + list(cfg.get("overlay", {}))
     names = names or all_names
     jobs = load_jobs()
     manifests = []
@@ -281,8 +352,10 @@ def build(names: list[str] | None = None, seeds: list[int] | None = None) -> lis
             if name in cfg["natural"]:
                 kept, info = natural_week(jobs, name, cfg["natural"][name]["week"], seed, target,
                                           quota)
-            else:
+            elif name in cfg["shifting"]:
                 kept, info = shifting_week(jobs, name, cfg["shifting"][name], seed, target)
+            else:
+                kept, info = overlay_week(jobs, name, cfg["overlay"][name], seed, target)
             m = write_scenario(finalize(kept), name, seed, target, info, quota)
             manifests.append(m)
             a = m["achieved"]
@@ -294,7 +367,7 @@ def build(names: list[str] | None = None, seeds: list[int] | None = None) -> lis
 
 def write_summary(manifests: list[dict]) -> None:
     SUMMARY.mkdir(parents=True, exist_ok=True)
-    rows, segs = [], []
+    rows, segs, bursts = [], [], []
     for m in manifests:
         row = {"scenario": m["scenario"], "seed": m["seed"], "jobs": m["jobs"],
                "users": m["users"], "accounts": m["accounts"],
@@ -304,6 +377,8 @@ def write_summary(manifests: list[dict]) -> None:
         rows.append(row)
         for s in m.get("segments", []):
             segs.append({"scenario": m["scenario"], "seed": m["seed"], **s})
+        for b in m.get("bursts", []):
+            bursts.append({"scenario": m["scenario"], "seed": m["seed"], **b})
     path = SUMMARY / "summary.csv"
     new = pd.DataFrame(rows)
     if path.exists():
@@ -314,6 +389,8 @@ def write_summary(manifests: list[dict]) -> None:
     new.sort_values(["scenario", "seed"]).to_csv(path, index=False, float_format="%.4f")
     if segs:
         pd.DataFrame(segs).to_csv(SUMMARY / "X_segments.csv", index=False, float_format="%.4f")
+    if bursts:
+        pd.DataFrame(bursts).to_csv(SUMMARY / "Y_bursts.csv", index=False, float_format="%.4f")
 
 
 def main() -> None:

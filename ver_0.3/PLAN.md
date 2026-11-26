@@ -87,7 +87,7 @@ spec is updated with justification).
   (SPEC §3.5).
 - Write the outputs: `jobs.parquet`, `events.txt`, `accounts.txt`, `manifest.json`
   (SPEC §3.6).
-- Build `K`, `N` and `X` for 3 seeds each. `M` waits until one-week runs work.
+- Build `K`, `N`, `X` and `Y` for 3 seeds each. `M` waits until one-week runs work.
 - Tests cover:
   - determinism: same seed, same bytes;
   - achieved `ρ` within ±2% of `ρ*`;
@@ -95,6 +95,7 @@ spec is updated with justification).
   - every limit ≤ 7 days and every `runtime_s ≤` limit;
   - every user/account pair appears in `accounts.txt`;
   - each `X` segment's dominant class or account matches its intent.
+  - each `Y` burst sits in its window with the jobs its pattern calls for.
 
 **Done when:** all scenario directories exist with manifests, and the tests pass.
 

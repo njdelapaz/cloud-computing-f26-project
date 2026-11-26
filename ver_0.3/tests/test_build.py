@@ -146,3 +146,29 @@ def test_shifting_segments_match_intent(d):
             block = (day["submit_s"] % 86400) // (6 * 3600)
             for b, cls in day.groupby(block)["class"]:
                 assert set(cls.astype(str)) == ({"sm-short"} if b % 2 == 0 else {"lg-long"})
+
+
+@needs_build
+@pytest.mark.parametrize("d", scenario_dirs("Y"), ids=lambda d: d.name)
+def test_overlay_bursts_match_intent(d):
+    m = json.loads((d / "manifest.json").read_text())
+    j = pd.read_parquet(d / "jobs.parquet")
+    base = j[j["segment"] == "base"]
+    assert set(base["submit_s"] // 86400) == set(range(7))          # background every day
+    assert abs(m["achieved"]["rho"] / m["target_rho"] - 1) <= 0.10
+    assert m["hours_with_2plus_bursts"] > 0                         # bursts do overlap
+    for b in m["bursts"]:
+        jobs = j[j["segment"] == f"burst{b['burst']:02d}:{b['name']}"]
+        assert len(jobs) == b["jobs"] >= 1
+        lo, hi = b["start_h"] * 3600, (b["start_h"] + b["hours"]) * 3600
+        assert jobs["submit_s"].between(lo, hi - 1).all(), b
+        classes = set(jobs["class"].astype(str))
+        if b["name"] == "small-short flood":
+            assert classes == {"sm-short"}
+        elif b["name"] == "large-long heavy":
+            assert classes == {"lg-long"}
+        elif b["name"] == "memory-heavy medium":
+            assert classes <= {"med-short", "med-med", "med-long"}
+            assert (jobs["mem_mb"] * 32 > jobs["cpus"] * 128000).all()
+        elif b["name"] == "one-account burst":
+            assert set(jobs["account"]) == {m["burst_account"]}

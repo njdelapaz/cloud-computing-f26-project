@@ -187,6 +187,7 @@ The aggregate load must also fit, not just each job. Offered load over the submi
 | `K` (calibration) | Calibrate the weights (§5.4) and anything tuned later. Kept separate from the evaluation weeks so nothing is tuned on the data it is judged on. | A typical trace week, thinned to `ρ*`. |
 | `N` (natural) | Evaluation week with realistic, gently varying load. | A different typical week, thinned to `ρ*`. |
 | `X` (shifting mix) | A week whose demand changes day by day, so a change of weights has something to respond to. | Seven one-day segments of real trace jobs, re-timed. Each segment keeps load near `ρ*` but changes who is asking: (1) natural mix; (2) small-short flood; (3) large-long heavy; (4) one account submitting about half the demand; (5) memory-heavy medium jobs; (6) natural mix; (7) alternating bursts of (2) and (3). |
+| `Y` (overlapping patterns) | Mixed, overlapping changes on an hour scale: a harder, more realistic test than `X`'s one-pattern days. | Natural background at 60% of `ρ*` all week, plus 22 bursts of `X`'s patterns (small-short flood, large-long, one-account, memory-heavy medium). Each burst lasts 3–12 h, starts at a seeded random hour and adds 40% of `ρ*` while it runs. |
 | `M` (scale-out) | Longer horizon. Built only after one-week runs work, as the brief says: one week first, scale later. | Four consecutive weeks, and weeks from other months. |
 
 How `X` is built (`config/scenarios.yaml`):
@@ -198,6 +199,19 @@ How `X` is built (`config/scenarios.yaml`):
   0.91–0.93 and CPU 0.66–0.71 across seeds.
 - **Burst account:** the account with the most memory load in the pool (`account026`).
 - **Size:** about 85k–88k jobs per week. Half of them are on the small-short flood day.
+
+How `Y` is built (`config/scenarios.yaml`, `overlay`):
+- **Source and timing:** the same source jobs and time-of-day placement as `X`.
+- **Background:** thinned to 60% of `ρ*` on each day.
+- **Bursts:** the four patterns are used in turn, in a seeded order, so each appears 5–6 times
+  a week. Every burst keeps at least one job, because one multi-day large job can exceed a
+  short burst's whole target.
+- **Coverage:** start times are random, so some hours have no burst and some have two or more.
+  Seed 1 has 78 h with none, 41 h with one and 49 h with two or more.
+- **Load:** the week's memory load lands at 0.88–0.96 across seeds, and peaks run above `ρ*`
+  where bursts overlap.
+- **Size:** about 47k–56k jobs per week. Burst details are in
+  `results/workloads/Y_bursts.csv`.
 
 "Typical week": a Monday-to-Sunday window whose offered load, class mix and active-account
 count are near the median of all full weeks in the trace. Weeks run from Monday 00:00 UTC,

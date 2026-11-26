@@ -25,3 +25,18 @@ shifting:
       - {name: memory-heavy medium, classes: [med-short, med-med, med-long], memory_bound: true}
       - {name: natural}
       - {name: alternating bursts, alternate: [1, 2], block_hours: 6}   # segments 1 and 2 above (0-based)
+
+overlay:
+  Y:
+    # Same source jobs as X. A natural background runs all week; bursts of X's patterns are
+    # laid on top at seeded random times, so patterns overlap and change on an hour scale.
+    pool_weeks: [1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23]
+    base_share: 0.6          # background load, as a share of target_rho, every day
+    burst_share: 0.4         # load each burst adds while it is active
+    burst_count: 22          # about 3 a day; with 3-12 h each they cover the week ~once
+    burst_hours: [3, 12]     # duration range, whole hours
+    patterns:                # used in turn, in a seeded order
+      - {name: small-short flood, classes: [sm-short]}
+      - {name: large-long heavy, classes: [lg-long]}
+      - {name: one-account burst, account: top}       # the pool's top account by memory load
+      - {name: memory-heavy medium, classes: [med-short, med-med, med-long], memory_bound: true}
