@@ -9,17 +9,20 @@ Usage:
       META.json; without it, runtimes come from the completion records.
   metrics.py aggregate ROW.json ... [--json OUT]
       Mean and 95% CI half-width per metric over seed rows (SPEC §13.4: t = 2.776 for 5 seeds).
+  metrics.py paired --a ROW.json ... --b ROW.json ... [--json OUT]
+      Mean and 95% CI half-width of the per-seed differences A − B (SPEC §10, §13.4). The i-th row
+      of --a and the i-th row of --b must be the same seed.
 
 Inputs under RUN_DIR, where scripts/sim_run.sh writes them:
   log/jobcomp.log      completion records (required). Times are UTC, as the simulator image writes them
   etc/slurm.conf       node names, cores and memory (default: the project cluster, 16 × 32 cores × 128,000 MB)
   log/decisions.csv    decision log (SPEC §13.3)
   log/placements.csv   placement log (SPEC §13.3)
-  log/queue_dumps.csv  pending order just before and after each ordering switch (proposed format, below)
+  log/queue_dumps.csv  pending order just before and after each ordering switch (format below)
   log/cost.csv         cost log (docker/patches/README.md)
 The four logs are optional. Without one, its metrics are empty: None in JSON, blank in CSV.
 
-Choices SPEC §13.4 leaves open (proposed in results/b2/summary.md, not yet in SPEC):
+Rules SPEC §13.3 and §13.4 adopted from B2's proposals (results/b2/summary.md):
   - Percentiles interpolate linearly between the two nearest ranks (numpy's default).
   - Decision, placement, queue-dump and cost rows count when their sim time is in
     [warmup_end, window_end), the window the time-averaged metrics use.
@@ -27,13 +30,13 @@ Choices SPEC §13.4 leaves open (proposed in results/b2/summary.md, not yet in S
     logs score_us = 0 and is counted in placements_n only.
   - A job is pending from its submit time until its start. The stranded-core median is over every
     pending job, warm-up jobs included, and "below" is strict.
-  - Wait spread is worst ÷ best user mean wait: infinite when the best user's mean wait is 0 and the
-    worst's isn't, and 1 when every user's is 0.
+  - Wait spread is max(1, worst ÷ max(best, 10 s)) over the users' mean waits; the 10 s floor is
+    bounded slowdown's τ.
   - Scheduler impact (SPEC §8 level 3): real_usec of the main-scheduler passes ("sched") and backfill
     cycles ("bf"), over the window and for the cycle just before (< t) and just after (>= t) each
     switch, averaged over the switches in the window.
 
-Proposed queue-dump format (log/queue_dumps.csv), written only when a switch changes the ordering
+Queue-dump format (log/queue_dumps.csv, SPEC §13.3), written only when a switch changes the ordering
 weights: one row per pending job per dump,
   sim_time,phase,rank,job_id,priority
 where sim_time is the switch's decision-log row, phase is "before" or "after" the priority
@@ -111,10 +114,9 @@ def jain(xs):
     return sum(xs) ** 2 / (len(xs) * sq) if xs and sq else None
 
 
-def ratio(worst, best):
-    if best > 0:
-        return worst / best
-    return 1.0 if worst == 0 else math.inf
+def wait_spread(worst, best, tau=TAU):
+    """max(1, worst ÷ max(best, τ)): the worst user's mean wait over the best's, floored at τ (SPEC §13.4)."""
+    return max(1.0, worst / max(best, tau))
 
 
 def utc(s):
@@ -259,7 +261,7 @@ def job_metrics(measured):
     out.update({
         "wait_mean_s": statistics.fmean(waits), "wait_median_s": quantile(waits, 0.5),
         "wait_p95_s": quantile(waits, 0.95), "wait_max_s": max(waits), "bsld_mean": statistics.fmean(bsld),
-        "fair_jain_bsld": jain(user_bsld), "fair_wait_spread": ratio(max(user_wait), min(user_wait)),
+        "fair_jain_bsld": jain(user_bsld), "fair_wait_spread": wait_spread(max(user_wait), min(user_wait)),
         "fair_wait_worst_user_s": max(user_wait), "fair_wait_best_user_s": min(user_wait),
         "makespan_s": makespan,
         "throughput_per_day": len(measured) / (makespan / 86400) if makespan > 0 else None,
@@ -510,6 +512,29 @@ def aggregate(rows):
     return out
 
 
+def paired(rows_a, rows_b):
+    """{metric: {"mean", "ci95", "n"}} of the per-seed differences A − B (SPEC §13.4). rows_a[i] and
+    rows_b[i] are the same seed; a metric uses the seeds where both rows have a number for it."""
+    if len(rows_a) != len(rows_b):
+        raise ValueError(f"paired needs one B row per A row ({len(rows_a)} vs {len(rows_b)})")
+    pairs = list(zip(rows_a, rows_b))
+    both = lambda a, b, k: is_number(a.get(k)) and is_number(b.get(k))
+    keys = [k for k in KEYS if any(both(a, b, k) for a, b in pairs)]
+    keys += sorted({k for a, b in pairs for k in a if both(a, b, k)} - set(keys))
+    out = {}
+    for k in keys:
+        d = [float(a[k]) - float(b[k]) for a, b in pairs if both(a, b, k)]
+        m, h = ci95(d)
+        out[k] = {"mean": m, "ci95": h, "n": len(d)}
+    return out
+
+
+def print_ci(agg):
+    for k, v in agg.items():
+        half = "" if v["ci95"] is None else f" ± {v['ci95']:.6g}"
+        print(f"{k:<26} {v['mean']:.6g}{half}  (n={v['n']})")
+
+
 # ---------------------------------------------------------------- command line
 def csv_value(v):
     return "" if v is None else v
@@ -538,9 +563,20 @@ def main(argv=None):
         p.add_argument("--json", type=Path, help="also write the result here")
         a = p.parse_args(argv[1:])
         agg = aggregate([json.loads(f.read_text()) for f in a.rows])
-        for k, v in agg.items():
-            half = "" if v["ci95"] is None else f" ± {v['ci95']:.6g}"
-            print(f"{k:<26} {v['mean']:.6g}{half}  (n={v['n']})")
+        print_ci(agg)
+        if a.json:
+            a.json.write_text(json.dumps(agg, indent=1) + "\n")
+        return 0
+    if argv and argv[0] == "paired":
+        p = argparse.ArgumentParser(prog="metrics.py paired",
+                                    description="Mean ± 95% CI of the per-seed differences A − B.")
+        p.add_argument("--a", nargs="+", type=Path, required=True, help="config A's rows, one per seed")
+        p.add_argument("--b", nargs="+", type=Path, required=True, help="config B's rows, same seeds, same order")
+        p.add_argument("--json", type=Path, help="also write the result here")
+        a = p.parse_args(argv[1:])
+        load = lambda files: [json.loads(f.read_text()) for f in files]
+        agg = paired(load(a.a), load(a.b))
+        print_ci(agg)
         if a.json:
             a.json.write_text(json.dumps(agg, indent=1) + "\n")
         return 0

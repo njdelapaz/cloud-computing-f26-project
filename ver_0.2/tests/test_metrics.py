@@ -55,13 +55,15 @@ class Helpers(unittest.TestCase):
         self.assertEqual(M.bounded_slowdown(20, 5), 2.5)       # (20 + 5) / max(5, 10)
         self.assertEqual(M.bounded_slowdown(100, 500), 1.2)
 
-    def test_jain_and_ratio(self):
+    def test_jain_and_wait_spread(self):
         self.assertEqual(M.jain([2, 2, 2]), 1.0)
         self.assertEqual(M.jain([1, 3]), 0.8)                  # 16 / (2 * 10)
         self.assertIsNone(M.jain([]))
-        self.assertEqual(M.ratio(170, 50), 3.4)
-        self.assertEqual(M.ratio(5, 0), math.inf)              # a user who never waited
-        self.assertEqual(M.ratio(0, 0), 1.0)                   # nobody waited
+        self.assertEqual(M.wait_spread(170, 50), 3.4)
+        self.assertEqual(M.wait_spread(500, 0), 50.0)          # a user who never waited: floor 10 s
+        self.assertEqual(M.wait_spread(120, 4), 12.0)          # a best user under 10 s is floored too
+        self.assertEqual(M.wait_spread(5, 0), 1.0)             # everyone under 10 s: at least 1
+        self.assertEqual(M.wait_spread(0, 0), 1.0)             # nobody waited
 
     def test_hostlist_and_cluster(self):
         self.assertEqual(M.expand_hostlist("n[01-03],x5,y[7,9-10]"), ["n01", "n02", "n03", "x5", "y7", "y9", "y10"])
@@ -251,6 +253,33 @@ class Aggregate(unittest.TestCase):
             agg = json.loads((Path(d) / "agg.json").read_text())
         self.assertIn("wait_mean_s", out.getvalue())
         self.assertAlmostEqual(agg["wait_mean_s"]["ci95"], 2.776 * math.sqrt(2.5) / math.sqrt(5))
+
+    def test_paired_differences(self):
+        a = [{"run": f"a{i}", "wait_mean_s": 10.0 * i + d, "switches": 2} for i, d in enumerate([1, 3, 2, 4, 5])]
+        b = [{"run": f"b{i}", "wait_mean_s": 10.0 * i, "switches": None} for i in range(5)]
+        p = M.paired(a, b)
+        self.assertNotIn("run", p)
+        self.assertNotIn("switches", p)                       # B has no value on any seed
+        # differences 1, 3, 2, 4, 5: mean 3, s = sqrt(2.5); the 10 * i day effect cancels
+        self.assertEqual((p["wait_mean_s"]["mean"], p["wait_mean_s"]["n"]), (3.0, 5))
+        self.assertAlmostEqual(p["wait_mean_s"]["ci95"], 2.776 * math.sqrt(2.5) / math.sqrt(5))
+        self.assertLess(p["wait_mean_s"]["ci95"], M.aggregate(a)["wait_mean_s"]["ci95"])
+        with self.assertRaises(ValueError):
+            M.paired(a, b[:4])
+
+    def test_paired_command_line(self):
+        with tempfile.TemporaryDirectory() as d:
+            fa, fb = [], []
+            for i in range(5):
+                for files, name, v in ((fa, "a", 2.0 * i + 1), (fb, "b", 2.0 * i)):
+                    f = Path(d) / f"{name}{i}.json"
+                    f.write_text(json.dumps({"run": f"{name}{i}", "wait_mean_s": v}))
+                    files.append(str(f))
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                M.main(["paired", "--a", *fa, "--b", *fb, "--json", str(Path(d) / "p.json")])
+            p = json.loads((Path(d) / "p.json").read_text())
+        self.assertIn("wait_mean_s", out.getvalue())
+        self.assertEqual((p["wait_mean_s"]["mean"], p["wait_mean_s"]["ci95"]), (1.0, 0.0))
 
 
 if __name__ == "__main__":

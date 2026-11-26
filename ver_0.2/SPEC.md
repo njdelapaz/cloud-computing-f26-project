@@ -80,7 +80,7 @@ every PriorityCalcPeriod (simulator clock):
 
 **Why in slurmctld and not an external daemon:** the UB simulator runs slurmctld on a virtual, accelerated clock. An external process polling `squeue` would run on wall-clock time and race the simulation. Logic inside slurmctld sees the same clock as the scheduler. With ver_0.2's virtual clock (§8), a given trace and config always give the same run.
 
-**Sharing the policy between plugins:** both plugins are loaded into the same slurmctld process. A small shared module compiled into slurmctld holds the active policy; the controller writes it and the scorer reads it. The exact hook is settled while building the plugins (A2, A4).
+**Sharing the policy between plugins:** both plugins are loaded into the same slurmctld process. The active policy lives in a small module compiled into slurmctld itself (`plugin/adaptive_policy/`, added to slurmctld's sources by `docker/register_plugins.sh`). slurmctld exports its symbols, so both plugins call it like any other slurmctld function, and the process holds one copy. The controller publishes the policy; the scorer reads it, and uses stock placement while nothing is published (settled in A2). How the scorer reads it is settled in A4.
 
 **Backfill consistency:** the scorer is used both when a job actually starts and when backfill tests where a job would run. That way backfill's plans and the real starts agree on nodes.
 
@@ -96,7 +96,7 @@ The plugins read these at startup and on `scontrol reconfigure`. The exact gramm
 - **Decision log:** CSV, one row per controller tick.
 - **Placement log:** CSV, one row per job start, optional.
 - Columns and rules for both are in §13.3.
-- When a switch changes the ordering weights, the plugin can also dump the pending queue's priority order just before and after it, for churn analysis (§8).
+- **Queue dumps** (`log/queue_dumps.csv`): when a switch changes the ordering weights, the plugin dumps the pending queue's priority order just before and after it, for churn (§8). Format in §13.3.
 - **Cost log** (`log/cost.csv`, written by the patched simulator for every run): one row per main-scheduler pass, backfill cycle, event and background call, with its real duration (`CLOCK_MONOTONIC`) and the simulated time charged for it. Format in `docker/patches/README.md`.
 
 ---
@@ -206,7 +206,7 @@ All signals come from one in-memory snapshot of pending and running jobs, node s
 **Timing:**
 - The simulator wraps `time()`, `gettimeofday()` and the sleep calls to return simulated time, but not `clock_gettime()`. So `swap_us` and `score_us` are measured with `CLOCK_MONOTONIC`, which stays real (confirmed in P1).
 - Every run uses ver_0.2's virtual clock (`ClockMode = virtual`, §11 #23). Simulated time moves only when the event loop skips ahead, when the main thread sleeps, and by fixed costs per unit of slurmctld work: per scheduler pass, per job tested, per event. The costs are fitted from real-clock runs. So identical inputs give identical runs.
-- The catch: real CPU cost no longer reaches simulated time by itself. The scorer's and the switch pass's cost show up in the real-time measures above, but they delay the schedule only if A2 and A4 charge a fixed cost for them through `sim_charge()`, fitted the same way from measured `score_us` and `swap_us`. Whether to do that is decided in A2 and A4.
+- The catch: real CPU cost no longer reaches simulated time by itself. The scorer's and the switch pass's cost show up in the real-time measures above, but they delay the schedule only if A2 and A4 charge a fixed cost for them through `sim_charge()`, fitted the same way from measured `score_us` and `swap_us`. A2 decided not to charge the switch pass: switching on every tick of the probe day took 36 ms of real time in all, against 194 s of charged scheduler time (0.02%; `results/a2/summary.md`). Its real cost is still measured, as `swap_us` and in the cost log. A4 decides for the scorer.
 
 **T_min selection:**
 - Sweep `T_min` ∈ {1 tick, 15 m, 30 m, 1 h, 2 h, 4 h, ∞} in auto mode, on the trigger workloads plus the general workload.
@@ -315,7 +315,7 @@ The trigger workloads are windows of the trace where the pattern happens on its 
 | Forced switch × periods | mechanism cost |
 | Auto × T_min sweep | choose T_min |
 | Auto at chosen T_min | **main result** |
-| Override only (W6 window → `U`, `BASE` otherwise) | does scheduling alone help? |
+| Override only (`FixedPolicy=BASE` plus the W6 window → `U` in `schedule.conf`) | does scheduling alone help? |
 | Auto + override | combined |
 
 **Headline comparisons:**
@@ -324,9 +324,11 @@ The trigger workloads are windows of the trace where the pattern happens on its 
 3. Override vs auto on W6: does knowing the peak window beat detecting it?
 4. The switching-cost curve and the T_min justification.
 
-**Seeds:** a seed is one random job sample of a trace window (§9.2). Each workload gets 3 calibration seeds, taken from January–February windows and used for P4 tuning and P6 thresholds. It also gets 5 evaluation seeds, taken from March–June windows and used only for reported results.
+**Seeds:** a seed is one random job sample of a trace window (§9.2). Each workload gets 3 calibration seeds, taken from January–February windows and used for P4 tuning and P6 thresholds. It also gets 5 evaluation seeds, used only for reported results. Each evaluation seed samples a different March–June window; for a trigger workload, that's a different episode. Every config of a workload runs on the same seeds.
 
-Runs repeat exactly (§11 #23), so each seed is run once. Report every metric as mean ± 95% CI across the 5 evaluation seeds. All plots come from one script reading raw results.
+Runs repeat exactly (§11 #23), so each seed is run once. But any change to a run's inputs, a different policy included, changes most jobs' starts, so one run's aggregates still carry timing variation: about ±4% (one SD) in mean wait on the probe day. A policy difference is judged by its CI, never by one seed.
+
+Report every metric as mean ± 95% CI across the 5 evaluation seeds. The headline comparisons also report the **paired difference**: the mean ± 95% CI of the per-seed differences between the two configs (§13.4). Because both run on the same seeds, each window's own difficulty cancels out. All plots come from one script reading raw results.
 
 ---
 
@@ -342,7 +344,7 @@ Runs repeat exactly (§11 #23), so each seed is run once. Report every metric as
 | 4 | Device utilization | CPU cores only; no GPUs in the project |
 | 5 | Cluster and users | 16 CPU nodes × 32 cores with 128 GB memory each, one partition, CPU jobs only. Users and accounts come from the trace, with equal shares per account |
 | 6 | Default policy in auto | `BASE` |
-| 7 | Seeds | 3 calibration + 5 evaluation per workload |
+| 7 | Seeds | 3 calibration + 5 evaluation per workload. Each evaluation seed samples a different window, and every config runs on the same seeds (§10) |
 | 8 | T_min rule numbers (X, Y) | Set after P5's forced-switch results, before the T_min sweep |
 | 9 | `scontrol reconfigure` comparison | Stretch goal, after the main evaluation |
 | 10 | Workload source | The real trace in `dataset/`, filtered to jobs that fit one node (§9.2) |
@@ -358,11 +360,11 @@ Runs repeat exactly (§11 #23), so each seed is run once. Report every metric as
 | 20 | Memory tracking | Confirmed in P1: with `CR_Core_Memory`, the simulator enforces memory per node |
 | 21 | Interfaces | Config grammars, data and log formats, controller edge cases and metric definitions are in §13 (P2) |
 | 22 | Regression standard (G1) | Exact (start, end and node) on the smoke trace, the contended trace and a realistic day, on the virtual clock (#23). On the stock clock, identical runs of one day differed on most jobs (A1), and `ClockScaling = 0.001` narrowed that without removing it |
-| 23 | Run-to-run spread | Every run uses the virtual clock with fixed costs: `ClockMode = virtual`, with the costs in `config/*/sim.conf.in`, fitted by `scripts/vclock.py costs` from six real-clock calibration runs. Identical runs are byte-identical, so each seed runs once. The same patch fixes a stock bug where stale completion events ended the wrong jobs. Halving or doubling every cost moved the probe day's mean wait by about 3% (`results/vclock/summary.md`) |
+| 23 | Run-to-run spread | Every run uses the virtual clock with fixed costs: `ClockMode = virtual`, with the costs in `config/*/sim.conf.in`, fitted by `scripts/vclock.py costs` from six real-clock calibration runs. Identical runs are byte-identical, so each seed runs once. The same patch fixes a stock bug where stale completion events ended the wrong jobs. Since the decay fix (#24), any change to the costs, even 1%, changes most jobs. Over nine probe-day runs with every cost nudged by −10% to +10%, mean wait was 786 ± 32 s (one SD), and the real clock's 753 ± 45 s sits inside that spread; halving every cost moved it +20%. So one run per seed still carries timing variation (§10) (`results/vclock/summary.md`) |
 | 24 | Priority decay in the simulator | `docker/patches/sim_decay_time.patch` fixes a stock simulator bug, and `priority/adaptive` has the same fix. In simulator builds the decay loop's time stayed at the run's first second, so usage never decayed and the age factor was always 0, leaving every Age weight without effect. The loop's time now follows the simulated clock on every `PriorityCalcPeriod`. The fixed costs of #23 were kept: the decay's measured real time changed by about 3% (found and fixed in A2, `results/a2/summary.md`) |
 
 **Settled by later phases:**
-- How the two plugins share the active policy inside slurmctld: settled in A2 and A4.
+- How the scorer reads the shared policy state: settled in A4. A2 settled the state itself (§4).
 - `MinDemand` for the balance and utilization signals: calibrated in P6 along with the thresholds.
 - W3 and W5 can only be found from `BASE` simulation runs (P6). If either turns out not to exist in the trace, what to do about it needs a decision then.
 - Window length per run: P1 measured about 11 minutes of real time per simulated day of submissions on the project cluster (about 530×). The virtual clock takes about the same, about 12 minutes per probe day, mostly spent in synchronous slurmdbd round trips, which a faster database setup might cut (B3). The length gets set along with the runner and run matrix (B3, P4).
@@ -427,7 +429,10 @@ All three use one entry per line. `#` starts a comment, blank lines are ignored,
 
 **Controller rules these formats encode (decided in P2):**
 - At the start of a run no switch has happened yet, so the controller is eligible on its first tick.
-- When an override window starts, its policy takes over at once, even during a cooldown. When it ends, the controller switches back to `DefaultPolicy` at once and starts a fresh cooldown.
+- A window wins in every mode. When an override window starts, its policy takes over at once, even during a cooldown. When it ends, the run goes back to its own policy at once: `DefaultPolicy` in `AUTO`, `FixedPolicy` in `FIXED`, or the first `ForceAlternate` policy in `FORCED`, with the alternation restarting.
+- A window's end starts a fresh cooldown, even when nothing switches.
+- `TMin` and `ForcePeriod` are counted in whole controller ticks: an interval within half a tick of the period reaches it.
+- In `FORCED` mode the first `ForceAlternate` policy holds from the first tick for one `ForcePeriod`.
 - In `OVERRIDE`, `FIXED` and `FORCED` mode the controller never samples state.
 
 ### 13.2 Data files (written in B1)
@@ -464,7 +469,7 @@ All three use one entry per line. `#` starts a comment, blank lines are ignored,
 |---|---|
 | `sim_time` | Unix seconds, never decreasing |
 | `mode` | `AUTO`, `OVERRIDE`, `FIXED` or `FORCED` |
-| `eligible` | 1 only in `AUTO`, once the cooldown has passed |
+| `eligible` | 1 only in `AUTO`, once the cooldown has passed. 0 on the tick a window ends, which starts a fresh cooldown |
 | `sampled` | 1 only when `eligible` is 1 (G4) |
 | `s_fairness`, `s_balance`, `s_util` | in [0, 1] when sampled, empty otherwise |
 | `queue_pressure` | ≥ 0 when sampled, empty otherwise |
@@ -473,34 +478,44 @@ All three use one entry per line. `#` starts a comment, blank lines are ignored,
 | `chosen_policy` | the policy in force after the tick |
 | `switched` | 1 exactly when `chosen_policy` differs from `active_policy`. In `AUTO` a switch needs sampling, except on the tick right after a window ends |
 | `swap_us` | real microseconds (`CLOCK_MONOTONIC`) spent switching; empty when nothing switched |
-| `pending_jobs` | integer ≥ 0 |
+| `pending_jobs` | integer ≥ 0, counted on every tick. Counting it is logging, not a state sample under G4 |
 
 **Placement log**, one row per job start:
-- `sim_time`, `job_id` (each job appears once), `policy` and `chosen_node`
+- `sim_time`, `job_id` (Slurm's JobId, as in the completion records; each job appears once), `policy` and `chosen_node`
 - `score`: in [0, 1], or empty when the policy uses stock placement
 - `candidates`: the number of nodes the job fit on, at least 1
 - `score_us`: real microseconds spent scoring, 0 for stock placement
 
+**Queue dump** (`log/queue_dumps.csv`), written only when a switch changes the ordering weights, one row per pending job per dump. Its writer in `priority/adaptive`, validator and example come before P5:
+- `sim_time`: the switch's decision-log row
+- `phase`: `before` or `after` the priority recompute
+- `rank`: 1, 2, … in the order the scheduler would consider the jobs
+- `job_id`: Slurm's JobId
+- `priority`: the job's priority at that moment
+
 ### 13.4 Metric definitions (B2 implements them)
-Job metrics cover the **measured jobs**, those submitted between `warmup_end` and `window_end`. Time-averaged metrics integrate over [`warmup_end`, `window_end`).
+Job metrics cover the **measured jobs**, those submitted between `warmup_end` and `window_end`. Time-averaged metrics integrate over [`warmup_end`, `window_end`). Rows of the decision, placement, queue-dump and cost logs count when their `sim_time` falls in that same interval.
 
 | Metric | Definition |
 |---|---|
 | wait | start − submit, in seconds |
 | bounded slowdown | max(1, (wait + runtime) ÷ max(runtime, 10 s)) |
 | **Fairness:** Jain index | (Σ xᵤ)² ÷ (n · Σ xᵤ²), where xᵤ is user u's mean bounded slowdown, over the n users with measured jobs. 1 means perfectly even |
-| **Fairness:** wait spread | the worst user's mean wait ÷ the best user's mean wait |
+| **Fairness:** wait spread | max(1, the worst user's mean wait ÷ max(the best user's mean wait, 10 s)). The 10 s floor is bounded slowdown's τ; without it, any user with zero mean wait made the spread infinite |
 | node load Lₙ(t) | max(allocated cores ÷ 32, allocated memory ÷ 128 GB) on node n |
 | **Balance:** load SD | time average of the standard deviation of Lₙ(t) across the 16 nodes |
 | **Balance:** max load | time average of maxₙ Lₙ(t) |
 | **Utilization:** cores | ∫ allocated cores dt ÷ (512 × window length). Memory utilization is the same with 2 TB |
-| **Utilization:** stranded core-hours | ∫ free cores on nodes whose free memory per free core is below the median memory per core of the jobs pending at that moment, counted only while jobs are pending |
+| **Utilization:** stranded core-hours | ∫ free cores on nodes whose free memory per free core is strictly below the median memory per core of the jobs pending at that moment, counted only while jobs are pending. A job is pending from its submit until its start; the median is over every pending job, warm-up jobs included, and is the mean of the middle two for an even count. 128 GB is `RealMemory` = 128,000 MB |
 | makespan | last end − first submit, over measured jobs |
-| throughput | finished measured jobs per day of makespan |
+| throughput | finished measured jobs per day of makespan: every measured job with a completion record. Measured jobs without one are reported as `jobs_missing` |
 | general | mean, median, p95 and max wait; mean bounded slowdown |
-| overhead | switch count; mean, p95 and max of `swap_us` and `score_us`; churn |
-| churn | Kendall-τ distance between the pending order just before and just after a switch: the share of job pairs whose order flipped |
+| percentiles | linear interpolation between the two nearest ranks (numpy's default), for the median, p95 and every other percentile |
+| overhead | switch count; mean, p95 and max of `swap_us` and `score_us`; churn. `score_us` statistics cover only the node choices that were scored (`score` set); stock placement's zeros count only toward the number of placements |
+| scheduler cycles around a switch | §8 level 3: the last main-scheduler and backfill cycle before the switch's `sim_time`, and the first at or after it, each averaged over the switches in the window |
+| churn | Kendall-τ distance between the pending order just before and just after a switch, from the queue dumps: the share of pairs of jobs in both dumps whose order flipped. A switch with fewer than 2 such jobs gives no value. Reported as the mean and max over switches, with the count of switches that have a value |
 | confidence interval | mean ± t₀.₉₇₅,₄ × s ÷ √5 over the 5 evaluation seeds (t = 2.776) |
+| paired difference | for two configs on the same 5 seeds: dᵢ = metric(A, seed i) − metric(B, seed i), reported as mean(d) ± t₀.₉₇₅,₄ × s(d) ÷ √5 |
 
 ---
 
