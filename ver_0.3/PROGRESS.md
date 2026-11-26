@@ -3,7 +3,7 @@
 Status tracker for [PLAN.md](PLAN.md). It records status, decisions and results only; no task
 lengths or dates beyond the change log.
 
-**Current phase:** 1 complete; next is 2.1 (specify Steps 4–5)
+**Current phase:** 2 — trigger states and change mechanism (Steps 4–5); next is 2.2–2.4
 
 ## Phase tracker
 
@@ -16,9 +16,12 @@ lengths or dates beyond the change log.
 | 1.5 Workload builder | done | K, N, X × seeds 1–3 built and deterministic; K/N memory load 0.947–0.956; 54 tests pass (`results/workloads/`) |
 | 1.6 Weight configurations | done | Redesigned 2026-11-26: B0 and C0–C3 (favor none / large / small / medium via one QOS per size class, then shortest time limit, then fairness; strict size) |
 | 1.7 Configuration check in the simulator | done | Pass v3c: weights and QOS factors match in all 5 runs; favored class first in 100% of cross-class pairs; time ahead of fairness within classes (`results/check/configs_v3c.json`) |
-| 2.1 Specify Steps 4–5 | not started | waits for Phase 1 |
-| 2.2 Determine trigger states | not started | |
-| 2.3 Build the change mechanism | not started | |
+| 2.1 Specify Steps 4–5 | done | SPEC §6–7 and PLAN 2.2–2.6 approved 2026-11-26 with default answers to Q-A to Q-C |
+| 2.2 Trigger calibration | not started | full K-s1 week under C0 |
+| 2.3 Policy module | not started | |
+| 2.4 Simulator hook | not started | |
+| 2.5 Apply test | not started | |
+| 2.6 Adaptive week | not started | |
 | 3.1 Specify Step 6 | not started | waits for Phase 2 |
 | 3.2 Run the simulations | not started | |
 | 3.3 Scale up | not started | |
@@ -62,6 +65,9 @@ lengths or dates beyond the change log.
 | Strict size first | One size step outweighs the largest possible time + fairness + age total | Requested 2026-11-26. With soft tiers the favored class led only 66–93% of cross-class pairs; the 1/T time factor makes short limits dominate. |
 | Time/fairness calibration | Gini mean difference among waiting jobs of the same class, per configuration (from pass v3b) | Within classes is where they decide order; each configuration reshapes its own queue. |
 | Run-to-run variation | Two FIFO runs of the same 36-h slice: mean wait 88 vs 51 min | Single runs show direction only; Step 6 needs several runs per configuration. |
+| Trigger signal (SPEC §6) | Each size class's share of waiting jobs, as a percentile of its own range in a C0 run of K; enter at P80, exit below P60, 2-tick persistence, 60-min dwell, 10-min ticks | Counted by job, small is 74–94% of the waiting queue and large 0–5% (FIFO K week). A fixed share would always pick small; a ratio to the median would fire for large on 1% → 2% and never for small. |
+| Change mechanism (SPEC §7) | A patch to the simulator adds a policy tick event that writes a snapshot, runs a Python policy, and applies weights (priority plugin reconfigure) and QOS priorities (accounting manager update) in place | No RPCs mid-run (task 1.2), so control must sit inside the event loop. Both apply paths exist in the pinned Slurm source. |
+| Step 4 open questions (approved 2026-11-26) | Q-A waiting queue; Q-B count jobs; Q-C enter P80 / exit P60, 60-min dwell | Defaults approved with the Step 4–5 spec. |
 | Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
@@ -76,3 +82,4 @@ lengths or dates beyond the change log.
 | 2026-11-26 | `f2ed7da` | 1.6: weight configurations B0, C1–C6; SPEC §5 corrections |
 | 2026-11-26 | `c319cc4` | Scenario Y (overlapping bursts) |
 | 2026-11-26 | `318cb1d` | 1.7: configuration check (six-configuration design, since superseded) |
+| 2026-11-26 | `614d9e6` | Priority configurations redesigned around size-class QOS; strict size first |

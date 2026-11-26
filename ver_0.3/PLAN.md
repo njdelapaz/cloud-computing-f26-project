@@ -18,7 +18,7 @@ stays inside `ver_0.3/`.
 | Phase | Steps | Outcome | Exit gate |
 |---|---|---|---|
 | 1 | 1–3: workloads, classes, weight configurations | Scenarios `K`, `N` and `X` built; 9 classes frozen; B0 and C0–C3 verified in the simulator | All Phase 1 "done when" items met |
-| 2 | 4–5: trigger states and change mechanism | Spec for Steps 4–5 written, then built and checked in the simulator | Defined when the Step 4–5 spec is written |
+| 2 | 4–5: trigger states and change mechanism | Triggers calibrated on K; policy module; simulator hook; apply test; adaptive week on K | 2.2–2.6 done; replay reproduces online decisions |
 | 3 | 6: simulation of the full setup | Spec for Step 6 written, then the runs, analysis and report | Defined when the Step 6 spec is written |
 
 ---
@@ -147,15 +147,67 @@ SPEC.md; `PROGRESS.md` is updated.
 - Then expand the rest of Phase 2 in this plan into tasks with "done when" items.
 
 **Done when:** the new SPEC sections and the expanded Phase 2 tasks are agreed and committed.
+(Drafted 2026-11-26: SPEC §6–7 and tasks 2.2–2.6 below.)
 
-### 2.2 Determine trigger states (Step 4)
-Build and check the trigger states as specified in 2.1.
+### 2.2 Trigger calibration (Step 4)
+- Run the full `K-s1` week under C0 (neutral). That is one week-long simulation, about 2 h.
+- From it, record the waiting-queue share of each size class every 10 simulated minutes.
+  Write the percentile tables and the SPEC §6.6 parameters to `config/triggers.yaml`.
+- Report how often each state would be active in that week, and how often the state would
+  change, under the default thresholds.
 
-### 2.3 Build the change mechanism (Step 5)
-Build the mechanism as specified in 2.1, then check that it changes weights correctly inside
-the simulator.
+**Done when:** `config/triggers.yaml` and the state-frequency summary are committed.
 
-**Phase 2 exit:** set by 2.1.
+### 2.3 Policy module (Step 4)
+- Write `controller/policy.py`, the pure decision function of SPEC §6.4, and
+  `controller/tick.py`, the command the simulator runs (SPEC §7.2).
+- Write unit tests on synthetic snapshots:
+  - each state is selected;
+  - the gate and quiet `mix` hold;
+  - the persistence and dwell rules block early switches;
+  - a state is left when its percentile drops below the exit level;
+  - the log record matches SPEC §7.5.
+- Write a replay tool that runs the policy over a run's logged snapshots.
+
+**Done when:** the tests pass. This can run in parallel with 2.2 and 2.4.
+
+### 2.4 Simulator hook (Step 5)
+- Write `sim/patches/policy_hook.patch` against the pinned `slurm_simulator`, applied in
+  `sim/Dockerfile`. It adds:
+  - the `SIM_POLICY_TICK` event;
+  - the snapshot writer;
+  - the blocking `PolicyCommand` call;
+  - the apply step (weights plus priority-plugin reconfigure, QOS priorities through the
+    accounting manager, immediate priority recalculation);
+  - the `set_priority_config` event in the events-file parser.
+- Add the `sim.conf` settings and the `sim/prepare_run.py` options to use them.
+- Rebuild the image. The smoke and probe runs must still pass with the hook off.
+
+**Done when:** the image builds, and the smoke run and a static check run give the same
+results as before.
+
+### 2.5 Apply test (Step 5)
+- Run scheduled switches C0 → C1 → C2 → C3 → C0 on a `K` slice with `DebugFlags=Priority`.
+- Within one simulated minute of each switch, the logged weights and QOS factors must equal
+  the new configuration's (SPEC §7.6 item 2).
+- An injected failure (a missing configuration file, or invalid command output) must leave
+  the configuration unchanged and be logged.
+
+**Done when:** all switches are confirmed in the log and the failure cases behave.
+
+### 2.6 Adaptive week (Steps 4–5 together)
+- Run the full `K-s1` week with the policy active.
+- Check that:
+  - every tick is logged;
+  - each switch shows up in the priority debug log;
+  - replay reproduces every online decision;
+  - the run check passes.
+- Report the switches per day, time in each state, and reversals.
+
+**Done when:** all checks pass and the summary is committed.
+
+**Phase 2 exit:** 2.2–2.6 done; open questions Q-A to Q-C (SPEC §6.6) answered or kept at
+their defaults; `PROGRESS.md` updated.
 
 ---
 
@@ -192,7 +244,9 @@ Analyze the results and write `REPORT.md`, which answers the research question i
 | 1.6 | 1.5 |
 | 1.7 | 1.2, 1.6 |
 | 2.1 | Phase 1 complete |
-| 2.2, 2.3 | 2.1 |
+| 2.2, 2.3, 2.4 | 2.1 (can run in parallel) |
+| 2.5 | 2.4 |
+| 2.6 | 2.2, 2.3, 2.5 |
 | 3.1 | Phase 2 complete |
 | 3.2 → 3.3 → 3.4 | 3.1 |
 

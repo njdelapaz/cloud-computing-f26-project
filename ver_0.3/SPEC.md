@@ -1,8 +1,11 @@
 # SPEC — Adaptive Slurm Priority Weights (ver_0.3)
 
-This document specifies Steps 1–3 of the `Project` brief in this folder: workloads, job
-classification and priority weight configurations. Steps 4–6 (trigger states, the change
-mechanism, and simulation) will be specified after Steps 1–3 are complete.
+This document specifies Steps 1–5 of the `Project` brief in this folder:
+- workloads, job classification and priority configurations (Steps 1–3, built in Phase 1);
+- the cluster states that trigger a change and the mechanism that applies it (Steps 4–5,
+  drafted for Phase 2).
+
+Step 6 (simulation and evaluation) will be specified after Phase 2.
 [PLAN.md](PLAN.md) lays out the order of work.
 
 **Scope rule (from the brief):** everything lives in and refers only to `ver_0.3/`. All paths
@@ -25,18 +28,20 @@ What counts as "better" will be defined with the Step 6 specification.
 - A 9-class job classification (Step 2).
 - Four priority configurations: favor one job size class (or none), then shortest time
   limit, then fairness (Step 3).
+- The queue states that select a configuration (Step 4, §6).
+- The mechanism that switches configurations while the simulation runs (Step 5, §7).
 
 ### Specified later
-- The cluster states that trigger a configuration change (Step 4).
-- The configuration change mechanism (Step 5).
 - Simulation of the full setup and its evaluation (Step 6).
 
 ### Out of scope
 - Changing node selection or placement (`SelectType`, `LLN`, node weights). Only priority
   settings change.
-- GPUs, multiple partitions, multiple QOS, job dependencies, reservations, preemption.
+- GPUs, multiple partitions, job dependencies, reservations, preemption. (The three size
+  QOS of §5 only carry priority.)
 - Changing what jobs request. Jobs keep their trace CPU, memory and time-limit requests.
-- Running on a real cluster. Everything is tested in the UB Slurm Simulator.
+- Running on a real cluster. Everything is tested in the UB Slurm Simulator. §7.4 describes
+  how the same policy would run on a real cluster, but that path is not built or tested.
 
 ---
 
@@ -466,3 +471,194 @@ run. Two FIFO runs of the same slice gave mean waits of 88 and 51 minutes. So th
 direction, not effect sizes; Step 6 needs several runs per configuration. Node imbalance
 barely moves under any configuration (σ 0.19–0.21), because Slurm's default placement fills
 `n01` and `n02` (85–89% busy) long before `n07`–`n10` (40–50%).
+
+---
+
+## 6. Queue states that select a configuration (Step 4)
+
+### 6.1 States and configurations
+
+At regular simulated times (**ticks**), the controller reads the waiting queue, decides which
+of four states it is in, and selects that state's configuration (§5.3):
+
+| State | Meaning | Configuration |
+|---|---|---|
+| `large` | Unusually many large jobs waiting | C1: favor large |
+| `small` | Unusually many small jobs waiting | C2: favor small |
+| `medium` | Unusually many medium jobs waiting | C3: favor medium |
+| `mix` | No class stands out | C0: neutral |
+
+### 6.2 What is measured
+
+At each tick, the waiting jobs (pending and eligible) are counted by size class:
+`n_small`, `n_medium`, `n_large`, with total `n`. The signal is each class's **share of the
+waiting jobs**, `s_c = n_c / n`.
+
+A share alone cannot be compared across classes, because the classes have very different
+normal levels. Over the FIFO run of the full `K-s1` week (ticks every 10 minutes with at
+least 20 jobs waiting):
+
+| Class | Median share | 10th–90th percentile |
+|---|---|---|
+| small | 0.90 | 0.74–0.94 |
+| medium | 0.08 | 0.05–0.20 |
+| large | 0.01 | 0.00–0.05 |
+
+So small jobs are always the majority, and a fixed share threshold would always pick
+`small`. A ratio to the median would fire for `large` on tiny changes (1% to 2%) and never
+for `small` (it cannot pass 1.11×). In that week, a ratio rule at 1.5× would put `large` in
+27% of ticks and `small` in none.
+
+### 6.3 Normalization: each class against its own range
+
+Each share is converted to a **percentile rank** `P_c` within that class's own distribution
+in a calibration run. A class is unusually present when its share is high *for that class*:
+- small at 0.95 might be its 95th percentile;
+- large at 0.05 its 90th.
+
+That puts the three classes on one scale.
+
+**Calibration run:** the full `K-s1` week under C0 (neutral), so no class is favored, with
+ticks every 10 minutes and at least 20 jobs waiting. The percentile tables go to
+`config/triggers.yaml`. Calibration uses scenario `K` only.
+
+### 6.4 Decision rule
+
+At each tick:
+
+1. **Gate.** If fewer than `n_min = 20` jobs are waiting, keep the current configuration.
+   Priority hardly matters with a short queue.
+2. **Candidate.** Let `c*` be the class with the highest `P_c`.
+   - If `P_c* ≥ P_enter` (80), the candidate state is `c*`.
+   - Otherwise the candidate state is `mix`.
+3. **Hysteresis.** Leave the current state only if all of these hold:
+   - the candidate has been the same for `k = 2` consecutive ticks;
+   - at least `T_dwell = 60` minutes have passed since the last switch;
+   - when the current state is a class `c`, its `P_c` has dropped below `P_exit` (60), or
+     another class has reached `P_enter` with a higher percentile than `c`.
+4. **Output.** The state's configuration (§6.1), and whether it changed.
+
+The controller starts in `mix` (C0). Every tick is logged with its inputs and decision
+(§7.5).
+
+### 6.5 Feedback
+
+The active configuration changes the signal it reads. Favoring a class makes its jobs start
+sooner, which lowers that class's share of the waiting queue and can end the state that
+selected it. Hysteresis and the dwell time limit how fast this can flip.
+
+Step 6 will report switch rates and reversals. If they are high, the alternative signal in
+§6.6 (Q-A) is the first thing to try.
+
+### 6.6 Parameters and open questions
+
+| Parameter | Default | Where |
+|---|---|---|
+| Tick interval `Δ` | 10 simulated minutes | `config/triggers.yaml` |
+| Minimum waiting jobs `n_min` | 20 | same |
+| Enter / exit percentile | 80 / 60 | same |
+| Persistence `k` | 2 ticks | same |
+| Dwell `T_dwell` | 60 minutes | same |
+| Calibration | `K-s1` week under C0 | same |
+
+**Open questions** (defaults approved 2026-11-26):
+
+| # | Question | Default |
+|---|---|---|
+| Q-A | Signal: the waiting queue, as framed by the queue scenarios, or recent **arrivals** by class (last hour), which the active configuration cannot affect | Waiting queue |
+| Q-B | Count jobs ("number of jobs"), or weigh them by requested resources × time limit | Count |
+| Q-C | Percentile thresholds and dwell | 80 / 60, 60 minutes |
+
+---
+
+## 7. Configuration change mechanism (Step 5)
+
+### 7.1 Constraint from Phase 1
+
+The simulator never starts `slurmctld`'s RPC thread. So while a simulation runs, no Slurm
+command can read state or reconfigure the controller (`sim/README.md`). Simulated time also
+exists only inside the controller, as a clock that jumps from event to event.
+
+The mechanism therefore runs **inside the simulator's event loop**, as a small patch to the
+pinned simulator source. The decision logic stays outside, in Python, so it can be tested
+and replayed on its own.
+
+### 7.2 Components
+
+```
+ slurmctld (simulated)                                     controller/ (Python)
+ ┌──────────────────────────────────────────┐   state.json  ┌───────────────────────┐
+ │ SIM_POLICY_TICK every Δ                   ├──────────────▶│ policy.decide(state,  │
+ │   1. write snapshot                       │               │   memory, params)     │
+ │   2. run PolicyCommand (blocking)         │◀──────────────┤ → decision.json       │
+ │   3. if switch: apply configuration       │ decision.json │ (pure function; keeps │
+ │      - priority weights → reconfig        │               │  hysteresis memory in │
+ │      - QOS priorities → assoc_mgr update  │               │  a small state file)  │
+ │      - recompute priorities now           │               └───────────────────────┘
+ │   4. log the tick                         │
+ └──────────────────────────────────────────┘
+```
+
+| Component | Where | Responsibility |
+|---|---|---|
+| Policy tick | patch to `contribs/sim/` (new event `SIM_POLICY_TICK`) | Fires every `Δ` simulated seconds from the first job's submission, and runs steps 1–4. |
+| Snapshot | patch | Writes `state.json`: simulated time, active configuration, and for each waiting job its id, QOS, CPUs, memory, time limit, account and time waited; plus allocated CPU and memory per node. |
+| Policy | `controller/policy.py` | A pure function of the snapshot, its own small memory (current state, candidate streak, last switch time) and the parameters. Returns the configuration and the reason. No I/O. |
+| Command | `controller/tick.py`, run as `PolicyCommand` | Reads the snapshot and memory, calls the policy, writes `decision.json` and the updated memory, and appends to the controller log. |
+| Apply | patch | Sets `slurm_conf.priority_weight_*` from the configuration's `.conf` file and calls the priority plugin's reconfigure entry. It applies the three QOS priorities from the `.qos` file through the accounting manager's QOS update, which also recomputes Slurm's normalized QOS priorities. Then it schedules an immediate priority recalculation. |
+| Scheduled switch | patch to the events-file parser | A new event `-dt <s> -e set_priority_config \| <id>` applies a configuration at a fixed time through the same apply step. Used to test the apply step and for fixed schedules. |
+
+Settings go in the run's `sim.conf`: `PolicyTickSeconds`, `PolicyCommand`, `PolicyDir`,
+`InitialConfig`. With no `PolicyCommand`, a run behaves exactly as today. Static runs and
+the Phase 1 checks are unchanged.
+
+### 7.3 Behaviour
+
+- **Latency.** A switch takes effect in the same simulated minute: priorities are
+  recalculated right after it is applied.
+- **Scope.** Only the five `PriorityWeight*` values and the three size-QOS priorities change.
+  Jobs, nodes, partitions and the queue are never touched.
+- **Failure.** If the command fails or its output is invalid, the configuration stays as it
+  is, the failure is logged, and the next tick tries again. There is at most one switch per
+  tick.
+- **Time cost.** The command runs in real time while the simulated clock follows the real
+  clock between events, so each tick lets simulated time move by the command's run time
+  (tens of milliseconds). This is logged and expected to be negligible.
+- **Reproducibility.** The policy is deterministic. The same snapshots give the same
+  decisions offline (replay), which is how online runs are checked.
+
+### 7.4 On a real cluster (specified, not built or tested)
+
+The same `controller/policy.py` would read state from `squeue --json` and `sinfo --json`.
+It would apply a configuration by:
+- rewriting the `Include`d weight file and running `scontrol reconfigure`;
+- running `sacctmgr -i modify qos <name> set priority=<p>` for the three QOS.
+
+A `dry-run` mode would log decisions without applying them.
+
+### 7.5 Controller log (one JSON line per tick)
+
+```json
+{"t_sim": "2024-01-30T10:20:00", "waiting": 412,
+ "counts": {"small": 360, "medium": 31, "large": 21},
+ "shares": {"small": 0.874, "medium": 0.075, "large": 0.051},
+ "percentiles": {"small": 41, "medium": 52, "large": 91},
+ "state": "mix", "candidate": "large", "streak": 2, "minutes_since_switch": 130,
+ "decision": "switch", "config": "C1", "reason": "large at P91 >= 80 for 2 ticks",
+ "command_ms": 38}
+```
+
+The simulator also logs each applied switch in `slurmctld.log`
+(`policy: switch C0 -> C1 at <time>`).
+
+### 7.6 How Phase 2 is verified
+
+1. **Policy unit tests.** Synthetic snapshots for each state, the gate, the persistence and
+   dwell rules, and exit by percentile drop.
+2. **Apply test.** Scheduled switches C0 → C1 → C2 → C3 → C0 on a `K` slice with
+   `DebugFlags=Priority`. Within one simulated minute of each switch, the logged weights and
+   QOS factors must equal the new configuration's, and every job must run as specified.
+3. **Replay.** Decisions recomputed offline from the logged snapshots must equal the online
+   decisions.
+4. **End-to-end week.** An adaptive run of the full `K-s1` week finishes, with every tick
+   logged and the run check passing.
