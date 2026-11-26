@@ -17,7 +17,7 @@ stays inside `ver_0.3/`.
 
 | Phase | Steps | Outcome | Exit gate |
 |---|---|---|---|
-| 1 | 1–3: workloads, classes, weight configurations | Scenarios `K`, `N` and `X` built; 9 classes frozen; B0 and C1–C6 verified in the simulator | All Phase 1 "done when" items met |
+| 1 | 1–3: workloads, classes, weight configurations | Scenarios `K`, `N` and `X` built; 9 classes frozen; B0 and C0–C3 verified in the simulator | All Phase 1 "done when" items met |
 | 2 | 4–5: trigger states and change mechanism | Spec for Steps 4–5 written, then built and checked in the simulator | Defined when the Step 4–5 spec is written |
 | 3 | 6: simulation of the full setup | Spec for Step 6 written, then the runs, analysis and report | Defined when the Step 6 spec is written |
 
@@ -100,9 +100,10 @@ spec is updated with justification).
 **Done when:** all scenario directories exist with manifests, and the tests pass.
 
 ### 1.6 Weight configurations
-- Write `config/weights.yaml` with the tiers, goal-to-factor map, TRES split and the C1–C6
-  orderings (SPEC §5.1–5.3).
-- Write the renderer that produces `config/priority/{B0,C1..C6}.conf`.
+- Write `config/weights.yaml` with the tiers, goal-to-factor map, TRES split and the
+  size-QOS configurations C0–C3 (favor none / large / small / medium, then shortest time limit, then
+  fairness; since 2026-11-26) (SPEC §5.1–5.3).
+- Write the renderer that produces `config/priority/{B0,C0..C3}.{conf,qos}`.
 - Compute the TRES and job-size factor spreads (`s_cpu`, `s_mem`, `s_jobsize`) from scenario
   `K` (SPEC §5.4). Leave the fair-share spread provisional until task 1.7.
 
@@ -111,7 +112,9 @@ weights; tier order holds for each configuration).
 
 ### 1.7 Configuration check in the simulator
 The simulator answers no CLI calls while it runs (task 1.2 probe), so priorities are read from
-the `DebugFlags=Priority` lines in `slurmctld.log` instead of `sprio`.
+the `DebugFlags=Priority` lines in `slurmctld.log` instead of `sprio`. Criteria for the current
+size-QOS configurations are in SPEC §5.5: favored class first in every cross-class pair; time
+limit ahead of fairness within a class; cluster-state numbers reported.
 - Run a slice of `K` with a standing queue under each rendered file, with
   `DebugFlags=Priority`. Confirm the logged weights match the file.
 - From the logged factors, measure the fair-share spread, re-render the weights, and confirm
@@ -135,6 +138,12 @@ SPEC.md; `PROGRESS.md` is updated.
   - the change mechanism.
 - Build on the Phase 1 results: the probe answers from 1.2, the verified configurations from
   1.7, and the scenarios from 1.5.
+- Use these queue scenarios (set 2026-11-26) as the states that select a configuration:
+  many large jobs waiting → C1 (favor large); many small → C2 (favor small); many medium →
+  C3 (favor medium); a mix → C0 (neutral). Step 4 defines how "many" is measured, for
+  example each size class's share of the waiting demand.
+- Measure load balance and utilization on cluster state (per-node utilization), not on the
+  queue.
 - Then expand the rest of Phase 2 in this plan into tasks with "done when" items.
 
 **Done when:** the new SPEC sections and the expanded Phase 2 tasks are agreed and committed.

@@ -1,0 +1,123 @@
+{
+  "scenario": "K-s1",
+  "hours": 36.0,
+  "jobs": 3683,
+  "fairshare_factor_gap_median": 0.2019062371424796,
+  "configs": [
+    {
+      "config": "B0",
+      "run_problems": [],
+      "cluster": {
+        "node_imbalance_sigma": 0.2081,
+        "utilization": 0.601,
+        "mean_wait_min": 88.5
+      },
+      "priority_rows": 5496,
+      "weights_match": true
+    },
+    {
+      "config": "C0",
+      "run_problems": [],
+      "cluster": {
+        "node_imbalance_sigma": 0.2069,
+        "utilization": 0.5976,
+        "mean_wait_min": 78.3
+      },
+      "priority_rows": 4853,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "qos_factor_ok": true,
+      "snapshots_used": 28,
+      "pending_per_snapshot_median": 134.5,
+      "pending_class_mix": {
+        "small": 0.726,
+        "medium": 0.194,
+        "large": 0.08
+      },
+      "class_dominance": null,
+      "within_class_gap": {
+        "fairness": 1067.8,
+        "time": 405.8
+      },
+      "order_ok": true
+    },
+    {
+      "config": "C1",
+      "run_problems": [],
+      "cluster": {
+        "node_imbalance_sigma": 0.2037,
+        "utilization": 0.6141,
+        "mean_wait_min": 56.4
+      },
+      "priority_rows": 3538,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "qos_factor_ok": true,
+      "snapshots_used": 24,
+      "pending_per_snapshot_median": 109.0,
+      "pending_class_mix": {
+        "small": 0.839,
+        "large": 0.096,
+        "medium": 0.065
+      },
+      "class_dominance": 0.9278,
+      "within_class_gap": {
+        "fairness": 1552.4,
+        "time": 442.6
+      },
+      "order_ok": true
+    },
+    {
+      "config": "C2",
+      "run_problems": [],
+      "cluster": {
+        "node_imbalance_sigma": 0.1988,
+        "utilization": 0.6223,
+        "mean_wait_min": 18.2
+      },
+      "priority_rows": 1188,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "qos_factor_ok": true,
+      "snapshots_used": 15,
+      "pending_per_snapshot_median": 33.0,
+      "pending_class_mix": {
+        "small": 0.461,
+        "large": 0.286,
+        "medium": 0.253
+      },
+      "class_dominance": 0.661,
+      "within_class_gap": {
+        "fairness": 2209.7,
+        "time": 717.4
+      },
+      "order_ok": false
+    },
+    {
+      "config": "C3",
+      "run_problems": [],
+      "cluster": {
+        "node_imbalance_sigma": 0.1994,
+        "utilization": 0.6257,
+        "mean_wait_min": 27.7
+      },
+      "priority_rows": 1812,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "qos_factor_ok": true,
+      "snapshots_used": 15,
+      "pending_per_snapshot_median": 98.0,
+      "pending_class_mix": {
+        "small": 0.776,
+        "large": 0.146,
+        "medium": 0.079
+      },
+      "class_dominance": 0.8063,
+      "within_class_gap": {
+        "fairness": 1850.3,
+        "time": 418.9
+      },
+      "order_ok": false
+    }
+  ]
+}

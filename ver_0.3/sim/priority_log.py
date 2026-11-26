@@ -18,7 +18,7 @@ TS = re.compile(r"^\[(\S+)\]")
 WEIGHTED = re.compile(r"_get_priority_internal: Weighted (\w+) priority is (\S+) \* (\S+) = (\S+)")
 TRES = re.compile(r"_get_priority_internal: Weighted TRES:(\w+) is (\S+) \* (\S+) = (\S+)")
 JOB = re.compile(r"_get_priority_internal: Job (\d+) priority: .* = (\S+)$")
-FACTORS = ["Age", "Fairshare", "JobSize", "TRES_cpu", "TRES_mem"]
+FACTORS = ["Age", "QOS", "Fairshare", "JobSize", "TRES_cpu", "TRES_mem"]
 
 
 def parse(path: Path, every_s: int = 3600, start: str | None = None) -> pd.DataFrame:
@@ -43,7 +43,7 @@ def parse(path: Path, every_s: int = 3600, start: str | None = None) -> pd.DataF
                     secs = int((ts - t0).total_seconds())
                     keep = secs % every_s < 60
                     cur = {"t": ts}
-                if keep and name in ("Age", "Fairshare", "JobSize"):
+                if keep and name in ("Age", "Fairshare", "JobSize", "QOS"):
                     f, w, v = (float(x) for x in m.groups()[1:])
                     cur.update({f"{name}_f": f, f"{name}_w": w, f"{name}_v": v})
                 continue

@@ -34,7 +34,7 @@ def parse_events(path: Path) -> pd.DataFrame:
             "runtime_s": opt(r"-sim-walltime\s+(\S+)", float),
             "user": opt(r"--uid=(\S+)"), "account": opt(r"-A\s+(\S+)"),
             "limit_min": opt(r"-t\s+(\d+)", int), "cpus": opt(r"-n\s+(\d+)", int),
-            "mem_mb": opt(r"--mem=(\d+)", int),
+            "mem_mb": opt(r"--mem=(\d+)", int), "qos": opt(r"-q\s+(\S+)"),
         })
     return pd.DataFrame(rows)
 
@@ -59,7 +59,25 @@ def mem_mb(s: str) -> float:
     return float(s[:-1]) * scale[s[-1]] if s[-1] in scale else float(s)
 
 
+KNOWN_ISSUES: list[str] = []
+
+
+def lost_finish_jobs(run_dir: Path) -> set[int]:
+    """Job ids the simulator could not find among its active jobs when they started."""
+    log = run_dir / "out" / "slurmctld.log"
+    ids = set()
+    if log.exists():
+        with open(log, errors="replace") as fh:
+            for line in fh:
+                if "among active sim jobs" in line:
+                    m = re.search(r"Can not find job (\d+)", line)
+                    if m:
+                        ids.add(int(m.group(1)))
+    return ids
+
+
 def check(run_dir: Path) -> list[str]:
+    KNOWN_ISSUES.clear()
     run_dir = ROOT / run_dir
     ev = parse_events(run_dir / "events.txt")
     acct = pd.read_csv(run_dir / "out" / "slurm_acct.out", sep="|")
@@ -91,7 +109,16 @@ def check(run_dir: Path) -> list[str]:
     report(m["limit_s"] != m["limit_min"] * 60, "time limit differs")
     report(m["User"] != m["user"], "user differs")
     report(m["Account"] != m["account"], "account differs")
-    report((m["elapsed_s"] - expected_run).abs() > 1, "run time differs from -sim-walltime")
+    report(m["QOS"] != m["qos"], "QOS differs from -q")
+    # Known simulator issue: a stray stop request at submit can drop a pending job from the
+    # simulator's active-job list; it then runs to its time limit (sim/README.md).
+    lost = lost_finish_jobs(run_dir)
+    off = (m["elapsed_s"] - expected_run).abs() > 1
+    known = off & m["JobIDRaw"].isin(lost) & (m["elapsed_s"] >= m["limit_s"])
+    report(off & ~known, "run time differs from -sim-walltime")
+    if known.any():
+        KNOWN_ISSUES.append(f"{int(known.sum())} job(s) ran to their time limit because the "
+                            f"simulator lost their finish event: {list(m.loc[known, 'name'][:5])}")
     offset = (m["submit_ts"] - m["submit_ts"].min()) - (m["dt"] - m["dt"].min())
     report(offset.abs() > 2, "submit offset differs from -dt")
     return problems
@@ -100,6 +127,8 @@ def check(run_dir: Path) -> list[str]:
 def main() -> None:
     run_dir = Path(sys.argv[1])
     problems = check(run_dir)
+    for k in KNOWN_ISSUES:
+        print("known simulator issue:", k)
     if problems:
         print("FAIL")
         for p in problems:

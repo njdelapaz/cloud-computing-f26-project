@@ -27,6 +27,7 @@ from workloads.classify import classify, load_config
 
 ROOT = trace.ROOT
 CONFIG = ROOT / "config" / "scenarios.yaml"
+WEIGHTS = ROOT / "config" / "weights.yaml"   # size class -> QOS label
 TRACES = ROOT / "workloads" / "traces"
 SUMMARY = ROOT / "results" / "workloads"
 DAY_S = 86_400
@@ -283,8 +284,10 @@ def finalize(kept: pd.DataFrame) -> pd.DataFrame:
     out.insert(0, "job_id", np.arange(1001, 1001 + len(out)))
     out.insert(1, "name", "jobid_" + out["job_id"].astype(str))
     out["timelimit_min"] = -(-out["timelimit_s"] // 60)
+    size_qos = yaml.safe_load(WEIGHTS.read_text())["size_qos"]
+    out["qos"] = out["class"].astype(str).str.split("-").str[0].map(size_qos)
     cols = ["job_id", "name", "submit_s", "runtime_s", "timelimit_min", "cpus", "mem_mb",
-            "user", "account", "class", "src_jobid", "src_state", "segment"]
+            "user", "account", "class", "qos", "src_jobid", "src_state", "segment"]
     out = out[cols].copy()
     for c in ["user", "account", "src_state"]:
         out[c] = out[c].astype(str)
@@ -296,7 +299,7 @@ def finalize(kept: pd.DataFrame) -> pd.DataFrame:
 def event_line(r) -> str:
     return (f"-dt {r.submit_s} -e submit_batch_job | -J {r.name} -sim-walltime {r.runtime_s} "
             f"--uid={r.user} -t {r.timelimit_min} -n {r.cpus} --ntasks-per-node={r.cpus} -N 1 "
-            f"--mem={r.mem_mb} -A {r.account} -p normal -q normal pseudo.job")
+            f"--mem={r.mem_mb} -A {r.account} -p normal -q {r.qos} pseudo.job")
 
 
 def sha256(path: Path) -> str:

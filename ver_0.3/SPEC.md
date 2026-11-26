@@ -23,7 +23,8 @@ What counts as "better" will be defined with the Step 6 specification.
 ### Specified in this document
 - Turning the trace into workloads that fit the simulated cluster (Step 1).
 - A 9-class job classification (Step 2).
-- Six priority weight configurations, one per ordering of three goals (Step 3).
+- Four priority configurations: favor one job size class (or none), then shortest time
+  limit, then fairness (Step 3).
 
 ### Specified later
 - The cluster states that trigger a configuration change (Step 4).
@@ -50,7 +51,7 @@ What counts as "better" will be defined with the Step 6 specification.
 | Totals | 512 cores, 2,048,000 MB (2 TB) |
 | Memory per core | 4,000 MB |
 | Partition | `normal`, all nodes, `MaxTime=7-00:00:00`, default |
-| QOS | one, `normal` |
+| QOS | `small`, `medium`, `large`: one per size class (§4.1), identical limits, used only to carry priority (§5). `normal` exists but is unused. |
 | Scheduler | Slurm default (`SchedulerType=sched/backfill`, default backfill parameters) |
 | Resource selection | `select/cons_tres` with `CR_Core_Memory`, so memory is a consumable resource |
 | Priority plugin | `priority/multifactor` |
@@ -60,7 +61,7 @@ What counts as "better" will be defined with the Step 6 specification.
 
 ### 2.2 Static `slurm.conf` priority keys
 
-These stay fixed for a run. Only the weight keys in §5 change.
+These stay fixed for a run. Only the weight keys and QOS priorities in §5 change.
 
 ```
 PriorityType=priority/multifactor
@@ -70,8 +71,7 @@ PriorityMaxAge=1-0                 # age factor saturates after one day
 PriorityFavorSmall=NO              # with the flag below: shortest time limit first (§5.1)
 PriorityFlags=SMALL_RELATIVE_TO_TIME
 PriorityWeightPartition=0          # one partition, constant
-PriorityWeightQOS=0                # one QOS, constant
-Include priority_weights.conf      # holds the PriorityWeight* lines of one configuration (§5)
+Include priority_weights.conf      # PriorityWeight{Age,QOS,Fairshare,JobSize,TRES} of one configuration (§5)
 ```
 
 ### 2.3 Accounts and fair share
@@ -80,6 +80,8 @@ Include priority_weights.conf      # holds the PriorityWeight* lines of one conf
 - Equal shares: every account has `RawShares=1` under `root`, and every user has `RawShares=1`
   within their account. The default fair-share algorithm (Fair Tree) is used.
 - Fairness is considered at the **account** level first and the user level second.
+- Every user may submit to every size QOS. Each configuration sets the three QOS priorities
+  (`config/priority/<id>.qos`).
 
 ---
 
@@ -116,7 +118,7 @@ Profile of January (from a pass over `01.tsv`), for orientation:
   **28×** its memory capacity, counting actual run time.
 - Jobs average about 6.6 GB per core-hour, against 4 GB per core on these nodes. **Memory is
   the bottleneck:** when memory is fully allocated, CPU allocation tops out near 60%. This
-  shapes the utilization goal (§5).
+  matters for utilization, which is measured on cluster state (§5.5).
 
 Confirmed in Phase 1 (`results/profile/assumptions.csv`):
 - `allocmem` and `maxrss` are in MB. The largest request on the 128 GB `hpc` nodes is
@@ -152,9 +154,10 @@ In January these filters keep 98.2% of jobs.
 | `mem_mb` | `allocmem` (per job, single node) |
 | `user`, `account` | unchanged trace ids |
 | `class` | from §4 |
+| `qos` | the size part of `class`: `sm` → `small`, `med` → `medium`, `lg` → `large` |
 | `src_jobid`, `src_state` | provenance |
 
-Every job's partition and QOS become `normal`.
+Every job's partition becomes `normal`; its QOS is its size class's QOS.
 
 ### 3.4 Scaling to fit the cluster
 The aggregate load must also fit, not just each job. Offered load over the submission window
@@ -236,11 +239,11 @@ For each scenario and seed, under `workloads/traces/<scenario>-s<seed>/`:
 - `manifest.json`: source window, filters, seed, `p`, target and achieved `ρ_cpu`/`ρ_mem`,
   per-class counts, and SHA-256 of each output.
 
-Expected shape of one `events.txt` line, to be confirmed against the pinned simulator in
-Phase 1. Only the events writer knows this format, so a mismatch is a one-file fix:
+One `events.txt` line (format confirmed against the pinned simulator in Phase 1). Job names
+run from `jobid_1001` in submission order, matching Slurm's job ids:
 
 ```
--dt <submit_s> -e submit_batch_job | -J job<id> -sim-walltime <runtime_s> --uid=<user> -A <account> -p normal -q normal -t <timelimit_min> -n <cpus> -N 1 --mem=<mem_mb> pseudo.job
+-dt <submit_s> -e submit_batch_job | -J jobid_<id> -sim-walltime <runtime_s> --uid=<user> -t <timelimit_min> -n <cpus> --ntasks-per-node=<cpus> -N 1 --mem=<mem_mb> -A <account> -p normal -q <qos> pseudo.job
 ```
 
 Requirements: the same inputs and seed give byte-identical outputs. The builder reads
@@ -304,143 +307,162 @@ from month to month: `sm-short` is 9–40% of jobs, and `lg-med` is 0.3–19%.
 
 ---
 
-## 5. Priority weight configurations (Step 3)
+## 5. Priority configurations (Step 3)
 
-### 5.1 Goals mapped to Slurm factors
+The brief lists six orderings of three goals: fairness, utilization and load balance. On
+2026-11-26 they were replaced, on request, by configurations built for four queue scenarios.
+This section supersedes the brief's WEIGHT CONFIGURATIONS list.
 
-| Goal | Brief's definition | Slurm factor | Why |
-|---|---|---|---|
-| **Fairness (F)** | No set of users gets placement priority over others | `PriorityWeightFairshare` | Fair-share lowers priority for accounts that used more than their share. |
-| **Utilization (U)** | Use as much of each node as possible, CPU and memory | `PriorityWeightTRES=CPU=…,Mem=…` | The TRES factor grows with the requested share of CPU and memory, so big requests that fill nodes in both dimensions go first. |
-| **Load balance (L)** | Keep utilization even across nodes | `PriorityWeightJobSize` with `SMALL_RELATIVE_TO_TIME` and `PriorityFavorSmall=NO` | Jobs with short time limits go first. They turn over fast and fill gaps on every node, instead of long jobs pinning some nodes while others empty out. |
+| Queue scenario | Configuration |
+|---|---|
+| Many large jobs waiting | C1: favor large |
+| Many small jobs waiting | C2: favor small |
+| Many medium jobs waiting | C3: favor medium |
+| A mix | C0: neutral |
 
-Notes:
-- `PriorityFavorSmall` and `PriorityFlags` are global, so they are fixed in all configurations
-  (§2.2). Only the weights change.
-- **How Slurm computes the job-size factor** (checked in the pinned source, Phase 1).
-  `SMALL_RELATIVE_TO_TIME` gives `max(32, cpus) / T_min / 512`, because a single-node job
-  counts as at least one node's average CPUs (32). So for every job here the factor depends
-  only on the time limit, and is highest for the shortest limits.
-  - `PriorityFavorSmall=YES` turns it into `1 − x`, which would favor *long* jobs. This spec
-    first proposed that combination, by mistake.
-  - `PriorityFavorSmall=NO` keeps `x`, so L means "shortest time limit first". The CPU count
-    plays no part.
-- **Without the flag, U and L would cancel.** The job-size factor is then a mirror image of
-  the CPU TRES factor. With the flag, the U and L contributions are uncorrelated over week
-  `K` (Pearson −0.006, Spearman −0.52; `config/factor_scales.yaml`).
-- Placement stays at the Slurm default, so priority can affect load balance only through which
-  jobs start next. Whether that is enough has to be measured in simulation, not assumed.
+Every configuration orders waiting jobs by **size class preference, then shortest time
+limit, then fairness**. How the scenarios are detected is part of Step 4 (PLAN 2.1).
+
+Utilization and load balance are no longer priority factors. Both are measured on cluster
+state (§5.5). Phase 1 showed why priority cannot carry them:
+- Slurm's size factors only ever favor bigger, or only ever favor smaller, jobs.
+- Priority barely changes how evenly the nodes are used, because Slurm's default placement
+  fills the low-numbered nodes first.
+
+### 5.1 Slurm factors
+
+| Criterion | Slurm factor | How it is computed |
+|---|---|---|
+| Size class | QOS (`PriorityWeightQOS`) | Every job runs in the QOS of its size class: `small`, `medium` or `large` (§4.1, §3.3). The three QOS have identical limits. A configuration sets their priorities, and Slurm's factor is the QOS priority divided by the largest QOS priority. |
+| Shortest time limit | Job size (`PriorityWeightJobSize`) with `SMALL_RELATIVE_TO_TIME` and `PriorityFavorSmall=NO` | `max(32, cpus) / T_min / 512`. Every single-node job counts as at least one node's average CPUs (32), so only the time limit matters, and shorter limits score higher. |
+| Fairness | Fair-share (`PriorityWeightFairshare`) | Fair Tree with equal shares (§2.3). |
+| Tie-breaker | Age (`PriorityWeightAge=500`) | Same in every configuration; saturates after 1 day. |
+
+TRES weights are 0.
+
+**Why one QOS per size class.** Slurm's own size factors (TRES, and job size without the
+flag) are monotonic, so none of them can favor *medium* jobs. A label QOS per class gives any
+class preference with built-in factors only. Alternatives considered:
+- A custom site-factor plugin (C code in the simulator).
+- One partition per class, which would change scheduling itself.
+- TRES weights, which can only favor large jobs.
+
+**Job-size factor check** (pinned source and simulator logs). Computed factors match Slurm's
+logged values to 5×10⁻⁷. `PriorityFavorSmall=YES` would turn the factor into `1 − x` and favor
+*long* jobs; the first draft of this spec had that wrong.
 
 ### 5.2 Tiers
-Each configuration orders the three goals. The goal in tier 1 gets the largest priority swing,
-tier 2 a middle one, and tier 3 the smallest:
 
-| Tier | Target priority swing `T_k` |
-|---|---|
-| 1 (primary) | 4000 |
-| 2 (secondary) | 2000 |
-| 3 (tertiary) | 1000 |
-| Age (all configs) | 500 at `PriorityMaxAge=1-0` |
+| Criterion | Target | Weight |
+|---|---|---|
+| Size class | **Strict**: one step between neighbouring classes outweighs everything else combined | `W_QOS = ⌈(W_JobSize · 0.0625 + W_Fairshare + W_Age + 1) / step⌉` |
+| Shortest time limit | Typical gap of 2,000 points between two waiting jobs of the same class | `W_JobSize = 2000 / s_time` |
+| Fairness | Typical gap of 1,000 points between two waiting jobs of the same class | `W_Fairshare = 1000 / s_fs` |
+| Age | 500 at most | `PriorityWeightAge=500`, `PriorityMaxAge=1-0` |
 
-Age is the same in every configuration. It is a tie-breaker and starvation guard, not a goal,
-so it does not bias the comparison.
+- **The strict bound.** `step` is the gap between neighbouring normalized QOS priorities: 0.5
+  for graded configurations, 1.0 for favor medium. `0.0625` is the largest job-size factor,
+  reached by a 1-minute limit. So the favored class always comes first.
+- **Strict was chosen 2026-11-26.** With soft tiers (4,000 points per step), short limits
+  routinely outweighed the size preference. The time factor grows as `1/T`, so a 30-minute
+  job scores about 227,000 points more than a 1-day job. The favored class then led in only
+  77–89% of cross-class pairs.
+- **Within a class the tiers stay soft.** A very short limit can outrank a fairer job.
 
-### 5.3 The six configurations
-Numbering follows the brief. Together they cover all 3! orderings of {F, U, L}.
+### 5.3 The configurations
 
-| Id | Ordering | Fairshare | TRES (CPU+Mem) | JobSize |
-|---|---|---|---|---|
-| C1 | F > U > L | tier 1 | tier 2 | tier 3 |
-| C2 | F > L > U | tier 1 | tier 3 | tier 2 |
-| C3 | L > F > U | tier 2 | tier 3 | tier 1 |
-| C4 | L > U > F | tier 3 | tier 2 | tier 1 |
-| C5 | U > F > L | tier 2 | tier 1 | tier 3 |
-| C6 | U > L > F | tier 3 | tier 1 | tier 2 |
+| Id | Name | QOS priority (small / medium / large) | Normalized QOS factor |
+|---|---|---|---|
+| C0 | neutral (mix) | 0 / 0 / 0 | 0 / 0 / 0 |
+| C1 | favor large | 0 / 50 / 100 | 0 / 0.5 / 1 |
+| C2 | favor small | 100 / 50 / 0 | 1 / 0.5 / 0 |
+| C3 | favor medium | 0 / 100 / 0 | 0 / 1 / 0 |
 
-Baseline **B0 (FIFO):** all weights 0. Jobs are ordered by submit time, and backfill still
-applies.
+- C1 and C2 are graded: favoring large also puts medium ahead of small.
+- Favor medium treats small and large equally.
+- Baseline **B0 (FIFO)** has all weights 0 and all QOS priorities 0. Jobs go in submit order,
+  and backfill still applies.
+- Each configuration is two files: `config/priority/<id>.conf` (weights) and `<id>.qos` (QOS
+  priorities). `sim/weights.py render` writes both from `config/weights.yaml` and
+  `config/factor_scales.yaml`.
 
 ### 5.4 Weight calibration
-Slurm normalizes each factor to 0–1, but the spread across real jobs is very different by
-factor. Fair-share spans most of 0–1. The TRES factor is a request divided by the *partition*
-total, so a full-node job scores only 1/16. Raw tier numbers would therefore let fair-share
-swamp everything. Weights are scaled by each factor's typical gap between two **waiting**
-jobs, its Gini mean difference:
+
+Slurm normalizes each factor to 0–1, but their spreads among real jobs differ enormously. The
+time and fairness weights are therefore scaled by each factor's typical gap between two
+waiting jobs: its Gini mean difference.
 
 ```
-s_g = median over hourly queue snapshots of  mean |φ_g(i) − φ_g(j)|  over pending jobs i ≠ j
-W_g = round(T_tier(g) / s_g)
-TRES split: W_cpu = round(0.5 · T / s_cpu),  W_mem = round(0.5 · T / s_mem)
+s_g = median over (hourly snapshot, size class) of  mean |φ_g(i) − φ_g(j)|
+      over waiting jobs i ≠ j of the same class
 ```
 
-So two typical waiting jobs differ by about `T_tier` points on each goal. Factors with long
-tails still give their extreme jobs many times the tier swing. For example, a 1-minute limit
-far outranks other jobs on job size.
+- **Waiting jobs, not the whole workload.** Priority only orders the queue, and the queue is
+  not a random sample of the workload. Large jobs pile up, and short-limit jobs start quickly.
+- **Within a class.** With size strictly first, time limit and fairness only order jobs of
+  the same class.
+- **Per configuration.** Each configuration reshapes its own queue: favoring short limits
+  leaves the queue with jobs whose limits are alike. So each configuration's scales come from
+  its own check run.
+- **Gini mean difference, not P95 − P5.** A first draft used P95 − P5, but over 95% of jobs
+  ask for 1 core, which made that spread 0 for the CPU factor.
 
-**Why the waiting queue.** Priority only orders jobs that are waiting, and the queue is not a
-random sample of the workload: large jobs pile up, and short-limit jobs backfill and leave.
-Over the queue, the TRES factors vary about 6× more than over all jobs and the job-size factor
-about 12× less.
+**Procedure** (`sim/check_configs.py` runs B0 and every configuration on the first 36 h of
+`K-s1` with `DebugFlags=Priority`; `sim/weights.py calibrate` measures the scales):
 
-**Why per configuration.** A configuration changes its own queue. Load-balance-first
-configurations clear short jobs, which shrinks the job-size spread among the jobs still
-waiting. So each of C1–C6 uses scales measured on the queue it produces.
+| Pass | Design | Scales from | Outcome |
+|---|---|---|---|
+| v3a | soft size; then fairness, then time | pooled waiting jobs of an earlier check | favored class first in 66–93% of cross-class pairs (fairness overrides) |
+| v3b | soft size; then time, then fairness | same | 77–89% (short limits override) |
+| v3c | **strict size**; then time, then fairness | each configuration's own v3b queue, within classes | see §5.5 |
 
-**Procedure (Phase 1).** Each pass runs B0 and C1–C6 on the first 36 h of `K-s1` with
-`DebugFlags=Priority` (`sim/check_configs.py`). TRES and job-size factors are computed from
-each pending job's request; they match Slurm's logged values to 5×10⁻⁷. Fair-share values are
-read from the log.
+Earlier designs went through the same steps:
+- the six three-goal orderings (passes 1–3);
+- the four two-goal pairings (v2a).
 
-| Pass | Scales from | Configurations in tier order |
-|---|---|---|
-| 1 | all jobs of `K` | 1 of 6 |
-| 2 | pending queues of pass 1, pooled | 4 of 6 (C3, C4 failed) |
-| 3 | each configuration's own pass-2 queue | **6 of 6** (final) |
+Their results are in `results/check/`.
 
-The first draft used `P95 − P5` as the spread. Over 95% of jobs ask for 1 core, so that is 0
-for the CPU factor; the Gini mean difference never is. Scales are in
-`config/factor_scales.yaml` (`sim/weights.py calibrate`). Calibration uses scenario `K` only.
-The CPU/memory split defaults to 50/50. A CPU-leaning split is worth testing later because
-memory is the bottleneck (§3.1).
+**Weights used in v3c** (`config/priority/*.conf`):
 
-**Final weights** (`config/priority/*.conf`; age weight 500 in all):
-
-| Id | Order | Fair-share | TRES CPU / Mem | Job size |
+| Id | QOS | Job size (time) | Fair-share | Age |
 |---|---|---|---|---|
-| C1 | F > U > L | 19,756 | 333,778 / 81,498 | 73,391,802 |
-| C2 | F > L > U | 21,704 | 145,680 / 35,256 | 151,156,727 |
-| C3 | L > F > U | 6,391 | 92,657 / 25,791 | 327,632,527 |
-| C4 | L > U > F | 3,342 | 198,936 / 65,746 | 404,416,225 |
-| C5 | U > F > L | 10,867 | 586,495 / 165,390 | 76,057,773 |
-| C6 | U > L > F | 6,425 | 875,178 / 209,234 | 186,521,926 |
+| C0 | 0 | 268,565,244 | 6,174 | 500 |
+| C1 | 32,981,060 | 263,726,990 | 7,092 | 500 |
+| C2 | 27,420,378 | 219,272,039 | 5,185 | 500 |
+| C3 | 16,431,432 | 262,807,945 | 5,434 | 500 |
 
-### 5.5 Source of truth and verification
-- `config/weights.yaml` holds the tiers, goal-to-factor map, split and the six orderings.
-  `config/factor_scales.yaml` holds the measured scales. `sim/weights.py render` turns them
-  into `config/priority/<id>.conf` (B0, C1…C6), each containing only `PriorityWeight*` lines.
-- Each rendered file loads in the simulator, and the priority debug log shows its weights.
-  The simulator serves no CLI calls while it runs, so `sprio` is not available
-  (`sim/README.md`).
-- On a loaded queue, the priority debug log shows the primary goal's factor making the
-  largest spread of priority contributions in each configuration.
-- Pearson correlation between the U and L contributions over the pending queue is recorded. If
-  `|r| > 0.8`, configurations that differ only in the order of U and L may behave alike; this
-  is recorded as a finding.
+The largest possible priority is about 0.3 billion, inside Slurm's 32-bit limit.
 
-**Result (Phase 1, pass 3; `results/check/configs_pass3.json`).** In all seven runs, Slurm's
-logged weights match the rendered files and every job ran as specified. Typical contribution
-gaps among waiting jobs (median of hourly snapshots):
+### 5.5 Verification
 
-| Id | Order | F | U | L | In order |
+Per configuration, over hourly snapshots of the waiting queue in the check runs:
+- Slurm's logged weights equal the rendered file, and every job's QOS factor equals its
+  class's configured value.
+- **Size first:** in every pair of waiting jobs from classes with different QOS factors, the
+  more favored job has the higher priority (strict: all pairs).
+- **Then time, then fairness:** among waiting jobs of the same class, the typical time-limit
+  gap exceeds the typical fair-share gap.
+- **Cluster state over the window**, reported for comparison and not a pass criterion:
+  - node imbalance: the standard deviation across the 16 nodes of per-node utilization
+    `(CPU + memory) / 2`. **Load balance is measured on the cluster, not the queue.**
+  - utilization;
+  - mean wait.
+
+**Result (pass v3c, `results/check/configs_v3c.json`).** In all five runs, every job ran as
+specified, the logged weights match, and every QOS factor is correct.
+
+| Id | Favored class first | Within class: time / fairness gap | Node imbalance σ | Utilization | Mean wait |
 |---|---|---|---|---|---|
-| C1 | F > U > L | 3,744 | 2,349 | 918 | yes |
-| C2 | F > L > U | 4,460 | 983 | 1,650 | yes |
-| C3 | L > F > U | 1,296 | 932 | 3,170 | yes |
-| C4 | L > U > F | 764 | 2,051 | 6,673 | yes |
-| C5 | U > F > L | 2,754 | 5,164 | 927 | yes |
-| C6 | U > L > F | 847 | 1,849 | 1,752 | yes, narrowly |
+| B0 | – | – | 0.210 | 0.61 | 72 min |
+| C0 | – | 1,976 / 1,137 | 0.192 | 0.62 | 17 min |
+| C1 | 100% | 1,966 / 929 | 0.195 | 0.62 | 24 min |
+| C2 | 100% | 2,335 / 1,152 | 0.202 | 0.61 | 13 min |
+| C3 | 100% | 1,915 / 1,001 | 0.210 | 0.61 | 13 min |
 
-U–L correlation among waiting jobs is −0.06, so the six configurations behave differently.
-The gaps are not exactly 4000 / 2000 / 1000, because each configuration reshapes its own
-queue. C6's margin between U and L is thin.
+All four configurations pass.
 
+These cluster numbers come from single 36-hour runs, and the simulator varies from run to
+run. Two FIFO runs of the same slice gave mean waits of 88 and 51 minutes. So they show
+direction, not effect sizes; Step 6 needs several runs per configuration. Node imbalance
+barely moves under any configuration (σ 0.19–0.21), because Slurm's default placement fills
+`n01` and `n02` (85–89% busy) long before `n07`–`n10` (40–50%).

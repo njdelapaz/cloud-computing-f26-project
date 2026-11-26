@@ -1,0 +1,6 @@
+config,run_problems,cluster,priority_rows,weights_match,weight_mismatches,qos_factor_ok,snapshots_used,pending_per_snapshot_median,pending_class_mix,class_dominance,within_class_gap,order_ok
+B0,[],"{""node_imbalance_sigma"": 0.2084, ""utilization"": 0.6169, ""mean_wait_min"": 50.7}",3162,True,,,,,,,,
+C0,[],"{""node_imbalance_sigma"": 0.1997, ""utilization"": 0.6183, ""mean_wait_min"": 16.7}",1076,True,{},True,11.0,37.0,"{""small"": 0.639, ""large"": 0.23, ""medium"": 0.131}",,"{""fairness"": 971.5, ""time"": 829.5}",False
+C1,[],"{""node_imbalance_sigma"": 0.1929, ""utilization"": 0.6197, ""mean_wait_min"": 28.7}",1859,True,{},True,15.0,116.0,"{""small"": 0.771, ""large"": 0.145, ""medium"": 0.084}",0.8907,"{""fairness"": 845.7, ""time"": 844.8}",False
+C2,[],"{""node_imbalance_sigma"": 0.1927, ""utilization"": 0.6225, ""mean_wait_min"": 17.5}",1163,True,{},True,12.0,36.5,"{""small"": 0.579, ""large"": 0.237, ""medium"": 0.184}",0.7737,"{""fairness"": 1156.8, ""time"": 1016.0}",False
+C3,[],"{""node_imbalance_sigma"": 0.1986, ""utilization"": 0.6176, ""mean_wait_min"": 21.9}",1393,True,{},True,13.0,64.0,"{""small"": 0.715, ""large"": 0.195, ""medium"": 0.091}",0.8557,"{""fairness"": 1103.8, ""time"": 847.7}",False

@@ -14,8 +14,8 @@ lengths or dates beyond the change log.
 | 1.3 Trace profiling | done | All 8 data checks pass; K = 2024-01-29 week, N = 2024-05-20 week; outputs in `results/profile/` |
 | 1.4 Job classifier | done | 22 tests pass; January shares reproduce SPEC §4.3 exactly; thresholds frozen |
 | 1.5 Workload builder | done | K, N, X × seeds 1–3 built and deterministic; K/N memory load 0.947–0.956; 54 tests pass (`results/workloads/`) |
-| 1.6 Weight configurations | done | B0, C1–C6 rendered from measured scales (final scales set in 1.7) |
-| 1.7 Configuration check in the simulator | done | Pass 3: weights match in all 7 runs; all six configs rank goals in tier order (C6 narrowly); U–L correlation −0.06 (`results/check/configs_pass3.json`) |
+| 1.6 Weight configurations | done | Redesigned 2026-11-26: B0 and C0–C3 (favor none / large / small / medium via one QOS per size class, then shortest time limit, then fairness; strict size) |
+| 1.7 Configuration check in the simulator | done | Pass v3c: weights and QOS factors match in all 5 runs; favored class first in 100% of cross-class pairs; time ahead of fairness within classes (`results/check/configs_v3c.json`) |
 | 2.1 Specify Steps 4–5 | not started | waits for Phase 1 |
 | 2.2 Determine trigger states | not started | |
 | 2.3 Build the change mechanism | not started | |
@@ -52,7 +52,16 @@ lengths or dates beyond the change log.
 | Scenario Y (added on request) | Natural background at 0.6·ρ* plus 22 random 3–12 h bursts of X's patterns at 0.4·ρ* each; ≥1 job per burst | Tests overlapping, hour-scale changes. Week memory load 0.88–0.96 across seeds; 47k–56k jobs. |
 | Weight calibration (SPEC §5.4 revised) | Scales = Gini mean difference among *waiting* jobs, measured per configuration on the queue it produces | Pass 1 (all jobs): 1/6 configs in order; pass 2 (pooled waiting jobs): 4/6; pass 3 (per configuration): 6/6. Large jobs pile up in the queue and short-limit jobs leave it, so the waiting queue differs from the workload. |
 | Factor formulas verified | TRES = request / partition total; job size = 32/T_min/512 | Computed factors match Slurm's logged values to 5×10⁻⁷. |
-| C6 margin | U 1,849 vs L 1,752 among waiting jobs | In order but narrow; worth watching when Step 6 compares configurations. |
+| ~~C6 margin~~ | Superseded | The six-configuration set was replaced (see below). |
+| Full-week cost | One week of K under FIFO: 2 h 05 min real time (13.6 simulated days incl. drain) | Sets the run budget for Phase 3; runs share the machine. Mean wait 9.1 h, p95 15.1 h, utilization 0.78. |
+| Simulator issue | Rare lost finish event: the job runs to its limit | 1 of 26,119 jobs in the full week; reported by `sim/check_run.py` as a known issue (`sim/README.md`). |
+| Load balance measure | Measured on cluster state: σ across the 16 nodes of per-node utilization (CPU+mem)/2 | Requested 2026-11-26. Priority weights barely move it (σ 0.199–0.210 on the 36-h checks); Slurm's default placement fills low-numbered nodes first. |
+| Configurations redesigned (requested 2026-11-26) | Four configurations for four queue scenarios: C1 favor large (many large waiting), C2 favor small (many small), C3 favor medium (many medium), C0 neutral (mix); B0 FIFO baseline | Replaces the brief's six fairness/utilization/load-balance orderings, and the interim four two-goal pairings. Utilization and load balance are measured on cluster state instead. |
+| Size preference mechanism | One QOS per size class (`small`, `medium`, `large`; identical limits); configurations set QOS priorities | Chosen over a site-factor plugin and partitions. Slurm's own size factors are monotonic and cannot favor medium. |
+| Ordering | Size class, then shortest time limit, then fairness | Requested 2026-11-26 (time and fairness swapped from the first draft). |
+| Strict size first | One size step outweighs the largest possible time + fairness + age total | Requested 2026-11-26. With soft tiers the favored class led only 66–93% of cross-class pairs; the 1/T time factor makes short limits dominate. |
+| Time/fairness calibration | Gini mean difference among waiting jobs of the same class, per configuration (from pass v3b) | Within classes is where they decide order; each configuration reshapes its own queue. |
+| Run-to-run variation | Two FIFO runs of the same 36-h slice: mean wait 88 vs 51 min | Single runs show direction only; Step 6 needs several runs per configuration. |
 | Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
@@ -66,3 +75,4 @@ lengths or dates beyond the change log.
 | 2026-11-26 | `67df735` | 1.5: workload builder; scenarios K, N, X × 3 seeds |
 | 2026-11-26 | `f2ed7da` | 1.6: weight configurations B0, C1–C6; SPEC §5 corrections |
 | 2026-11-26 | `c319cc4` | Scenario Y (overlapping bursts) |
+| 2026-11-26 | `318cb1d` | 1.7: configuration check (six-configuration design, since superseded) |

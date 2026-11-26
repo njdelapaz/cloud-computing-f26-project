@@ -42,7 +42,6 @@ PriorityMaxAge=1-0
 PriorityFavorSmall=NO
 PriorityFlags=SMALL_RELATIVE_TO_TIME
 PriorityWeightPartition=0
-PriorityWeightQOS=0
 Include @ETC@/priority_weights.conf
 
 # Logs and state

@@ -1,0 +1,4 @@
+# C3: QOS priorities (Slurm normalizes by the largest)
+small 0
+medium 100
+large 0

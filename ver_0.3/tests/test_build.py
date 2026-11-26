@@ -107,6 +107,9 @@ def test_built_scenario_is_valid(d):
     lines = (d / "events.txt").read_text().splitlines()
     assert len(lines) == len(j)
     assert lines[0].startswith(f"-dt {j['submit_s'].iloc[0]} -e submit_batch_job | -J jobid_1001 ")
+    size = j["class"].astype(str).str.split("-").str[0]
+    assert (j["qos"] == size.map({"sm": "small", "med": "medium", "lg": "large"})).all()
+    assert all(l.endswith(f"-q {q} pseudo.job") for l, q in zip(lines, j["qos"]))
 
 
 @needs_build

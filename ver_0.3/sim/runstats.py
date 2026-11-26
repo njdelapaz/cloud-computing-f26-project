@@ -45,6 +45,54 @@ def timeline(a: pd.DataFrame, step: int = 3600) -> pd.DataFrame:
                          "cpu_frac": run_cpu / 512, "mem_frac": run_mem / 2_048_000})
 
 
+NODES = [f"n{i:02d}" for i in range(1, 17)]
+
+
+def _allocated_at(starts, ends, amounts, ts):
+    """Sum of `amounts` for intervals [start, end) that contain each time in ts."""
+    def cum(times):
+        o = np.argsort(times)
+        c = np.concatenate([[0.0], np.cumsum(amounts[o])])
+        return c[np.searchsorted(times[o], ts, "right")]
+    return cum(starts) - cum(ends)
+
+
+def node_timeline(a: pd.DataFrame, step: int = 300) -> pd.DataFrame:
+    """Per-node allocated CPU and memory fractions every `step` seconds.
+
+    Returns a long table: t (seconds from first submit), node, cpu, mem, u = (cpu + mem) / 2.
+    """
+    t0 = a["Submit"].min()
+    ts = np.arange(t0, a["End"].max() + step, step)
+    rows = []
+    for node in NODES:
+        j = a[a["NodeList"] == node]
+        s, e = j["Start"].to_numpy(), j["End"].to_numpy()
+        cpu = _allocated_at(s, e, j["NCPUS"].to_numpy(float), ts) / 32
+        mem = _allocated_at(s, e, j["mem_mb"].to_numpy(float), ts) / 128_000
+        rows.append(pd.DataFrame({"t": ts - t0, "node": node, "cpu": cpu, "mem": mem}))
+    out = pd.concat(rows, ignore_index=True)
+    out["u"] = (out["cpu"] + out["mem"]) / 2
+    return out
+
+
+def cluster_balance(a: pd.DataFrame, until_s: float | None = None, step: int = 300) -> dict:
+    """Load balance measured on cluster state: how unevenly the 16 nodes are used.
+
+    At each sample time, sigma = standard deviation across nodes of per-node utilization
+    u = (cpu + mem) / 2, and spread = max - min. Reported as time means over [0, until_s)
+    seconds from the first submission, together with mean utilization for context.
+    """
+    nt = node_timeline(a, step)
+    if until_s is not None:
+        nt = nt[nt["t"] < until_s]
+    g = nt.groupby("t")
+    per_t = pd.DataFrame({"sigma_u": g["u"].std(ddof=0), "spread_u": g["u"].max() - g["u"].min(),
+                          "sigma_cpu": g["cpu"].std(ddof=0), "sigma_mem": g["mem"].std(ddof=0),
+                          "util": g["u"].mean(), "cpu": g["cpu"].mean(), "mem": g["mem"].mean()})
+    return {k: float(v) for k, v in per_t.mean().items()}
+
+
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("run_dir", type=Path)

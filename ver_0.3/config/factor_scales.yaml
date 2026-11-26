@@ -23,45 +23,35 @@ snapshots:
   jobsize: 145
   fairshare: 120
 per_config:
+  C0:
+    tres_cpu: 0.000459559
+    tres_mem: 0.00303795
+    jobsize: 7.44698e-06
+    fairshare: 0.161969
+    samples: 24
+    source: 'check ''v3b'' on K-s1: median over (snapshot, size class) groups of waiting
+      jobs'
   C1:
-    tres_cpu: 0.002996
-    tres_mem: 0.0122702
-    jobsize: 1.36255e-05
-    fairshare: 0.20247
-    snapshots: 27
-    source: check 'pass2' on K-s1
+    tres_cpu: 0.0
+    tres_mem: 0.00257555
+    jobsize: 7.5836e-06
+    fairshare: 0.141002
+    samples: 35
+    source: 'check ''v3b'' on K-s1: median over (snapshot, size class) groups of waiting
+      jobs'
   C2:
-    tres_cpu: 0.00343217
-    tres_mem: 0.0141819
-    jobsize: 1.32313e-05
-    fairshare: 0.1843
-    snapshots: 27
-    source: check 'pass2' on K-s1
+    tres_cpu: 0.00148765
+    tres_mem: 0.00382576
+    jobsize: 9.12109e-06
+    fairshare: 0.192871
+    samples: 24
+    source: 'check ''v3b'' on K-s1: median over (snapshot, size class) groups of waiting
+      jobs'
   C3:
-    tres_cpu: 0.00539627
-    tres_mem: 0.0193868
-    jobsize: 1.22088e-05
-    fairshare: 0.312923
-    snapshots: 14
-    source: check 'pass2' on K-s1
-  C4:
-    tres_cpu: 0.00502673
-    tres_mem: 0.0152101
-    jobsize: 9.8908e-06
-    fairshare: 0.299237
-    snapshots: 13
-    source: check 'pass2' on K-s1
-  C5:
-    tres_cpu: 0.00341009
-    tres_mem: 0.0120926
-    jobsize: 1.31479e-05
-    fairshare: 0.184042
-    snapshots: 28
-    source: check 'pass2' on K-s1
-  C6:
-    tres_cpu: 0.00228525
-    tres_mem: 0.00955866
-    jobsize: 1.07226e-05
-    fairshare: 0.155646
-    snapshots: 29
-    source: check 'pass2' on K-s1
+    tres_cpu: 0.0
+    tres_mem: 0.00257555
+    jobsize: 7.61012e-06
+    fairshare: 0.184034
+    samples: 27
+    source: 'check ''v3b'' on K-s1: median over (snapshot, size class) groups of waiting
+      jobs'

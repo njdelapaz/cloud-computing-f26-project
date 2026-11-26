@@ -99,13 +99,36 @@ example a new event that loads `priority_weights.conf` at a simulated time, or a
 priority recalculation. An outside controller using `scontrol reconfigure` is not possible in
 this simulator unless the RPC thread is re-enabled.
 
+## Known simulator issue: rare lost finish event
+
+Rarely, the simulator processes a stray "batch script complete" request for a job while it is
+still pending. It logs `error: Can not stop <id> job, it is not running (PENDING)` and drops
+the job from its active-job list. When the job later starts, it logs
+`Sim:sim_insert_event_comp_job: Can not find job <id> among active sim jobs!` and never
+schedules the job's finish, so the job runs to its time limit and ends `TIMEOUT`.
+
+Seen once in about 30 runs: 1 of 26,119 jobs in the full FIFO week of `K-s1`, and none in the
+36-hour checks. `sim/check_run.py` reports such jobs as a known simulator issue instead of a
+failure.
+
+## Full-week reference run (FIFO, `K-s1`)
+
+| Item | Value |
+|---|---|
+| Jobs | 26,119 |
+| Simulated span | 13.6 days (the 7-day week plus the drain) |
+| Real time | 2 h 05 min (about 157× on average; slower late in the week as the queue grows) |
+| Mean / p95 wait | 9.1 h / 15.1 h |
+| Utilization over the week | 0.78 (CPU 0.67, memory 0.89) |
+| Node imbalance σ / max−min | 0.16 / 0.54 |
+
 ## Other tools
 
 | Command | What it does |
 |---|---|
 | `.venv/bin/python -m sim.runstats RUN_DIR` | Hourly pending jobs and allocated CPU/memory fractions, mean and p95 wait, makespan, from `out/slurm_acct.out` |
 | `.venv/bin/python -m sim.weights calibrate` / `render` | Measure factor scales on scenario K; render `config/priority/*.conf` |
-| `.venv/bin/python -m sim.check_configs --hours H --tag T` | Task 1.7: run B0 and C1–C6 in parallel on the first H hours of K with priority logging, and check weights and tier order |
+| `.venv/bin/python -m sim.check_configs --hours H --tag T` | Task 1.7: run B0 and every configuration (C0–C3) in parallel on the first H hours of K with priority logging, and check weights, QOS factors, size-first order and within-class order (SPEC §5.5) |
 | `sim/priority_log.py` | Parser for the priority debug log (hourly queue snapshots) |
 
 ## Seeing priorities without `sprio`

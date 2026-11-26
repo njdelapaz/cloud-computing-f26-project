@@ -1,34 +1,42 @@
-# Priority weight configurations (SPEC §5). Design parameters only.
+# Priority configurations (SPEC §5). Design parameters only.
 #
-# Factor scales are measured, not chosen: config/factor_scales.yaml is written by
-#   .venv/bin/python -m sim.weights calibrate
-# and config/priority/*.conf is rendered by
-#   .venv/bin/python -m sim.weights render
+# Each configuration favors one job size class, then orders by shortest time limit, then by
+# fairness (order set 2026-11-26):
+#   size      QOS factor: every job runs in the QOS of its size class (SPEC §4); a
+#             configuration sets the three QOS priorities. Slurm normalizes them by the
+#             largest QOS priority, so 0/50/100 become 0/0.5/1.
+#   time      Job-size factor with SMALL_RELATIVE_TO_TIME and PriorityFavorSmall=NO:
+#             32 / T_min / 512 for single-node jobs, so shorter limits score higher.
+#   fairness  Fair-share factor.
 #
-# Weight for a goal in tier k:  W = round(tiers[k] / scale), where scale is the Gini mean
-# difference of that goal's Slurm factor (the average gap between two jobs). So in every
-# configuration, two typical jobs differ by about tiers[k] priority points on that goal.
+# Weights (rendered by .venv/bin/python -m sim.weights render):
+#   PriorityWeightQOS       = (points per size step) / (smallest step between distinct
+#                             normalized QOS priorities). tiers.size 'strict' (set 2026-11-26):
+#                             one step exceeds the largest possible time + fairness + age
+#                             total, so the favored class always comes first.
+#   PriorityWeightJobSize = tiers.time / scale, PriorityWeightFairshare = tiers.fairness / scale,
+#                             where scale is the factor's Gini mean difference among waiting
+#                             jobs (config/factor_scales.yaml), so two typical waiting jobs
+#                             differ by about tiers.time and tiers.fairness points.
 
-tiers: [4000, 2000, 1000]        # tier 1 (primary), tier 2, tier 3
+tiers:
+  size: strict      # or a number of points per size step (soft tiers)
+  time: 2000
+  fairness: 1000
 
-# Same in all configurations: tie-breaker and starvation guard, not a goal.
+# Same in all configurations: tie-breaker and starvation guard.
 # PriorityMaxAge=1-0 is set in sim/etc/slurm.conf.in.
 age_weight: 500
 
-goals:
-  fairness:                       # PriorityWeightFairshare
-    factor: fairshare
-  utilization:                    # PriorityWeightTRES=CPU=..,Mem=.. (favors big requests)
-    factor: tres
-    split: {cpu: 0.5, mem: 0.5}
-  load_balance:                   # PriorityWeightJobSize with PriorityFavorSmall=NO and
-    factor: jobsize               # SMALL_RELATIVE_TO_TIME: shortest time limit first
+# Size class (SPEC §4) -> QOS label. The QOS have identical limits; they only carry priority.
+size_qos:
+  sm: small
+  med: medium
+  lg: large
 
-# The six orderings (SPEC §5.3), numbered as in the brief.
+# Numbered as requested on 2026-11-26. C0 serves the "mix" queue scenario.
 configs:
-  C1: [fairness, utilization, load_balance]
-  C2: [fairness, load_balance, utilization]
-  C3: [load_balance, fairness, utilization]
-  C4: [load_balance, utilization, fairness]
-  C5: [utilization, fairness, load_balance]
-  C6: [utilization, load_balance, fairness]
+  C0: {name: neutral, scenario: mix, qos_priority: {small: 0, medium: 0, large: 0}}
+  C1: {name: favor large, scenario: many large jobs, qos_priority: {small: 0, medium: 50, large: 100}}
+  C2: {name: favor small, scenario: many small jobs, qos_priority: {small: 100, medium: 50, large: 0}}
+  C3: {name: favor medium, scenario: many medium jobs, qos_priority: {small: 0, medium: 100, large: 0}}

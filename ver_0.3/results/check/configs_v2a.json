@@ -1,0 +1,115 @@
+{
+  "scenario": "K-s1",
+  "hours": 36.0,
+  "jobs": 3683,
+  "fairshare_factor_gap_median": 0.26126444635149026,
+  "fairshare_factor_gap_quartiles": [
+    0.17434463689316276,
+    0.2962669235383595
+  ],
+  "corr_U_L_pending": -0.10083799651373689,
+  "configs": [
+    {
+      "config": "B0",
+      "run_problems": [],
+      "priority_rows": 3133,
+      "weights_match": true
+    },
+    {
+      "config": "C1",
+      "run_problems": [],
+      "priority_rows": 2361,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "snapshots_used": 23,
+      "pending_per_snapshot_median": 63.0,
+      "typical_gap": {
+        "F": 6165.3,
+        "U": 3266.6,
+        "L": 0.0
+      },
+      "expected_order": [
+        "F",
+        "U"
+      ],
+      "observed_order": [
+        "F",
+        "U"
+      ],
+      "unused_goals_zero": true,
+      "order_ok": true
+    },
+    {
+      "config": "C2",
+      "run_problems": [],
+      "priority_rows": 3959,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "snapshots_used": 27,
+      "pending_per_snapshot_median": 110.0,
+      "typical_gap": {
+        "F": 4527.9,
+        "U": 0.0,
+        "L": 1385.0
+      },
+      "expected_order": [
+        "F",
+        "L"
+      ],
+      "observed_order": [
+        "F",
+        "L"
+      ],
+      "unused_goals_zero": true,
+      "order_ok": true
+    },
+    {
+      "config": "C3",
+      "run_problems": [],
+      "priority_rows": 1073,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "snapshots_used": 12,
+      "pending_per_snapshot_median": 35.0,
+      "typical_gap": {
+        "F": 3446.4,
+        "U": 0.0,
+        "L": 2628.2
+      },
+      "expected_order": [
+        "L",
+        "F"
+      ],
+      "observed_order": [
+        "F",
+        "L"
+      ],
+      "unused_goals_zero": true,
+      "order_ok": false
+    },
+    {
+      "config": "C4",
+      "run_problems": [],
+      "priority_rows": 2021,
+      "weights_match": true,
+      "weight_mismatches": {},
+      "snapshots_used": 17,
+      "pending_per_snapshot_median": 88.0,
+      "typical_gap": {
+        "F": 2654.7,
+        "U": 5936.1,
+        "L": 0.0
+      },
+      "expected_order": [
+        "U",
+        "F"
+      ],
+      "observed_order": [
+        "U",
+        "F"
+      ],
+      "unused_goals_zero": true,
+      "order_ok": true
+    }
+  ]
+}

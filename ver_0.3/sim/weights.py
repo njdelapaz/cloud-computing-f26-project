@@ -1,21 +1,21 @@
-"""Task 1.6: calibrate factor scales and render the priority weight files (SPEC §5).
+"""Calibrate factor scales and render the priority configuration files (SPEC §5).
 
 Usage:
-  .venv/bin/python -m sim.weights calibrate                       # first pass: all jobs of K
   .venv/bin/python -m sim.weights calibrate --from-check TAG      # pooled pending queues
   .venv/bin/python -m sim.weights calibrate --per-config-from TAG # each config's own queue
-  .venv/bin/python -m sim.weights render      # writes config/priority/{B0,C1..C6}.conf
+  .venv/bin/python -m sim.weights render   # writes config/priority/{B0,C0..C3}.{conf,qos}
 
 Slurm factors (Slurm 23.11 priority/multifactor, single-node jobs on the 16-node cluster):
-  TRES cpu  = cpus / 512                 TRES mem = mem_mb / 2,048,000
+  QOS       = QOS priority / largest QOS priority (each job runs in its size class's QOS)
+  Fairshare = Fair Tree factor (0..1), read from the priority debug log
   JobSize   = max(32, cpus) / T_min / 512   (SMALL_RELATIVE_TO_TIME, PriorityFavorSmall=NO;
               every single-node job counts as one node's 32 CPUs, so only T_min matters)
-  Fairshare = Fair Tree factor (0..1); its scale comes from the priority debug log (task 1.7).
+  TRES      = request / partition total (computed for reference; weight 0)
 """
 from __future__ import annotations
 
 import argparse
-import itertools
+import math
 from pathlib import Path
 
 import numpy as np
@@ -27,7 +27,6 @@ WEIGHTS = ROOT / "config" / "weights.yaml"
 SCALES = ROOT / "config" / "factor_scales.yaml"
 PRIORITY_DIR = ROOT / "config" / "priority"
 CLUSTER_CPUS, NODES, CLUSTER_MEM_MB = 512, 16, 2_048_000
-PROVISIONAL_FAIRSHARE_SCALE = 0.3
 
 
 def gini_mean_difference(x) -> float:
@@ -52,71 +51,53 @@ def job_factors(jobs: pd.DataFrame) -> pd.DataFrame:
     })
 
 
-def calibrate(scenario: str = "K", seeds=(1, 2, 3), fairshare: float | None = None,
-              fairshare_source: str | None = None) -> dict:
-    """Measure the scale of each per-job factor on scenario K and write factor_scales.yaml."""
-    jobs = pd.concat([pd.read_parquet(ROOT / "workloads" / "traces" / f"{scenario}-s{s}" /
-                                      "jobs.parquet") for s in seeds])
-    f = job_factors(jobs)
-    old = yaml.safe_load(SCALES.read_text()) if SCALES.exists() else {}
-    if fairshare is None:
-        fairshare = old.get("fairshare", PROVISIONAL_FAIRSHARE_SCALE)
-        fairshare_source = old.get("sources", {}).get("fairshare",
-                                                       "provisional until task 1.7")
-    scales = {k: gini_mean_difference(f[k]) for k in ["tres_cpu", "tres_mem", "jobsize"]}
-    out = {
-        **{k: float(f"{v:.6g}") for k, v in scales.items()},
-        "fairshare": float(f"{fairshare:.6g}"),
-        "sources": {
-            "tres_cpu": f"Gini mean difference over {len(jobs)} jobs of {scenario} seeds {list(seeds)}",
-            "tres_mem": f"Gini mean difference over {len(jobs)} jobs of {scenario} seeds {list(seeds)}",
-            "jobsize": f"Gini mean difference over {len(jobs)} jobs of {scenario} seeds {list(seeds)}",
-            "fairshare": fairshare_source,
-        },
-        "correlation_U_L": float(f"{np.corrcoef(0.5 * f['tres_cpu'] / scales['tres_cpu'] + 0.5 * f['tres_mem'] / scales['tres_mem'], f['jobsize'] / scales['jobsize'])[0, 1]:.4f}"),
-    }
-    SCALES.write_text("# Measured factor scales (Gini mean difference). Written by\n"
-                      "#   .venv/bin/python -m sim.weights calibrate\n" +
-                      yaml.safe_dump(out, sort_keys=False))
-    return out
-
-
-def pending_factor_gaps(run: Path, jobs: pd.DataFrame, min_pending: int = 20
+def pending_factor_gaps(run: Path, jobs: pd.DataFrame, min_pending: int = 20,
+                        within_class: bool = False, min_class: int = 5
                         ) -> dict[str, list[float]]:
-    """Per-snapshot Gini mean difference of each factor across a run's pending jobs."""
+    """Per-snapshot Gini mean difference of each factor across a run's pending jobs.
+
+    within_class: measure among waiting jobs of the same size QOS (one value per snapshot and
+    class with at least min_class jobs). With size strictly first, time limit and fairness
+    only order jobs within a class, so that is where their gaps matter.
+    """
     from sim.priority_log import parse   # local import: only needed here
 
     df = parse(run / "out" / "slurmctld.log", every_s=3600)
-    f = job_factors(jobs.loc[df["job_id"]].reset_index())
+    picked = jobs.loc[df["job_id"]].reset_index()
+    f = job_factors(picked)
     f["snapshot"] = df["snapshot"].to_numpy()
     f["fairshare"] = df["Fairshare_f"].to_numpy()
+    f["qos"] = picked["qos"].to_numpy() if "qos" in picked else "all"
     gaps = {k: [] for k in ["tres_cpu", "tres_mem", "jobsize", "fairshare"]}
     for _, g in f.groupby("snapshot"):
         if len(g) < min_pending:
             continue
-        for k in gaps:
-            gaps[k].append(gini_mean_difference(g[k]))
+        groups = [h for _, h in g.groupby("qos") if len(h) >= min_class] if within_class else [g]
+        for h in groups:
+            for k in gaps:
+                gaps[k].append(gini_mean_difference(h[k]))
     return gaps
 
 
 def calibrate_per_config(tag: str, scenario: str = "K-s1", min_pending: int = 20) -> dict:
-    """Give each of C1-C6 its own scales, measured on the queue that configuration produced.
+    """Give each configuration its own scales, measured on the queue it produced.
 
-    The pooled scales fit some configurations' queues but not others: a configuration that
-    favors short jobs clears them from the queue, so the job-size factor varies less among
-    the jobs still waiting. Measuring each configuration's scales in its own check run makes
-    the tier gaps hold in the queue it actually creates. Iterate (check, calibrate, render)
-    until every configuration ranks its goals in order.
+    A configuration reshapes its own queue: favoring short limits clears short jobs, so the
+    time factor varies less among the jobs still waiting. Scales are measured among waiting
+    jobs of the same size class, where time limit and fairness decide the order. Iterate
+    (check, calibrate, render) until every configuration ranks them in order.
     """
     jobs = pd.read_parquet(ROOT / "workloads" / "traces" / scenario / "jobs.parquet")
     jobs = jobs.set_index("job_id")
     scales = yaml.safe_load(SCALES.read_text())
     per = scales.get("per_config", {})
     for name in yaml.safe_load(WEIGHTS.read_text())["configs"]:
-        gaps = pending_factor_gaps(ROOT / "results" / "check" / f"{tag}-{name}", jobs, min_pending)
+        gaps = pending_factor_gaps(ROOT / "results" / "check" / f"{tag}-{name}", jobs, min_pending,
+                                   within_class=True)
         per[name] = {k: float(f"{np.median(v):.6g}") for k, v in gaps.items()}
-        per[name]["snapshots"] = len(gaps["jobsize"])
-        per[name]["source"] = f"check '{tag}' on {scenario}"
+        per[name]["samples"] = len(gaps["jobsize"])
+        per[name]["source"] = (f"check '{tag}' on {scenario}: median over (snapshot, size class) "
+                               f"groups of waiting jobs")
     scales["per_config"] = per
     SCALES.write_text("# Measured factor scales (Gini mean difference among pending jobs).\n"
                       "# Top level: pooled over all configurations (calibrate --from-check TAG).\n"
@@ -172,46 +153,105 @@ def calibrate_pending(tag: str, scenario: str = "K-s1", min_pending: int = 20) -
     return out
 
 
-def weights_for(order: list[str], cfg: dict, scales: dict) -> dict[str, float]:
-    """PriorityWeight* values for one ordering of the goals."""
-    w = {"Age": cfg["age_weight"], "Fairshare": 0, "JobSize": 0, "TRES_CPU": 0, "TRES_Mem": 0}
-    for tier, goal in zip(cfg["tiers"], order):
-        factor = cfg["goals"][goal]["factor"]
-        if factor == "fairshare":
-            w["Fairshare"] = round(tier / scales["fairshare"])
-        elif factor == "jobsize":
-            w["JobSize"] = round(tier / scales["jobsize"])
-        elif factor == "tres":
-            split = cfg["goals"][goal]["split"]
-            w["TRES_CPU"] = round(split["cpu"] * tier / scales["tres_cpu"])
-            w["TRES_Mem"] = round(split["mem"] * tier / scales["tres_mem"])
+def qos_factors(qos_priority: dict[str, int]) -> dict[str, float]:
+    """Slurm's normalized QOS factor: priority / largest QOS priority (0 if all are 0)."""
+    top = max(qos_priority.values())
+    return {q: (p / top if top else 0.0) for q, p in qos_priority.items()}
+
+
+def size_step(qos_priority: dict[str, int]) -> float:
+    """Smallest gap between distinct normalized QOS priorities (0 if all equal)."""
+    levels = sorted(set(qos_factors(qos_priority).values()))
+    gaps = [b - a for a, b in zip(levels, levels[1:])]
+    return min(gaps) if gaps else 0.0
+
+
+# Largest possible job-size factor: 32 / T_min / 512 with the shortest limit, 1 minute.
+MAX_JOBSIZE_FACTOR = 32 / 1 / 512
+
+
+def strict_size_bound(w: dict[str, int]) -> int:
+    """Largest priority any job can get from everything except size (all factors <= 1)."""
+    return math.ceil(w["JobSize"] * MAX_JOBSIZE_FACTOR + w["Fairshare"] + w["Age"])
+
+
+def weights_for(config: dict, cfg: dict, scales: dict) -> dict[str, int]:
+    """PriorityWeight* values for one configuration (TRES is not used: weight 0).
+
+    tiers.size 'strict': one step between neighbouring size classes is worth more than the
+    largest possible time + fairness + age total, so the favored class always comes first.
+    A number instead: one step is worth that many points (soft tiers).
+    """
+    w = {
+        "Age": cfg["age_weight"],
+        "QOS": 0,
+        "Fairshare": round(cfg["tiers"]["fairness"] / scales["fairshare"]),
+        "JobSize": round(cfg["tiers"]["time"] / scales["jobsize"]),
+        "TRES_CPU": 0, "TRES_Mem": 0,
+    }
+    step = size_step(config["qos_priority"])
+    if step:
+        per_step = (strict_size_bound(w) + 1 if cfg["tiers"]["size"] == "strict"
+                    else cfg["tiers"]["size"])
+        w["QOS"] = math.ceil(per_step / step)
     return w
+
+
+B0_WEIGHTS = {"Age": 0, "QOS": 0, "Fairshare": 0, "JobSize": 0, "TRES_CPU": 0, "TRES_Mem": 0}
 
 
 def conf_text(name: str, title: str, w: dict) -> str:
     return (f"# {name}: {title}\n"
             f"# Rendered from config/weights.yaml and config/factor_scales.yaml by sim/weights.py\n"
             f"PriorityWeightAge={w['Age']}\n"
+            f"PriorityWeightQOS={w['QOS']}\n"
             f"PriorityWeightFairshare={w['Fairshare']}\n"
             f"PriorityWeightJobSize={w['JobSize']}\n"
             f"PriorityWeightTRES=CPU={w['TRES_CPU']},Mem={w['TRES_Mem']}\n")
 
 
+def qos_text(name: str, qos_priority: dict[str, int]) -> str:
+    """QOS priorities for sim/prepare_run.py: one 'qos priority' pair per line."""
+    return (f"# {name}: QOS priorities (Slurm normalizes by the largest)\n" +
+            "".join(f"{q} {p}\n" for q, p in qos_priority.items()))
+
+
+def validate(cfg: dict) -> None:
+    """Every configuration gives a non-negative integer priority to each size QOS."""
+    qos = set(cfg["size_qos"].values())
+    seen = set()
+    for name, c in cfg["configs"].items():
+        pr = c["qos_priority"]
+        if set(pr) != qos:
+            raise ValueError(f"{name}: qos_priority must cover exactly {sorted(qos)}, got {sorted(pr)}")
+        if any(not isinstance(v, int) or v < 0 for v in pr.values()):
+            raise ValueError(f"{name}: QOS priorities must be non-negative integers, got {pr}")
+        key = tuple(sorted(qos_factors(pr).items()))
+        if key in seen:
+            raise ValueError(f"{name}: duplicates another configuration")
+        seen.add(key)
+
+
 def render() -> dict[str, dict]:
     cfg = yaml.safe_load(WEIGHTS.read_text())
     scales = yaml.safe_load(SCALES.read_text())
-    orders = list(cfg["configs"].values())
-    if sorted(map(tuple, orders)) != sorted(itertools.permutations(cfg["goals"])):
-        raise ValueError("configs must be exactly the orderings of the goals")
-    short = {"fairness": "F", "utilization": "U", "load_balance": "L"}
-    out = {"B0": {"Age": 0, "Fairshare": 0, "JobSize": 0, "TRES_CPU": 0, "TRES_Mem": 0}}
+    validate(cfg)
     PRIORITY_DIR.mkdir(parents=True, exist_ok=True)
-    (PRIORITY_DIR / "B0.conf").write_text(conf_text("B0", "FIFO baseline, all weights 0", out["B0"]))
-    for name, order in cfg["configs"].items():
-        w = weights_for(order, cfg, scales_for(name, scales))
+    names = ["B0"] + list(cfg["configs"])
+    keep = {".gitkeep"} | {f"{n}{ext}" for n in names for ext in (".conf", ".qos")}
+    for stale in PRIORITY_DIR.iterdir():          # configurations no longer defined
+        if stale.name not in keep:
+            stale.unlink()
+    zero_qos = {q: 0 for q in cfg["size_qos"].values()}
+    (PRIORITY_DIR / "B0.conf").write_text(conf_text("B0", "FIFO baseline, all weights 0", B0_WEIGHTS))
+    (PRIORITY_DIR / "B0.qos").write_text(qos_text("B0", zero_qos))
+    out = {"B0": B0_WEIGHTS}
+    for name, c in cfg["configs"].items():
+        w = weights_for(c, cfg, scales_for(name, scales))
         out[name] = w
-        title = " > ".join(short[g] for g in order)
+        title = f"{c['name']} (for: {c['scenario']}), then shortest time limit, then fairness"
         (PRIORITY_DIR / f"{name}.conf").write_text(conf_text(name, title, w))
+        (PRIORITY_DIR / f"{name}.qos").write_text(qos_text(name, c["qos_priority"]))
     return out
 
 
@@ -219,8 +259,8 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("action", choices=["calibrate", "render"])
     p.add_argument("--from-check", metavar="TAG",
-                   help="calibrate on the pending queues of check run TAG (sim/check_configs.py) "
-                        "instead of on all jobs of scenario K")
+                   help="calibrate on the pooled pending queues of check run TAG "
+                        "(sim/check_configs.py)")
     p.add_argument("--per-config-from", metavar="TAG",
                    help="give each configuration its own scales, measured in check run TAG")
     p.add_argument("--scenario", default="K-s1", help="scenario the check ran")
@@ -231,7 +271,7 @@ def main() -> None:
         elif a.from_check:
             out = calibrate_pending(a.from_check, a.scenario)
         else:
-            out = calibrate()
+            p.error("calibrate needs --from-check TAG or --per-config-from TAG")
         print(yaml.safe_dump(out, sort_keys=False))
     else:
         for name, w in render().items():

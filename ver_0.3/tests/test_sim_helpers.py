@@ -18,6 +18,15 @@ def test_users_sim_unique_ids():
     assert len(set(uids)) == len(uids)
 
 
+def test_sacctmgr_creates_size_qos_with_priorities():
+    s = sacctmgr_script(PAIRS, {"small": 0, "medium": 50, "large": 100})
+    assert "add qos name=small Priority=0" in s and "add qos name=large Priority=100" in s
+    assert "QOS=normal,small,medium,large" in s
+    assert "modify user set qoslevel=normal,small,medium,large" in s
+    # QOS exist before the cluster that lists them
+    assert s.index("add qos name=small") < s.index("add cluster")
+
+
 def test_sacctmgr_equal_shares_and_all_associations():
     s = sacctmgr_script(PAIRS)
     for a, u in PAIRS:
