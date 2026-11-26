@@ -17,8 +17,8 @@ lengths or dates beyond the change log.
 | 1.6 Weight configurations | done | Redesigned 2026-11-26: B0 and C0–C3 (favor none / large / small / medium via one QOS per size class, then shortest time limit, then fairness; strict size) |
 | 1.7 Configuration check in the simulator | done | Pass v3c: weights and QOS factors match in all 5 runs; favored class first in 100% of cross-class pairs; time ahead of fairness within classes (`results/check/configs_v3c.json`) |
 | 2.1 Specify Steps 4–5 | done | SPEC §6–7 and PLAN 2.2–2.6 approved 2026-11-26 with default answers to Q-A to Q-C |
-| 2.2 Trigger calibration | not started | full K-s1 week under C0 |
-| 2.3 Policy module | not started | |
+| 2.2 Trigger calibration | in progress | full K-s1 week under C0 running |
+| 2.3 Policy module | done | `controller/policy.py`, `tick.py`, `replay.py` (standard library only; runs under the container's Python 3.10); 10 tests pass |
 | 2.4 Simulator hook | not started | |
 | 2.5 Apply test | not started | |
 | 2.6 Adaptive week | not started | |
@@ -83,3 +83,4 @@ lengths or dates beyond the change log.
 | 2026-11-26 | `c319cc4` | Scenario Y (overlapping bursts) |
 | 2026-11-26 | `318cb1d` | 1.7: configuration check (six-configuration design, since superseded) |
 | 2026-11-26 | `614d9e6` | Priority configurations redesigned around size-class QOS; strict size first |
+| 2026-11-26 | `ef50823` | 2.1: Step 4–5 spec (SPEC §6–7) and Phase 2 tasks |
