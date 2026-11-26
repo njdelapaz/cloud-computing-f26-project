@@ -1,0 +1,69 @@
+# Simulated cluster for ver_0.3 (SPEC §2). Rendered by sim/prepare_run.py:
+#   @ETC@  run's etc/ directory (inside the container)
+#   @LOG@  and @VAR@  container-local log and state directories
+ClusterName=sim16
+AuthType=auth/none
+SlurmUser=slurm
+SlurmdUser=slurm
+ControlMachine=localhost
+ControlAddr=localhost
+FrontEndName=localhost
+ReturnToService=1
+MessageTimeout=60
+JobRequeue=0
+JobCredentialPrivateKey=@ETC@/slurm.key
+JobCredentialPublicCertificate=@ETC@/slurm.cert
+SlurmdParameters=config_overrides
+ProctrackType=proctrack/pgid
+SwitchType=switch/none
+TaskPlugin=task/none
+FirstJobId=1001
+UsePAM=0
+MailProg=/bin/true
+SlurmctldTimeout=300
+SlurmdTimeout=300
+InactiveLimit=0
+MinJobAge=300
+KillWait=30
+Waittime=0
+
+# Scheduler: Slurm default (backfill with default parameters)
+SchedulerType=sched/backfill
+
+# Memory is a consumable resource, so CPU and memory both limit packing
+SelectType=select/cons_tres
+SelectTypeParameters=CR_Core_Memory
+
+# Priority (SPEC §2.2). Only priority_weights.conf changes between configurations.
+PriorityType=priority/multifactor
+PriorityCalcPeriod=1
+PriorityDecayHalfLife=7-0
+PriorityMaxAge=1-0
+PriorityFavorSmall=YES
+PriorityFlags=SMALL_RELATIVE_TO_TIME
+PriorityWeightPartition=0
+PriorityWeightQOS=0
+Include @ETC@/priority_weights.conf
+
+# Logs and state
+SlurmctldDebug=info
+SlurmdDebug=info
+SlurmctldLogFile=@LOG@/slurmctld.log
+SlurmdLogFile=@LOG@/slurmd.log
+SlurmSchedLogFile=@LOG@/sched.log
+SlurmSchedLogLevel=0
+SlurmdSpoolDir=@VAR@/spool
+StateSaveLocation=@VAR@/state
+JobCompType=jobcomp/filetxt
+JobCompLoc=@LOG@/jobcomp.log
+JobAcctGatherType=jobacct_gather/none
+
+# Accounting (fair share needs usage from slurmdbd)
+AccountingStorageType=accounting_storage/slurmdbd
+AccountingStorageEnforce=associations,limits,qos
+AccountingStorageHost=localhost
+PropagateResourceLimits=NONE
+
+# 16 nodes, 2 sockets x 16 cores, 128,000 MB, no GPUs
+NodeName=n[01-16] CPUs=32 Sockets=2 CoresPerSocket=16 ThreadsPerCore=1 RealMemory=128000 State=UNKNOWN
+PartitionName=normal Nodes=n[01-16] Default=YES DefMemPerCPU=4000 MaxTime=7-00:00:00 State=UP

@@ -338,7 +338,7 @@ TRES split: W_cpu = round(0.5 · T / s_cpu),  W_mem = round(0.5 · T / s_mem)
 ```
 
 TRES and job-size spreads come from the workload, because they are fixed per job. Fair-share
-spread comes from `sprio` snapshots of calibration runs. Calibration uses scenario `K` only.
+spread comes from the priority debug log (`DebugFlags=Priority`) of calibration runs. Calibration uses scenario `K` only.
 The CPU/memory split defaults to 50/50. A CPU-leaning split is worth testing later because
 memory is the bottleneck (§3.1).
 
@@ -346,9 +346,11 @@ memory is the bottleneck (§3.1).
 - `config/weights.yaml` holds the tiers, goal-to-factor map, spreads, split and the six
   orderings. A renderer turns it into `config/priority/<id>.conf` (B0, C1…C6), each containing
   only `PriorityWeight*` lines.
-- Each rendered file loads in the simulator, and `scontrol show config` echoes the weights.
-- On a loaded queue, `sprio -l` shows the primary goal's factor making the largest spread of
-  priority contributions in each configuration.
+- Each rendered file loads in the simulator, and the priority debug log shows its weights.
+  The simulator serves no CLI calls while it runs, so `sprio` is not available
+  (`sim/README.md`).
+- On a loaded queue, the priority debug log shows the primary goal's factor making the
+  largest spread of priority contributions in each configuration.
 - Pearson correlation between the U and L contributions over the pending queue is recorded. If
   `|r| > 0.8`, configurations that differ only in the order of U and L may behave alike; this
   is recorded as a finding.

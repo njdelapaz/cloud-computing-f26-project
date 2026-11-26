@@ -1,0 +1,7 @@
+# account	user
+acct1	u1
+acct1	u2
+acct2	u3
+acct2	u4
+acct3	u4
+acct3	u5

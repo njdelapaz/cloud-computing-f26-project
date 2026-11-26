@@ -1,0 +1,7 @@
+# Allowlist: the build only needs the pinned simulator checkouts and the
+# entrypoint. Everything else (notably the multi-GB dataset/) stays out.
+*
+!third_party/slurm_sim_tools
+!third_party/slurm_simulator
+!sim/entrypoint.sh
+**/.git

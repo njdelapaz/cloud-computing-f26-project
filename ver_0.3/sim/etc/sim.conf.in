@@ -1,0 +1,14 @@
+# UB Slurm Simulator settings (rendered by sim/prepare_run.py)
+## Unix time stamp for the simulated start time
+TimeStart = @TIME_START@
+## 0: run until all jobs are finished
+TimeStop = 0
+## Overridden by -dtstart on the slurmsim command line
+SecondsBeforeFirstJob = 60
+ClockScaling = 1.0
+EventsFile = @EVENTS@
+TimeAfterAllEventsDone = 10
+## Start-up delays that mimic a real controller (upstream defaults)
+FirstJobDelay = -0.32
+CompJobDelay = 0.000
+TimeLimitDelay = 0.000

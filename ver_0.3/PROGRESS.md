@@ -10,7 +10,7 @@ lengths or dates beyond the change log.
 | Task | Status | Notes |
 |---|---|---|
 | 1.1 Folder setup and tooling | done | Layout, `.venv`, pinned `requirements.txt`, `pytest.ini`, layout tests (3 pass) |
-| 1.2 Simulator bring-up | in progress | |
+| 1.2 Simulator bring-up | done | Image `slurmsim:v03` built; smoke run: all 36 jobs as specified; probe: no CLI or reconfigure mid-run (`sim/README.md`) |
 | 1.3 Trace profiling | done | All 8 data checks pass; K = 2024-01-29 week, N = 2024-05-20 week; outputs in `results/profile/` |
 | 1.4 Job classifier | done | 22 tests pass; January shares reproduce SPEC §4.3 exactly; thresholds frozen |
 | 1.5 Workload builder | not started | |
@@ -28,7 +28,7 @@ lengths or dates beyond the change log.
 
 | Checkout (in `third_party/`) | Branch | Commit |
 |---|---|---|
-| `slurm_simulator` (UB Slurm Simulator, Slurm 23.02 based) | `slurm-23-02-sim` | `f99a71eb2073266bba3869aa2a0ccd51c58c9bb7` |
+| `slurm_simulator` (UB Slurm Simulator; binary reports Slurm 23.11.0-0rc1) | `slurm-23-02-sim` | `f99a71eb2073266bba3869aa2a0ccd51c58c9bb7` |
 | `slurm_sim_tools` (runner and tools, v3.0) | `v3.0-branch` | `21ba58d5b88b2a208a4b2db8b2b31c86d41a3847` |
 
 ## Decisions
@@ -42,6 +42,8 @@ lengths or dates beyond the change log.
 | Calibration week `K` | 2024-01-29 to 2024-02-04 (week 4) | Second most typical eligible week, at least two weeks from `N`. |
 | Evaluation week `N` | 2024-05-20 to 2024-05-26 (week 20) | Most typical of 22 eligible weeks (`results/profile/selection.json`). |
 | Ineligible weeks | Jan 1 week; Mar 11–17 (maintenance Mar 12); Jun 17 onward | Holiday; jobs killed by maintenance; monthly files hold jobs by end time, so the last two weeks lose jobs ending after June 30. |
+| Mid-run control (input to 2.1) | Weight changes must happen inside the simulator's event loop (a simulator patch); an outside controller using `scontrol reconfigure` is not possible | The simulator never starts `slurmctld`'s RPC thread: every mid-run `squeue`, `sprio`, `sshare`, `scontrol` call fails (`results/probe/probe.json`). |
+| Priority checks | `DebugFlags=Priority` lines in `slurmctld.log` replace `sprio` | `sprio` needs the RPC thread; the debug log has every job's factors and weights in simulated time. |
 | Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
@@ -50,3 +52,4 @@ lengths or dates beyond the change log.
 |---|---|---|
 | 2026-11-26 | `677798c` | 1.1: folder layout, Python env, layout tests, this tracker |
 | 2026-11-26 | `b250f9d` | 1.4: nine-class job classifier and boundary tests |
+| 2026-11-26 | `2dbe58a` | 1.3: trace cache, data checks, weekly profile, weeks K and N |

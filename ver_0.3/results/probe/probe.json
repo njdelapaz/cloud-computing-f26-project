@@ -1,0 +1,67 @@
+{
+  "container_wall_seconds": 43.0,
+  "simulation": {
+    "Simulated time": "5:57:13.140258",
+    "Real time": "0:00:36.935163",
+    "Acceleration": "580.290935"
+  },
+  "Q1_Q2_cli_attempts_during_run": {
+    "squeue": {
+      "tries": 5,
+      "ok": 0,
+      "messages": {
+        "slurm_load_jobs error: Unable to contact slurm controller (connect failure)": 4,
+        "no output": 1
+      }
+    },
+    "sprio": {
+      "tries": 4,
+      "ok": 0,
+      "messages": {
+        "Couldn't get priority factors from controller: Unable to contact slurm controller (connect failure)": 4
+      }
+    },
+    "sshare": {
+      "tries": 4,
+      "ok": 0,
+      "messages": {
+        "Couldn't get shares from controller: Unable to contact slurm controller (connect failure)": 4
+      }
+    },
+    "scontrol show node": {
+      "tries": 4,
+      "ok": 0,
+      "messages": {
+        "slurm_load_node error: Unable to contact slurm controller (connect failure)": 4
+      }
+    },
+    "scontrol reconfigure": {
+      "tries": 4,
+      "ok": 0,
+      "messages": {
+        "slurm_reconfigure error: Unable to contact slurm controller (connect failure)": 4
+      }
+    }
+  },
+  "Q3_run_check_problems": [],
+  "Q4_rpc_thread_source": {
+    "file": "third_party/slurm_simulator/contribs/sim/slurmctld_controller.c",
+    "line": 67,
+    "code": [
+      "\tif (xstrcmp(\"&slurmctld_config.thread_id_rpc\", id) == 0) {",
+      "\t\tdebug(\"sim_pthread_create: %s ... start.\", id);",
+      "\t\treturn 0;"
+    ]
+  },
+  "priority_debug_job_lines": 14388,
+  "priority_debug_factor_lines": 86328,
+  "priority_debug_examples": [
+    "[2024-05-20T00:00:41.651356] priority/multifactor: _get_priority_internal: Weighted Age priority is 0.000000 * 0 = 0.00",
+    "[2024-05-20T00:00:41.651360] priority/multifactor: _get_priority_internal: Weighted Assoc priority is 0.000000 * 0 = 0.00",
+    "[2024-05-20T00:00:41.651363] priority/multifactor: _get_priority_internal: Weighted Fairshare priority is 0.000000 * 0 = 0.00",
+    "[2024-05-20T00:00:41.651365] priority/multifactor: _get_priority_internal: Weighted JobSize priority is 0.000000 * 0 = 0.00",
+    "[2024-05-20T00:00:41.651367] priority/multifactor: _get_priority_internal: Weighted Partition priority is 0.000000 * 0 = 0.00",
+    "[2024-05-20T00:00:41.651369] priority/multifactor: _get_priority_internal: Weighted QOS priority is 0.000000 * 0 = 0.00",
+    "[2024-05-20T00:00:41.651385] priority/multifactor: _get_priority_internal: Job 1001 priority: 0 +  0 + 0.00 + 0.00 + 0.00 + 0.00 + 0.00 +  0 - 0 = 1.00"
+  ]
+}

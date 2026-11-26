@@ -109,13 +109,16 @@ spec is updated with justification).
 weights; tier order holds for each configuration).
 
 ### 1.7 Configuration check in the simulator
-- Load each rendered file in the simulator and confirm `scontrol show config` echoes it.
-- On a loaded queue (a slice of `K`), capture `sprio -l` for each configuration. Measure the
-  fair-share spread, re-render the weights, and confirm the primary goal's factor makes the
-  largest spread of contributions in each configuration (SPEC §5.5).
+The simulator answers no CLI calls while it runs (task 1.2 probe), so priorities are read from
+the `DebugFlags=Priority` lines in `slurmctld.log` instead of `sprio`.
+- Run a slice of `K` with a standing queue under each rendered file, with
+  `DebugFlags=Priority`. Confirm the logged weights match the file.
+- From the logged factors, measure the fair-share spread, re-render the weights, and confirm
+  the primary goal's factor makes the largest spread of contributions in each configuration
+  (SPEC §5.5).
 - Record the U–L contribution correlation (SPEC §5.5).
 
-**Done when:** the per-configuration `sprio` summaries are committed; final weights are
+**Done when:** the per-configuration priority summaries are committed; final weights are
 rendered; the correlation is recorded, with a note if `|r| > 0.8`.
 
 **Phase 1 exit:** tasks 1.1–1.7 are done; class thresholds, weeks and weights are frozen in
@@ -208,9 +211,9 @@ Decisions for Steps 4–6 are made when their spec is written (2.1, 3.1).
 |---|---|---|
 | R1 | The simulator cannot answer CLI calls or apply weight changes mid-run. | Probe in 1.2, so the Step 5 spec is written knowing the answer. |
 | R2 | Trace fields mean something other than assumed (units, multi-node). | Checks in 1.3, before any workload is built. |
-| R3 | One factor swamps the others because of normalization (TRES spans only 0–1/16). | Spread-based weight calibration (SPEC §5.4), verified with `sprio` in 1.7. |
+| R3 | One factor swamps the others because of normalization (TRES spans only 0–1/16). | Spread-based weight calibration (SPEC §5.4), verified from the priority debug log in 1.7. |
 | R4 | Utilization and load-balance factors are nearly opposite, so configurations collapse. | `SMALL_RELATIVE_TO_TIME` (SPEC §5.1); correlation check in 1.7; recorded as a finding if it happens. |
-| R5 | Too little contention in the built workloads, so priority order barely matters. | `ρ* = 0.95`; scenario `X` has built-in peaks; the 1.7 `sprio` check needs a standing queue. |
+| R5 | Too little contention in the built workloads, so priority order barely matters. | `ρ* = 0.95`; scenario `X` has built-in peaks; the 1.7 priority check needs a standing queue. |
 | R6 | Thresholds or weights get tuned on the weeks used for judging. | All calibration on `K` only (SPEC §3.5). |
 
 ---

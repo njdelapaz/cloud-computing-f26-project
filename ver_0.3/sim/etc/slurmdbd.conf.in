@@ -1,0 +1,10 @@
+DbdHost=localhost
+AuthType=auth/none
+PidFile=@VAR@/slurmdbd.pid
+LogFile=@LOG@/slurmdbd.log
+StorageHost=localhost
+StorageType=accounting_storage/mysql
+StorageUser=slurm
+StoragePass=slurm
+SlurmUser=slurm
+StorageLoc=slurmdb_sim16
