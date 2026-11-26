@@ -3,7 +3,7 @@
 Status tracker for [PLAN.md](PLAN.md). It records status, decisions and results only; no task
 lengths or dates beyond the change log.
 
-**Current phase:** 2 — trigger states and change mechanism (Steps 4–5); next is 2.2–2.4
+**Current phase:** 2 complete; next is 3.1 (specify Step 6)
 
 ## Phase tracker
 
@@ -21,7 +21,7 @@ lengths or dates beyond the change log.
 | 2.3 Policy module | done | `controller/policy.py`, `tick.py`, `replay.py` (standard library only; runs under the container's Python 3.10); 10 tests pass |
 | 2.4 Simulator hook | done | `sim/patches/policy_hook.patch` applied at build; image `slurmsim:v03` now includes it; with the hook off it matches the unpatched image (same nodes, start times within the 1 s run-to-run jitter) |
 | 2.5 Apply test | done | C0→C1→C2→C3→C0 during a standing queue: every waiting job recomputed within 2 s with the new weights and QOS factors; missing config rejected; failing command logged, no switch (`results/phase2/apply_test.json`) |
-| 2.6 Adaptive week | not started | |
+| 2.6 Adaptive week | done | Full K-s1 week with policy ticks: 1,981 ticks logged on both sides, 0 command failures, 49/49 switches applied, replay exact, run check passes; submission week: 6.6 switches/day, 28% reversals within 2 h (`results/phase2/K-s1-adaptive_summary.json`) |
 | 3.1 Specify Step 6 | not started | waits for Phase 2 |
 | 3.2 Run the simulations | not started | |
 | 3.3 Scale up | not started | |
@@ -69,6 +69,7 @@ lengths or dates beyond the change log.
 | Change mechanism (SPEC §7) | A patch to the simulator adds a policy tick event that writes a snapshot, runs a Python policy, and applies weights (priority plugin reconfigure) and QOS priorities (accounting manager update) in place | No RPCs mid-run (task 1.2), so control must sit inside the event loop. Both apply paths exist in the pinned Slurm source. |
 | Step 4 open questions (approved 2026-11-26) | Q-A waiting queue; Q-B count jobs; Q-C enter P80 / exit P60, 60-min dwell | Defaults approved with the Step 4–5 spec. |
 | Trigger calibration source | Neutral C0 run of K, not FIFO | The waiting queue's class mix depends on the configuration: under C0 short jobs start fast, so small falls from 0.90 (FIFO) to 0.59 of waiting jobs. |
+| Trigger feedback (finding, task 2.6) | The waiting-queue trigger flips more than predicted: 6.6 switches/day vs 4.3 from the neutral replay; 28% reversals within 2 h; 21 of 45 gaps at the 60-min minimum | Favoring a class drains it from the queue (SPEC §6.5). Mechanism is correct; the trigger signal (Q-A: arrivals instead of the waiting queue) or longer dwell/persistence are the levers for Phase 3. |
 | Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
@@ -88,3 +89,4 @@ lengths or dates beyond the change log.
 | 2026-11-26 | `c9430e7` | 2.3: policy module, tick command, replay |
 | 2026-11-26 | `c235b6d` | 2.4: simulator policy hook (patch, image, `--policy` run setup) |
 | 2026-11-26 | `ff274cc` | 2.5: apply test of the policy hook |
+| 2026-11-26 | `5c5e520` | 2.2: trigger calibration on the neutral K week |

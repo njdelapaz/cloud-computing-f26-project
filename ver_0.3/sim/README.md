@@ -158,6 +158,10 @@ failure.
 | `.venv/bin/python -m sim.weights calibrate` / `render` | Measure factor scales on scenario K; render `config/priority/*.conf` |
 | `.venv/bin/python -m sim.check_configs --hours H --tag T` | Task 1.7: run B0 and every configuration (C0–C3) in parallel on the first H hours of K with priority logging, and check weights, QOS factors, size-first order and within-class order (SPEC §5.5) |
 | `sim/priority_log.py` | Parser for the priority debug log (hourly queue snapshots) |
+| `.venv/bin/python -m controller.calibrate RUN_DIR` | Task 2.2: trigger percentiles from a neutral (C0) run, written to `config/triggers.yaml` |
+| `.venv/bin/python -m sim.apply_test` | Task 2.5: scheduled switches and failure handling of the policy hook |
+| `.venv/bin/python -m controller.summarize RUN_DIR` | Task 2.6: adaptive-run checks (ticks logged, switches applied, replay, run check) and switch statistics |
+| `python3 -m controller.replay POLICY_DIR` | Re-run the policy over a run's `controller.jsonl` and compare decisions |
 
 ## Seeing priorities without `sprio`
 

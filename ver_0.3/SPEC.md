@@ -550,6 +550,13 @@ selected it. Hysteresis and the dwell time limit how fast this can flip.
 Step 6 will report switch rates and reversals. If they are high, the alternative signal in
 §6.6 (Q-A) is the first thing to try.
 
+**Measured in Phase 2** (the adaptive `K-s1` week, task 2.6): the feedback is real.
+- Over the 7 submission days the controller switched 46 times (6.6 a day). Replaying the
+  policy over the neutral week had predicted 4.3 a day.
+- 13 switches (28%) returned to the previous state within 2 hours, and 21 of the 45 gaps
+  between switches were at the 60-minute minimum.
+- Time in each state: mix 48%, small 24%, large 22%, medium 6%.
+
 ### 6.6 Parameters and open questions
 
 | Parameter | Default | Where |
@@ -662,3 +669,20 @@ The simulator also logs each applied switch in `slurmctld.log`
    decisions.
 4. **End-to-end week.** An adaptive run of the full `K-s1` week finishes, with every tick
    logged and the run check passing.
+
+**Result (Phase 2).** All four pass:
+1. The policy unit tests pass.
+2. The apply test passes: every switch recomputed all waiting jobs within 2 simulated
+   seconds with the new weights and QOS factors. A missing configuration was rejected, and a
+   failing command was logged without a switch.
+3. Replay reproduced all 1,981 decisions of the adaptive week.
+4. The adaptive week finished in 1 h 14 min real time:
+   - 1,981 ticks logged on both sides, with no command failures;
+   - all 49 requested switches applied, in order;
+   - every job ran as specified;
+   - each policy command took about 34 ms.
+
+Its mean wait was 84 minutes (neutral C0 week: 120; FIFO: 549). These are single runs, so
+they show direction only.
+
+Files: `results/phase2/apply_test.json` and `results/phase2/K-s1-adaptive_summary.json`.

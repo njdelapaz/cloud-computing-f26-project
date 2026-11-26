@@ -1,0 +1,37 @@
+{
+  "ticks_controller": 1981,
+  "ticks_simulator": 1981,
+  "command_failures": 0,
+  "switches_asked": 49,
+  "switches_applied": 49,
+  "applied_matches_asked": true,
+  "replay_mismatches": [],
+  "run_problems": [],
+  "known_simulator_issues": [],
+  "span_days": 13.75,
+  "switches_per_day": 3.56,
+  "time_share_by_state": {
+    "large": 0.586,
+    "medium": 0.038,
+    "mix": 0.257,
+    "small": 0.12
+  },
+  "reversals_within_2h": 13,
+  "command_ms_median": 33.6,
+  "gated_ticks": 1164,
+  "submission_week": {
+    "switches": 46,
+    "switches_per_day": 6.57,
+    "time_share_by_state": {
+      "large": 0.223,
+      "medium": 0.058,
+      "mix": 0.484,
+      "small": 0.235
+    },
+    "reversals_within_2h": 13,
+    "minutes_between_switches_median": 80.0,
+    "switches_at_minimum_dwell": 21,
+    "gated_ticks": 252
+  },
+  "ok": true
+}

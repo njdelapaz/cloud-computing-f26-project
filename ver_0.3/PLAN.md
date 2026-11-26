@@ -207,7 +207,8 @@ results as before.
 **Done when:** all checks pass and the summary is committed.
 
 **Phase 2 exit:** 2.2–2.6 done; open questions Q-A to Q-C (SPEC §6.6) answered or kept at
-their defaults; `PROGRESS.md` updated.
+their defaults; `PROGRESS.md` updated. (Met 2026-11-26; the trigger feedback finding in SPEC
+§6.5 is an input to 3.1.)
 
 ---
 
