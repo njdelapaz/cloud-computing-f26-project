@@ -1,0 +1,14 @@
+{
+  "rule": "eligible = complete, no maintenance, not the Jan 1 week; N = most typical, K = next most typical at least 2 weeks away from N",
+  "N": {
+    "week": 20,
+    "start": "2024-05-20",
+    "typicality": 2.643
+  },
+  "K": {
+    "week": 4,
+    "start": "2024-01-29",
+    "typicality": 2.784
+  },
+  "eligible_weeks": 22
+}

@@ -87,8 +87,11 @@ Include priority_weights.conf      # holds the PriorityWeight* lines of one conf
 
 ### 3.1 Trace
 
-`dataset/01.tsv` … `06.tsv`: one file per month, from 2024-01-01 to 2024-06-30 (UTC epoch
-seconds). There are 23,539,150 jobs in about 3.1 GB of tab-separated text with a header row.
+`dataset/01.tsv` … `06.tsv`: one file per month, from 2024-01-01 to 2024-06-30. There are
+23,539,150 jobs in about 3.1 GB of tab-separated text with a header row. The files are the
+first half of the public IN2P3 Computing Center 2024 workload dataset (Cochard & Simon,
+arXiv:2606.05914), which documents the fields. Each monthly file holds the jobs that *ended*
+that month, cut at local (Europe/Paris) midnight. Timestamps are epoch seconds.
 
 | Column | Meaning | Use |
 |---|---|---|
@@ -115,9 +118,17 @@ Profile of January (from a pass over `01.tsv`), for orientation:
   the bottleneck:** when memory is fully allocated, CPU allocation tops out near 60%. This
   shapes the utilization goal (§5).
 
-Assumptions to confirm in Phase 1: `allocmem` and `maxrss` are in MB; timestamps are UTC epoch
-seconds; `hostnames` lists every node a job used; and the simulator accepts `--mem`, `-t` in
-minutes and a per-job `--uid`.
+Confirmed in Phase 1 (`results/profile/assumptions.csv`):
+- `allocmem` and `maxrss` are in MB. The largest request on the 128 GB `hpc` nodes is
+  125,000.
+- `elapsed = end − start` for 99.997% of jobs that ran.
+- Only `hpc` jobs span several nodes.
+- `timelimit` is in seconds and always a whole number of minutes.
+- Over all six months, a week offers 21–37× this cluster's memory capacity and 14–36× its CPU
+  capacity (`results/profile/weekly.csv`).
+
+The simulator's job-trace format, `--mem`, `-t` and per-job `--uid` are confirmed by its
+documentation; the smoke run checks them in practice.
 
 ### 3.2 Filters
 A trace job enters a workload only if all of these hold:
@@ -175,8 +186,19 @@ The aggregate load must also fit, not just each job. Offered load over the submi
 | `M` (scale-out) | Longer horizon. Built only after one-week runs work, as the brief says: one week first, scale later. | Four consecutive weeks, and weeks from other months. |
 
 "Typical week": a Monday-to-Sunday window whose offered load, class mix and active-account
-count are near the median of all full weeks in the trace. The holiday week of Jan 1 is
-excluded. The weeks are picked in Phase 1 and recorded here.
+count are near the median of all full weeks in the trace. Weeks run from Monday 00:00 UTC,
+which is 01:00 or 02:00 local time. Three kinds of week are not eligible:
+- the holiday week of Jan 1;
+- the maintenance week of Mar 11–17, when running jobs were killed on Mar 12;
+- the last two weeks (from Jun 17). The files hold jobs by end time, so these weeks are missing
+  jobs that ended after June 30.
+
+Picked in Phase 1 from 22 eligible weeks (`results/profile/selection.json`):
+
+| Scenario | Week (UTC) | Why |
+|---|---|---|
+| `N` | 2024-05-20 to 2024-05-26 | most typical eligible week |
+| `K` | 2024-01-29 to 2024-02-04 | next most typical week at least two weeks from `N` |
 
 ### 3.6 Builder outputs
 For each scenario and seed, under `workloads/traces/<scenario>-s<seed>/`:
@@ -239,8 +261,12 @@ filtered January jobs.
 | 8 | `lg-med` | 0.6% | 2.7% | 4.0% |
 | 9 | `lg-long` | 0.7% | 20.2% | 25.0% |
 
-Most jobs are small, but most of the load is long. Phase 1 checks these thresholds against all
-six months before freezing them. Thresholds live in one config file, not in code.
+Most jobs are small, but most of the load is long. Thresholds live in `config/classes.yaml`,
+not in code.
+
+**Frozen in Phase 1.** All nine classes are populated in every month from January to June
+(`results/profile/classes_by_month.csv`), so the thresholds stay as above. The mix moves a lot
+from month to month: `sm-short` is 9–40% of jobs, and `lg-med` is 0.3–19%.
 
 ### 4.4 Rules
 - Boundaries are inclusive on the upper side.

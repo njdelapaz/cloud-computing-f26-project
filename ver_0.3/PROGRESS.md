@@ -11,8 +11,8 @@ lengths or dates beyond the change log.
 |---|---|---|
 | 1.1 Folder setup and tooling | done | Layout, `.venv`, pinned `requirements.txt`, `pytest.ini`, layout tests (3 pass) |
 | 1.2 Simulator bring-up | in progress | |
-| 1.3 Trace profiling | not started | |
-| 1.4 Job classifier | not started | |
+| 1.3 Trace profiling | done | All 8 data checks pass; K = 2024-01-29 week, N = 2024-05-20 week; outputs in `results/profile/` |
+| 1.4 Job classifier | done | 22 tests pass; January shares reproduce SPEC §4.3 exactly; thresholds frozen |
 | 1.5 Workload builder | not started | |
 | 1.6 Weight configurations | not started | |
 | 1.7 Configuration check in the simulator | not started | |
@@ -38,8 +38,15 @@ lengths or dates beyond the change log.
 | Folder names | `third_party/`, `workloads/` (`cache/`, `traces/`), `results/<group>/<run>/` | Match the committed `ver_0.3/.gitignore`. |
 | Simulator image | Own lean image from `sim/Dockerfile` (`slurmsim:v03`) built from the pinned checkouts | The upstream image adds Jupyter, RStudio, Eclipse and Chrome, which the simulation does not need. |
 | Python | 3.12 venv in `.venv/`, pinned `requirements.txt` | SPEC conventions. |
+| Class thresholds | Kept as proposed: size 1/16 and 1/4 of a node; time 4 h and 24 h | All nine classes are populated in every month (`results/profile/classes_by_month.csv`). |
+| Calibration week `K` | 2024-01-29 to 2024-02-04 (week 4) | Second most typical eligible week, at least two weeks from `N`. |
+| Evaluation week `N` | 2024-05-20 to 2024-05-26 (week 20) | Most typical of 22 eligible weeks (`results/profile/selection.json`). |
+| Ineligible weeks | Jan 1 week; Mar 11–17 (maintenance Mar 12); Jun 17 onward | Holiday; jobs killed by maintenance; monthly files hold jobs by end time, so the last two weeks lose jobs ending after June 30. |
+| Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
 
 | Date | Commit | Change |
 |---|---|---|
+| 2026-11-26 | `677798c` | 1.1: folder layout, Python env, layout tests, this tracker |
+| 2026-11-26 | `b250f9d` | 1.4: nine-class job classifier and boundary tests |

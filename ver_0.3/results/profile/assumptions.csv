@@ -1,0 +1,9 @@
+check,value,ok
+elapsed == end - start (jobs that ran),99.9965% match,True
+multi-node jobs only in hpc,partitions: ['hpc'],True
+allocmem in MB (largest request on 128 GB p nodes),"125,000 MB",True
+largest single-node allocmem per source node type (MB),"a=256,000, b=500,000, g=1,546,517, m=800,000, p=125,000",True
+"maxrss in MB (p95 maxrss/allocmem, non-EL9 jobs)",0.787,True
+submit <= start <= end,99.9965% of jobs that ran,True
+end times span 2024-01 to 2024-06 in Europe/Paris time,2024-01-01 00:00 .. 2024-06-30 23:59 local (2023-12-31 23:00 .. 2024-06-30 21:59 UTC),True
+timelimit in seconds (share that are whole minutes),100.0000%,True
