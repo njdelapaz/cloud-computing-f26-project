@@ -67,7 +67,7 @@ PriorityType=priority/multifactor
 PriorityCalcPeriod=1
 PriorityDecayHalfLife=7-0          # Slurm default; tunable later
 PriorityMaxAge=1-0                 # age factor saturates after one day
-PriorityFavorSmall=YES             # job-size factor favors small jobs (§5.1)
+PriorityFavorSmall=NO              # with the flag below: shortest time limit first (§5.1)
 PriorityFlags=SMALL_RELATIVE_TO_TIME
 PriorityWeightPartition=0          # one partition, constant
 PriorityWeightQOS=0                # one QOS, constant
@@ -298,15 +298,22 @@ from month to month: `sm-short` is 9–40% of jobs, and `lg-med` is 0.3–19%.
 |---|---|---|---|
 | **Fairness (F)** | No set of users gets placement priority over others | `PriorityWeightFairshare` | Fair-share lowers priority for accounts that used more than their share. |
 | **Utilization (U)** | Use as much of each node as possible, CPU and memory | `PriorityWeightTRES=CPU=…,Mem=…` | The TRES factor grows with the requested share of CPU and memory, so big requests that fill nodes in both dimensions go first. |
-| **Load balance (L)** | Keep utilization even across nodes | `PriorityWeightJobSize` with `PriorityFavorSmall=YES` and `SMALL_RELATIVE_TO_TIME` | Small, short jobs go first. They turn over fast and fill gaps on every node, instead of large long jobs pinning some nodes while others empty out. |
+| **Load balance (L)** | Keep utilization even across nodes | `PriorityWeightJobSize` with `SMALL_RELATIVE_TO_TIME` and `PriorityFavorSmall=NO` | Jobs with short time limits go first. They turn over fast and fill gaps on every node, instead of long jobs pinning some nodes while others empty out. |
 
 Notes:
 - `PriorityFavorSmall` and `PriorityFlags` are global, so they are fixed in all configurations
   (§2.2). Only the weights change.
-- Without `SMALL_RELATIVE_TO_TIME`, the job-size factor is nearly the mirror image of the CPU
-  TRES factor, and U and L would just cancel. With the flag, L means "small **and** short
-  first", which is a distinct behavior. Phase 1 checks the correlation of the two
-  contributions on a real queue (§5.5).
+- **How Slurm computes the job-size factor** (checked in the pinned source, Phase 1).
+  `SMALL_RELATIVE_TO_TIME` gives `max(32, cpus) / T_min / 512`, because a single-node job
+  counts as at least one node's average CPUs (32). So for every job here the factor depends
+  only on the time limit, and is highest for the shortest limits.
+  - `PriorityFavorSmall=YES` turns it into `1 − x`, which would favor *long* jobs. This spec
+    first proposed that combination, by mistake.
+  - `PriorityFavorSmall=NO` keeps `x`, so L means "shortest time limit first". The CPU count
+    plays no part.
+- **Without the flag, U and L would cancel.** The job-size factor is then a mirror image of
+  the CPU TRES factor. With the flag, the U and L contributions are uncorrelated over week
+  `K` (Pearson −0.006, Spearman −0.52; `config/factor_scales.yaml`).
 - Placement stays at the Slurm default, so priority can affect load balance only through which
   jobs start next. Whether that is enough has to be measured in simulation, not assumed.
 
@@ -343,23 +350,32 @@ applies.
 Slurm normalizes each factor to 0–1, but the spread across real jobs is very different by
 factor. Fair-share spans most of 0–1. The TRES factor is a request divided by the *partition*
 total, so a full-node job scores only 1/16. Raw tier numbers would therefore let fair-share
-swamp everything. Weights are scaled by each factor's observed spread:
+swamp everything. Weights are scaled by each factor's typical gap between two jobs, its Gini
+mean difference:
 
 ```
-s_g = P95(φ_g) − P5(φ_g)        # spread of factor g over pending jobs in calibration runs
+s_g = mean |φ_g(i) − φ_g(j)| over pairs of jobs i ≠ j
 W_g = round(T_tier(g) / s_g)
 TRES split: W_cpu = round(0.5 · T / s_cpu),  W_mem = round(0.5 · T / s_mem)
 ```
 
-TRES and job-size spreads come from the workload, because they are fixed per job. Fair-share
+So in every configuration, two typical jobs differ by about `T_tier` points on each goal. A
+first draft used `P95 − P5`, but in week `K` over 95% of jobs ask for 1 core. That makes the
+CPU factor's `P95 − P5` exactly 0. Factors with long tails still give their extreme jobs many
+times the tier swing:
+- a 1-minute limit gets about 300× on job size;
+- a 22-core job gets about 90× on CPU.
+
+TRES and job-size scales come from the workload, because they are fixed per job
+(`config/factor_scales.yaml`, written by `sim/weights.py calibrate`). Fair-share
 spread comes from the priority debug log (`DebugFlags=Priority`) of calibration runs. Calibration uses scenario `K` only.
 The CPU/memory split defaults to 50/50. A CPU-leaning split is worth testing later because
 memory is the bottleneck (§3.1).
 
 ### 5.5 Source of truth and verification
-- `config/weights.yaml` holds the tiers, goal-to-factor map, spreads, split and the six
-  orderings. A renderer turns it into `config/priority/<id>.conf` (B0, C1…C6), each containing
-  only `PriorityWeight*` lines.
+- `config/weights.yaml` holds the tiers, goal-to-factor map, split and the six orderings.
+  `config/factor_scales.yaml` holds the measured scales. `sim/weights.py render` turns them
+  into `config/priority/<id>.conf` (B0, C1…C6), each containing only `PriorityWeight*` lines.
 - Each rendered file loads in the simulator, and the priority debug log shows its weights.
   The simulator serves no CLI calls while it runs, so `sprio` is not available
   (`sim/README.md`).

@@ -14,7 +14,7 @@ lengths or dates beyond the change log.
 | 1.3 Trace profiling | done | All 8 data checks pass; K = 2024-01-29 week, N = 2024-05-20 week; outputs in `results/profile/` |
 | 1.4 Job classifier | done | 22 tests pass; January shares reproduce SPEC §4.3 exactly; thresholds frozen |
 | 1.5 Workload builder | done | K, N, X × seeds 1–3 built and deterministic; K/N memory load 0.947–0.956; 54 tests pass (`results/workloads/`) |
-| 1.6 Weight configurations | not started | |
+| 1.6 Weight configurations | done | B0, C1–C6 rendered from measured scales; fair-share scale provisional (0.3) until 1.7; 73 tests pass |
 | 1.7 Configuration check in the simulator | not started | |
 | 2.1 Specify Steps 4–5 | not started | waits for Phase 1 |
 | 2.2 Determine trigger states | not started | |
@@ -47,6 +47,8 @@ lengths or dates beyond the change log.
 | Thinning | Seeded order, keep the prefix closest to ρ* (Bernoulli with solved p) | Deterministic per seed; hits ρ* within 1% for K and N. |
 | Scenario X load | Each segment (and each 6-h block) at ρ* in the resource it saturates; no week-level balancing | Forcing the week's memory total onto one day pushed that day to 1.27×; per-segment targets match SPEC's intent. Week comes out at memory 0.91–0.93. |
 | X burst account | `account026` (most memory load in the pool) | Deterministic choice. |
+| Job-size direction (SPEC §5.1 corrected) | `PriorityFavorSmall=NO` with `SMALL_RELATIVE_TO_TIME`: shortest time limit first | Slurm 23.11 computes `max(32, cpus)/T_min/512` for single-node jobs, so only the limit matters; `FavorSmall=YES` (the first draft) would have favored long jobs. |
+| Weight scaling (SPEC §5.4 corrected) | Gini mean difference of each factor, not P95 − P5 | Over 95% of week-K jobs ask for 1 core, so the CPU factor's P95 − P5 is 0. U–L correlation on K: Pearson −0.006. |
 | Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
@@ -57,3 +59,4 @@ lengths or dates beyond the change log.
 | 2026-11-26 | `b250f9d` | 1.4: nine-class job classifier and boundary tests |
 | 2026-11-26 | `2dbe58a` | 1.3: trace cache, data checks, weekly profile, weeks K and N |
 | 2026-11-26 | `6b17bb7` | 1.2: simulator image, smoke test, mid-run probe |
+| 2026-11-26 | `67df735` | 1.5: workload builder; scenarios K, N, X × 3 seeds |

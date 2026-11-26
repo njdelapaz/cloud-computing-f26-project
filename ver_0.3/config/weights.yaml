@@ -1,0 +1,34 @@
+# Priority weight configurations (SPEC §5). Design parameters only.
+#
+# Factor scales are measured, not chosen: config/factor_scales.yaml is written by
+#   .venv/bin/python -m sim.weights calibrate
+# and config/priority/*.conf is rendered by
+#   .venv/bin/python -m sim.weights render
+#
+# Weight for a goal in tier k:  W = round(tiers[k] / scale), where scale is the Gini mean
+# difference of that goal's Slurm factor (the average gap between two jobs). So in every
+# configuration, two typical jobs differ by about tiers[k] priority points on that goal.
+
+tiers: [4000, 2000, 1000]        # tier 1 (primary), tier 2, tier 3
+
+# Same in all configurations: tie-breaker and starvation guard, not a goal.
+# PriorityMaxAge=1-0 is set in sim/etc/slurm.conf.in.
+age_weight: 500
+
+goals:
+  fairness:                       # PriorityWeightFairshare
+    factor: fairshare
+  utilization:                    # PriorityWeightTRES=CPU=..,Mem=.. (favors big requests)
+    factor: tres
+    split: {cpu: 0.5, mem: 0.5}
+  load_balance:                   # PriorityWeightJobSize with PriorityFavorSmall=NO and
+    factor: jobsize               # SMALL_RELATIVE_TO_TIME: shortest time limit first
+
+# The six orderings (SPEC §5.3), numbered as in the brief.
+configs:
+  C1: [fairness, utilization, load_balance]
+  C2: [fairness, load_balance, utilization]
+  C3: [load_balance, fairness, utilization]
+  C4: [load_balance, utilization, fairness]
+  C5: [utilization, fairness, load_balance]
+  C6: [utilization, load_balance, fairness]

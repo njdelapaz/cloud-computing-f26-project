@@ -1,0 +1,12 @@
+# Measured factor scales (Gini mean difference). Written by
+#   .venv/bin/python -m sim.weights calibrate
+tres_cpu: 0.000476761
+tres_mem: 0.00159569
+jobsize: 0.000207947
+fairshare: 0.3
+sources:
+  tres_cpu: Gini mean difference over 80783 jobs of K seeds [1, 2, 3]
+  tres_mem: Gini mean difference over 80783 jobs of K seeds [1, 2, 3]
+  jobsize: Gini mean difference over 80783 jobs of K seeds [1, 2, 3]
+  fairshare: provisional until task 1.7
+correlation_U_L: -0.006
