@@ -1,0 +1,27 @@
+# Workload scenarios (SPEC §3.4-3.5). Built by: .venv/bin/python -m workloads.build
+#
+# Offered load rho = max(rho_cpu, rho_mem), with run time counted in full for every job
+# submitted in the window. Weeks are counted from Monday 2024-01-01 00:00 UTC.
+
+target_rho: 0.95
+seeds: [1, 2, 3]
+# Minimum jobs per class per week, or null for the trace's own mix (SPEC §3.4).
+class_quota: null
+
+natural:
+  K: {week: 4}      # 2024-01-29 .. 2024-02-04, calibration
+  N: {week: 20}     # 2024-05-20 .. 2024-05-26, evaluation
+
+shifting:
+  X:
+    # Source jobs: every eligible week except K and N (results/profile/selection.json).
+    pool_weeks: [1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23]
+    # One segment per day. Jobs keep their time of day (UTC) and are thinned to target_rho.
+    segments:
+      - {name: natural}
+      - {name: small-short flood, classes: [sm-short]}
+      - {name: large-long heavy, classes: [lg-long]}
+      - {name: one-account burst, burst_share: 0.5}
+      - {name: memory-heavy medium, classes: [med-short, med-med, med-long], memory_bound: true}
+      - {name: natural}
+      - {name: alternating bursts, alternate: [1, 2], block_hours: 6}   # segments 1 and 2 above (0-based)

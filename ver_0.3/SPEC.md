@@ -174,7 +174,11 @@ The aggregate load must also fit, not just each job. Offered load over the submi
   built later.
 - **Optional class quotas:** thin per class with separate rates, to guarantee a minimum count
   per class (default 200 per class per week) while still meeting `ρ*`.
-- At `ρ* = 0.95`, one trace week becomes about 25k jobs (`p ≈ 0.034`).
+- At `ρ* = 0.95`, one trace week becomes about 18k–28k jobs, depending on the week and seed
+  (`results/workloads/summary.csv`).
+- Thinning is deterministic for a seed: jobs are ordered by a seeded uniform draw, and the
+  kept set is the prefix whose load is closest to `ρ*`. That is Bernoulli thinning with a
+  solved `p`.
 
 ### 3.5 Scenarios
 
@@ -184,6 +188,16 @@ The aggregate load must also fit, not just each job. Offered load over the submi
 | `N` (natural) | Evaluation week with realistic, gently varying load. | A different typical week, thinned to `ρ*`. |
 | `X` (shifting mix) | A week whose demand changes day by day, so a change of weights has something to respond to. | Seven one-day segments of real trace jobs, re-timed. Each segment keeps load near `ρ*` but changes who is asking: (1) natural mix; (2) small-short flood; (3) large-long heavy; (4) one account submitting about half the demand; (5) memory-heavy medium jobs; (6) natural mix; (7) alternating bursts of (2) and (3). |
 | `M` (scale-out) | Longer horizon. Built only after one-week runs work, as the brief says: one week first, scale later. | Four consecutive weeks, and weeks from other months. |
+
+How `X` is built (`config/scenarios.yaml`):
+- **Source jobs:** the eligible weeks other than `K` and `N`.
+- **Re-timing:** jobs keep their time of day, which preserves the daily cycle.
+- **Load:** each segment, and each 6-hour block of the alternating day, is thinned to `ρ*` in
+  the resource it saturates. The flood is CPU-bound; the large-long and memory-heavy days are
+  memory-bound. So the week's load in either single resource comes out below `ρ*`: memory
+  0.91–0.93 and CPU 0.66–0.71 across seeds.
+- **Burst account:** the account with the most memory load in the pool (`account026`).
+- **Size:** about 85k–88k jobs per week. Half of them are on the small-short flood day.
 
 "Typical week": a Monday-to-Sunday window whose offered load, class mix and active-account
 count are near the median of all full weeks in the trace. Weeks run from Monday 00:00 UTC,

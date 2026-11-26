@@ -13,7 +13,7 @@ lengths or dates beyond the change log.
 | 1.2 Simulator bring-up | done | Image `slurmsim:v03` built; smoke run: all 36 jobs as specified; probe: no CLI or reconfigure mid-run (`sim/README.md`) |
 | 1.3 Trace profiling | done | All 8 data checks pass; K = 2024-01-29 week, N = 2024-05-20 week; outputs in `results/profile/` |
 | 1.4 Job classifier | done | 22 tests pass; January shares reproduce SPEC §4.3 exactly; thresholds frozen |
-| 1.5 Workload builder | not started | |
+| 1.5 Workload builder | done | K, N, X × seeds 1–3 built and deterministic; K/N memory load 0.947–0.956; 54 tests pass (`results/workloads/`) |
 | 1.6 Weight configurations | not started | |
 | 1.7 Configuration check in the simulator | not started | |
 | 2.1 Specify Steps 4–5 | not started | waits for Phase 1 |
@@ -44,6 +44,9 @@ lengths or dates beyond the change log.
 | Ineligible weeks | Jan 1 week; Mar 11–17 (maintenance Mar 12); Jun 17 onward | Holiday; jobs killed by maintenance; monthly files hold jobs by end time, so the last two weeks lose jobs ending after June 30. |
 | Mid-run control (input to 2.1) | Weight changes must happen inside the simulator's event loop (a simulator patch); an outside controller using `scontrol reconfigure` is not possible | The simulator never starts `slurmctld`'s RPC thread: every mid-run `squeue`, `sprio`, `sshare`, `scontrol` call fails (`results/probe/probe.json`). |
 | Priority checks | `DebugFlags=Priority` lines in `slurmctld.log` replace `sprio` | `sprio` needs the RPC thread; the debug log has every job's factors and weights in simulated time. |
+| Thinning | Seeded order, keep the prefix closest to ρ* (Bernoulli with solved p) | Deterministic per seed; hits ρ* within 1% for K and N. |
+| Scenario X load | Each segment (and each 6-h block) at ρ* in the resource it saturates; no week-level balancing | Forcing the week's memory total onto one day pushed that day to 1.27×; per-segment targets match SPEC's intent. Week comes out at memory 0.91–0.93. |
+| X burst account | `account026` (most memory load in the pool) | Deterministic choice. |
 | Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
@@ -53,3 +56,4 @@ lengths or dates beyond the change log.
 | 2026-11-26 | `677798c` | 1.1: folder layout, Python env, layout tests, this tracker |
 | 2026-11-26 | `b250f9d` | 1.4: nine-class job classifier and boundary tests |
 | 2026-11-26 | `2dbe58a` | 1.3: trace cache, data checks, weekly profile, weeks K and N |
+| 2026-11-26 | `6b17bb7` | 1.2: simulator image, smoke test, mid-run probe |
