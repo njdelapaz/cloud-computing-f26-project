@@ -3,9 +3,8 @@
 This is the order of work for the `Project` brief. The phases match the brief: Phase 1 covers
 Steps 1–3, Phase 2 covers Steps 4–5, and Phase 3 covers Step 6.
 
-[SPEC.md](SPEC.md) currently specifies Steps 1–3 only. Steps 4–6 are specified after Phase 1
-is complete, so Phases 2 and 3 are outlined here and each starts by writing its part of the
-spec.
+[SPEC.md](SPEC.md) specifies Steps 1–6. Each phase after the first started by writing its
+part of the spec: Steps 4–5 in task 2.1, Step 6 in task 3.1.
 
 Each task names what it produces and when it counts as done. The plan intentionally leaves out
 durations and target dates. Status is tracked in `PROGRESS.md` (created in task 1.1). All work
@@ -19,7 +18,7 @@ stays inside `ver_0.3/`.
 |---|---|---|---|
 | 1 | 1–3: workloads, classes, weight configurations | Scenarios `K`, `N` and `X` built; 9 classes frozen; B0 and C0–C3 verified in the simulator | All Phase 1 "done when" items met |
 | 2 | 4–5: trigger states and change mechanism | Triggers calibrated on K; policy module; simulator hook; apply test; adaptive week on K | 2.2–2.6 done; replay reproduces online decisions |
-| 3 | 6: simulation of the full setup | Spec for Step 6 written, then the runs, analysis and report | Defined when the Step 6 spec is written |
+| 3 | 6: simulation of the full setup | Static and adaptive policies run on `N`, `X` and `Y`; answer to SPEC §1 by the SPEC §8.6 rules; scale-up on `M`; `REPORT.md` | 3.2–3.8 done |
 
 ---
 
@@ -214,6 +213,9 @@ their defaults; `PROGRESS.md` updated. (Met 2026-11-26; the trigger feedback fin
 
 ## Phase 3 — Simulation of the full setup (Step 6)
 
+(Drafted and approved 2026-11-26: SPEC §8 and tasks 3.2–3.8 below, with the default
+answers to SPEC §8.9.)
+
 ### 3.1 Specify Step 6
 - Add the SPEC section for simulation and evaluation: what is compared, which metrics, how
   many runs, and what counts as "effective".
@@ -223,17 +225,93 @@ their defaults; `PROGRESS.md` updated. (Met 2026-11-26; the trigger feedback fin
 
 **Done when:** the new SPEC section and the expanded Phase 3 tasks are agreed and committed.
 
-### 3.2 Run the simulations
-Run the one-week workloads with the full setup, as specified in 3.1.
+### 3.2 Evaluation tooling
+- Add B1 (SPEC §8.2):
+  - `sim/weights.py` renders `config/priority/B1.conf` (its weights and static keys) and
+    `B1.qos` (all QOS priorities 0) alongside B0, so a re-render keeps them;
+  - `sim/prepare_run.py` writes B1's static keys in place of the template's lines.
+- Give `sim/prepare_run.py` a triggers file per adaptive variant: `config/triggers.yaml`
+  (A1), `config/triggers_A2.yaml` (per-state minimum stays) and `config/triggers_A3.yaml`
+  (arrivals, written in 3.3).
+- Write `sim/batch.py`, which runs a list of (workload, policy) runs:
+  - one batch per workload, with a limit on how many run at once;
+  - resumable: it skips runs that already finished and passed their checks;
+  - it runs each run's checks (SPEC §8.4) and records the outcome.
+- Write `evaluation/metrics.py`, every SPEC §8.5 metric for one run, from its sacct output,
+  the workload's `jobs.parquet` and, for adaptive runs, the controller log.
+- Write `evaluation/compare.py`: noise bands, `S*`, paired differences and the SPEC §8.6 pass
+  rules.
+- Write tests on synthetic tables: wait and bounded slowdown, Jain's index, per-day and
+  per-burst splits, the noise band and each pass rule.
 
-### 3.3 Scale up
-Build scenario `M` (SPEC §3.5) and repeat on the longer horizon, as the brief says: one week
-first, scale later.
+**Done when:**
+- the tests pass;
+- the metrics of the Phase 2 `K` runs match the numbers already reported (mean wait 120 min
+  under C0, 84 min adaptive);
+- a short B1 run on a `K` slice with `DebugFlags=Priority` logs B1's weights, with job-size
+  factors that grow with the request, not with a shorter time limit.
 
-### 3.4 Analyze and report
-Analyze the results and write `REPORT.md`, which answers the research question in SPEC §1.
+### 3.3 Arrivals variant (A3)
+- Extend the hook (SPEC §8.3): record each submitted job's size QOS and submit time, and add
+  `arrivals` to `state.json`. Rebuild the image.
+- Give the policy a `signal` parameter (`waiting` or `arrivals`) and the arrivals gate.
+- Calibrate the arrival-share percentiles from the `K-s1` workload. Write
+  `config/triggers_A3.yaml`.
+- With the rebuilt image, rerun:
+  - the hook-off smoke check;
+  - the apply test;
+  - a short A3 run on a `K` slice, where arrival counts must match sacct at every tick and
+    replay must be exact.
 
-**Phase 3 exit:** set by 3.1.
+**Done when:** these checks pass. The rebuilt image is used for every run from 3.4 on.
+
+### 3.4 Pilot
+- Run C0 and A1 alone on seed 1 of `N`, `X` and `Y` (6 runs).
+- Then run the `N-s1` batch of nine policies together (it is also that workload's matrix
+  batch in 3.5).
+- Record each run's real time, peak memory and CPU, and disk use.
+
+**Done when:** the batch size is set (nine at once, or fewer if the host cannot carry nine)
+and the run costs are in `PROGRESS.md`.
+
+### 3.5 One-week evaluation runs
+- Run the matrix: 9 policies × 9 workloads, one batch per workload.
+- Run the 6 extra repeat runs: C0 and A1 on seed 1 of each scenario.
+- Every run passes its checks, or is rerun once, or is excluded and listed (SPEC §8.4).
+- Write `results/phase3/metrics.csv`, one row per run.
+
+**Done when:** all 93 runs are accounted for and `metrics.csv` is committed.
+
+### 3.6 Analysis of the one-week results
+- Compute the noise bands, `S*`, the paired differences and the pass rules. Write
+  `results/phase3/comparison.json`.
+- Figures in `results/phase3/`:
+  - mean wait by policy and scenario;
+  - per-class waits;
+  - the adaptive state over the `X` week against its day patterns;
+  - burst and background waits in `Y`.
+
+**Done when:** `comparison.json` and the figures are committed, and the SPEC §8.6 answer is
+recorded in `PROGRESS.md`.
+
+### 3.7 Scale up (`M`)
+- Add `M` to `config/scenarios.yaml` (weeks 11–14, SPEC §8.7) and build seeds 1–3.
+- Run `S*`, C0 and the best adaptive variant (and A1 if it is not the best): 9–12 runs.
+- Report each policy's metrics and, for each week of `M`, how well `K`'s percentile tables
+  fit.
+
+**Done when:** the runs pass their checks and their results are committed.
+
+### 3.8 Report
+- Write `REPORT.md`:
+  - the answer to SPEC §1 by the SPEC §8.6 rules;
+  - the one-week and `M` results;
+  - the limitations listed in SPEC §8.8.
+
+**Done when:** `REPORT.md` is committed.
+
+**Phase 3 exit:** 3.2–3.8 done; open questions E-A to E-E (SPEC §8.9) answered or kept at
+their defaults; `PROGRESS.md` updated.
 
 ---
 
@@ -251,7 +329,9 @@ Analyze the results and write `REPORT.md`, which answers the research question i
 | 2.5 | 2.4 |
 | 2.6 | 2.2, 2.3, 2.5 |
 | 3.1 | Phase 2 complete |
-| 3.2 → 3.3 → 3.4 | 3.1 |
+| 3.2, 3.3 | 3.1 (can run in parallel) |
+| 3.4 | 3.2, 3.3 |
+| 3.5 → 3.6 → 3.7 → 3.8 | 3.4 |
 
 Task 1.2 can run in parallel with 1.3–1.6.
 
@@ -283,6 +363,15 @@ Decisions for Steps 4–6 are made when their spec is written (2.1, 3.1).
 | R5 | Too little contention in the built workloads, so priority order barely matters. | `ρ* = 0.95`; scenario `X` has built-in peaks; the 1.7 priority check needs a standing queue. |
 | R6 | Thresholds or weights get tuned on the weeks used for judging. | All calibration on `K` only (SPEC §3.5). |
 
+## Risks (Phase 3)
+
+| # | Risk | Mitigation |
+|---|---|---|
+| R7 | Run-to-run variation hides real differences (two FIFO runs of one slice: 88 vs 51 min mean wait). | Paired comparisons on the same workload, three seeds, a measured noise band (SPEC §8.6). "No difference beyond noise" is a valid answer and is reported as such. |
+| R8 | Host load changes how the simulator behaves. | All nine policies of a workload run in one batch, so they share conditions. The noise band includes a run made alone (SPEC §8.4). |
+| R9 | `X` and `Y` runs are slow or heavy (up to 3.4 times `K`'s jobs). | The pilot (3.4) measures them before the matrix and sets the batch size. |
+| R10 | The arrivals signal is noisy for large jobs, a few an hour. | 60-minute window and an arrivals gate (SPEC §8.3). Reported as is; no tuning on evaluation weeks. |
+
 ---
 
 ## Working conventions
@@ -298,14 +387,16 @@ ver_0.3/
 ├── requirements.txt     pinned Python dependencies
 ├── dataset/             raw trace (read-only input; gitignored)
 ├── third_party/         pinned simulator checkouts (gitignored)
-├── sim/                 container build, slurm.conf, sacctmgr setup, run scripts, README
+├── sim/                 container build, slurm.conf, sacctmgr setup, run scripts, policy hook patch, README
+├── controller/          queue-state policy, tick command, replay, trigger calibration (Phase 2)
+├── evaluation/          run metrics and comparisons (Phase 3)
 ├── workloads/           profiler, builder, classifier; cache/ (Parquet), traces/ (scenarios)
-├── config/              classes.yaml, weights.yaml, priority/*.conf
+├── config/              classes.yaml, weights.yaml, priority/*.conf, triggers*.yaml
 ├── results/             summaries (committed); results/<group>/<run>/ folders and logs (gitignored)
 └── tests/               unit and integration tests
 ```
 
-Folders for Steps 4–6 are added when their spec is written.
+`controller/` was added in Phase 2 and `evaluation/` is added in Phase 3.
 
 ### Practices
 - Python 3.12 in `ver_0.3/.venv`, with pinned `requirements.txt` (pandas, pyarrow, numpy,

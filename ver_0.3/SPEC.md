@@ -1,11 +1,11 @@
 # SPEC — Adaptive Slurm Priority Weights (ver_0.3)
 
-This document specifies Steps 1–5 of the `Project` brief in this folder:
+This document specifies Steps 1–6 of the `Project` brief in this folder:
 - workloads, job classification and priority configurations (Steps 1–3, built in Phase 1);
 - the cluster states that trigger a change and the mechanism that applies it (Steps 4–5,
-  drafted for Phase 2).
+  built in Phase 2);
+- simulation of the full setup and its evaluation (Step 6, §8, approved for Phase 3).
 
-Step 6 (simulation and evaluation) will be specified after Phase 2.
 [PLAN.md](PLAN.md) lays out the order of work.
 
 **Scope rule (from the brief):** everything lives in and refers only to `ver_0.3/`. All paths
@@ -21,7 +21,7 @@ simulate it to answer:
 > Can switching priority weights based on the live cluster state adapt to changing workloads
 > and provide better overall service than any single fixed weight setting?
 
-What counts as "better" will be defined with the Step 6 specification.
+What counts as "better" is defined in §8.1 and §8.6.
 
 ### Specified in this document
 - Turning the trace into workloads that fit the simulated cluster (Step 1).
@@ -30,9 +30,7 @@ What counts as "better" will be defined with the Step 6 specification.
   limit, then fairness (Step 3).
 - The queue states that select a configuration (Step 4, §6).
 - The mechanism that switches configurations while the simulation runs (Step 5, §7).
-
-### Specified later
-- Simulation of the full setup and its evaluation (Step 6).
+- Simulation of the full setup and its evaluation (Step 6, §8).
 
 ### Out of scope
 - Changing node selection or placement (`SelectType`, `LLN`, node weights). Only priority
@@ -66,7 +64,8 @@ What counts as "better" will be defined with the Step 6 specification.
 
 ### 2.2 Static `slurm.conf` priority keys
 
-These stay fixed for a run. Only the weight keys and QOS priorities in §5 change.
+These stay fixed for a run. Only the weight keys and QOS priorities in §5 change. The one
+exception is B1 (§8.2), a fixed reference setting for Step 6 with its own static keys.
 
 ```
 PriorityType=priority/multifactor
@@ -711,3 +710,201 @@ Its mean wait was 84 minutes (neutral C0 week: 120; FIFO: 549). These are single
 they show direction only.
 
 Files: `results/phase2/apply_test.json` and `results/phase2/K-s1-adaptive_summary.json`.
+
+---
+
+## 8. Simulation and evaluation (Step 6)
+
+*Approved 2026-11-26, with the default answers to open questions E-A to E-E (§8.9).*
+
+### 8.1 What "better" means
+
+Step 6 runs the full setup (§3–§7) on weeks it was not tuned on and answers §1's question.
+**Better overall service** means shorter waits for the workload as a whole, without making
+any size class, utilization or fairness across accounts noticeably worse. §8.6 turns this
+into pass/fail rules.
+
+Everything the policies use was fixed on `K`: weights (§5.4), percentile tables (§6.3) and
+minimum stays (§6.5). B1 is taken as published, with no tuning at all. Evaluation uses only
+`N`, `X` and `Y` (§3.5), and nothing is tuned on them.
+
+### 8.2 What is compared
+
+| Id | Kind | Setting |
+|---|---|---|
+| B0 | static | FIFO (§5.3): Slurm's out-of-the-box behaviour, since every weight defaults to 0 |
+| B1 | static | A typical site setting: SchedMD's multifactor example, fair share first (below) |
+| C0 | static | neutral |
+| C1 | static | favor large |
+| C2 | static | favor small |
+| C3 | static | favor medium |
+| A1 | adaptive | The Phase 2 trigger: waiting-queue shares, 60-minute minimum stay in every state (§6) |
+| A2 | adaptive | A1 with minimum stays of 120 min for small and medium, 60 min for large and mix (§6.5) |
+| A3 | adaptive | A1 with the arrivals signal (§8.3) in place of the waiting queue |
+
+All adaptive runs start in `mix` (C0) and use the same thresholds, persistence and tick.
+
+**B1, the typical site setting.** The configuration example on Slurm's multifactor priority
+page (`priority_multifactor.html`), used as published:
+
+```
+PriorityDecayHalfLife=14-0
+PriorityMaxAge=14-0
+PriorityFavorSmall=NO              # no SMALL_RELATIVE_TO_TIME: larger requests score higher
+PriorityWeightFairshare=10000
+PriorityWeightAge=1000
+PriorityWeightJobSize=1000
+PriorityWeightPartition=1000       # one partition: the same for every job
+PriorityWeightQOS=0
+```
+
+- **Kept from §2.2:** `PriorityCalcPeriod=1` (the brief) and TRES weights 0 (the example sets
+  none). Jobs keep their size QOS, which has no effect with a QOS weight of 0.
+- **Static keys:** B1 never switches, so its runs can differ from §2.2. Its keys replace the
+  template's lines; they are not added after them.
+- **Expected order:** with the factor gaps measured in §5.4 (about 0.17 in fair share between
+  two waiting jobs), fair share decides most of B1's order. Age and job size act as
+  tie-breakers.
+
+**The bar.** `S*`, the best single static setting, is the one of B0, B1 and C0–C3 with the lowest
+primary metric averaged over all nine evaluation workloads. That is what an operator would
+pick to use everywhere. The best static setting of each workload, chosen with hindsight, is
+also reported, to show how much room any policy had.
+
+### 8.3 Arrivals signal (A3)
+
+§6.5 showed the waiting queue answers back: favoring a class empties it, and the state ends.
+Arrivals do not depend on the configuration, so they cannot feed back.
+
+- **Signal.** At each tick, each size class's share of the jobs submitted in the last 60
+  simulated minutes.
+- **Normalization.** As in §6.3, a percentile against that class's own range, taken from the
+  `K-s1` workload itself every 10 minutes. No simulation is needed, because arrivals are
+  the same under every configuration.
+- **Gate.** Hold when fewer than `n_min` (20) jobs are waiting, or fewer than 20 jobs arrived
+  in the window.
+- **Snapshot.** Finished jobs leave `slurmctld`'s job list after `MinJobAge` (300 s), so
+  arrivals cannot be read from it. The hook records each job's size QOS and submit time when
+  the simulator submits it, and `state.json` gains `"arrivals": {"small": n, "medium": n,
+  "large": n}`. This is a change to `sim/patches/policy_hook.patch`, so the image is rebuilt
+  before any evaluation run.
+- **Check.** At every tick of an A3 run, the logged arrival counts must equal those computed
+  from the run's sacct submit times.
+
+### 8.4 Runs
+
+| Item | Value |
+|---|---|
+| Workloads | `N`, `X`, `Y` × seeds 1–3: nine workloads |
+| Policies | the nine in §8.2 |
+| Matrix | 9 × 9 = 81 one-week runs |
+| Pilot | C0 and A1 on seed 1 of each scenario, run alone: 6 runs |
+| Repeat runs | C0 and A1 on seed 1 of each scenario, three runs each: the pilot run, the matrix run and one more, so 6 more runs |
+| Total | 93 runs |
+
+- **Same build for every run.** One image (after the A3 change) and the same settings:
+  priority every minute, ticks every 10 minutes, no `DebugFlags=Priority` (its log runs to
+  gigabytes a week; ordering was verified in §5.5 and §7.6).
+- **Each run drains.** Submissions span the 7 days and the run continues until every job has
+  ended, as in Phase 2 (`K` took about 14 simulated days).
+- **Batches.** The nine policies of one workload run together as one batch, so host load
+  affects them alike. The pilot shows whether the host carries nine at once (memory, CPU)
+  and how long `X` and `Y` take. `K` took 1 h 14 min to 1 h 19 min real time per run; `X`
+  and `Y` have 2–3.4 times as many jobs.
+- **Checks.** Every run must pass `sim/check_run.py` (known simulator issues are reported,
+  not failures). Adaptive runs must also pass `controller/summarize.py`: every tick logged on
+  both sides, every switch applied, replay exact. A run that fails is rerun once. If it fails
+  again, it is excluded and the report says so.
+
+### 8.5 Metrics
+
+Every job of a workload is submitted in its 7-day week, and every run drains, so each job has
+a wait (start − submit) and a run time.
+
+**Service**
+- **Mean wait**: the primary metric (open question E-A).
+- Median and 95th-percentile wait.
+- Mean bounded slowdown, `(wait + run) / max(run, 10 min)`.
+- Mean and 95th-percentile wait for each size class (small, medium, large), plus mean wait
+  for each of the nine classes.
+
+**Cluster state**, from 5-minute samples over the 7-day submission window (§5.5):
+- Utilization: mean allocated `(CPU + memory) / 2`, and each separately.
+- Node imbalance σ (`sim/runstats.py`, `cluster_balance`). Reported only: priority does not
+  change placement (§1), and in Phase 1 σ barely moved under any configuration.
+- Makespan: last end minus first submit.
+
+**Fairness**
+- Jain's index `(Σx)² / (n·Σx²)` over accounts, where `x` is an account's mean bounded
+  slowdown. Accounts with at least 20 jobs. 1 means every account fares the same.
+
+**Adaptation** (adaptive runs)
+- Switches a day, reversals within 2 hours, time in each state, and stays at the minimum
+  (`controller/summarize.py`).
+- `X`: the state over the week against the day patterns, and each policy's mean wait for
+  the jobs of each day. Does the adaptive policy track the best static setting day by day?
+- `Y`: mean wait of burst jobs and of background jobs (jobs carry their `segment`).
+- Policy command time.
+
+### 8.6 Analysis and pass rules
+
+**Paired comparisons.** Policies are compared on the same workload. For each workload, the
+result is each adaptive variant's metric against `S*`'s.
+
+**Noise band.** For scenario `s`, the band `b_s` is the larger relative range,
+`(max − min) / mean`, of the primary metric over the three C0 runs and over the three A1
+runs of seed 1. A difference counts only if it is larger than `b_s` times `S*`'s value.
+
+**Effective on a scenario.** An adaptive variant is effective on `s` when, on all three seeds:
+1. its mean wait is lower than `S*`'s by more than the noise band; and
+2. these guards hold against `S*` on the same workload (open question E-D):
+   - no size class's mean wait is more than 25% higher;
+   - utilization is no more than 1 percentage point lower;
+   - Jain's index is no more than 0.05 lower.
+
+**Answer to §1.**
+- **Yes:** an adaptive variant is effective on both `X` and `Y`, and on `N` it is within the
+  noise band of `S*` or better, with the guards holding.
+- **Partly:** effective on only one of `X` and `Y`, or effective on both but worse than `S*`
+  on `N`.
+- **No:** otherwise.
+
+All three variants are reported, not only the best. Picking the best of three on the same
+weeks favors it slightly. The scale-up (§8.7) uses new weeks, so it checks that choice.
+
+### 8.7 Scale-up (`M`)
+
+The brief says one week first, scale later. Once the one-week answer is in:
+- **`M`:** four consecutive eligible weeks, weeks 11–14 (2024-03-18 to 2024-04-14), thinned
+  to `ρ*` like `K` and `N`, seeds 1–3.
+- **Policies:** `S*`, C0, and the best adaptive variant from §8.6. A1 is added if it is not
+  the best. That is 9–12 runs, each about four times as long as a week.
+- **Questions:**
+  - Does the one-week result hold over a month?
+  - Do `K`'s percentile tables still fit other months? Under C0, the share of busy ticks at
+    or above P80 for each class is about 20% by construction in `K`; report it for each
+    week of `M`.
+
+### 8.8 Outputs
+
+- `results/phase3/runs/<scenario>-s<seed>/<policy>/`: raw runs (gitignored).
+- `results/phase3/metrics.csv`: one row per run, with every §8.5 metric.
+- `results/phase3/comparison.json`: noise bands, `S*`, paired differences, the pass rules
+  per scenario and the answer.
+- `REPORT.md`: the answer, tables and figures, and limitations:
+  - the simulator varies from run to run;
+  - placement is fixed;
+  - one trace;
+  - the rare lost finish event (`sim/README.md`).
+
+### 8.9 Open questions
+
+Defaults approved 2026-11-26.
+
+| # | Question | Default |
+|---|---|---|
+| E-A | Primary metric: mean wait, or mean bounded slowdown (which weighs short jobs' waits more) | Mean wait; bounded slowdown reported |
+| E-B | Adaptive variants to run | A1, A2 and A3 |
+| E-C | The bar: the best single static setting over all workloads, or the best per workload | Best single (`S*`); per-workload best reported |
+| E-D | Guards against `S*` | Size-class mean wait +25%, utilization −1 point, Jain −0.05 |
+| E-E | Repeat runs for the noise band | Three runs of C0 and A1 on seed 1 of each scenario |

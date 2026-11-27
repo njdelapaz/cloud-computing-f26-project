@@ -3,7 +3,7 @@
 Status tracker for [PLAN.md](PLAN.md). It records status, decisions and results only; no task
 lengths or dates beyond the change log.
 
-**Current phase:** 2 complete; next is 3.1 (specify Step 6)
+**Current phase:** 3; 3.1 done (Step 6 spec approved); next are 3.2 (evaluation tooling) and 3.3 (arrivals variant), which can run in parallel
 
 ## Phase tracker
 
@@ -22,10 +22,14 @@ lengths or dates beyond the change log.
 | 2.4 Simulator hook | done | `sim/patches/policy_hook.patch` applied at build; image `slurmsim:v03` now includes it; with the hook off it matches the unpatched image (same nodes, start times within the 1 s run-to-run jitter) |
 | 2.5 Apply test | done | C0→C1→C2→C3→C0 during a standing queue: every waiting job recomputed within 2 s with the new weights and QOS factors; missing config rejected; failing command logged, no switch (`results/phase2/apply_test.json`) |
 | 2.6 Adaptive week | done | Full K-s1 week with policy ticks: 1,981 ticks logged on both sides, 0 command failures, 49/49 switches applied, replay exact, run check passes; submission week: 6.6 switches/day, 28% reversals within 2 h (`results/phase2/K-s1-adaptive_summary.json`) |
-| 3.1 Specify Step 6 | not started | waits for Phase 2 |
-| 3.2 Run the simulations | not started | |
-| 3.3 Scale up | not started | |
-| 3.4 Analyze and report | not started | |
+| 3.1 Specify Step 6 | done | SPEC §8 and PLAN 3.2–3.8 approved 2026-11-26 with the default answers to E-A to E-E: nine policies (B0, B1, C0–C3, A1–A3), 93 one-week runs |
+| 3.2 Evaluation tooling | not started | |
+| 3.3 Arrivals variant (A3) | not started | |
+| 3.4 Pilot | not started | |
+| 3.5 One-week evaluation runs | not started | |
+| 3.6 Analysis of the one-week results | not started | |
+| 3.7 Scale up (`M`) | not started | |
+| 3.8 Report | not started | |
 
 ## Pinned third-party sources
 
@@ -71,6 +75,8 @@ lengths or dates beyond the change log.
 | Trigger calibration source | Neutral C0 run of K, not FIFO | The waiting queue's class mix depends on the configuration: under C0 short jobs start fast, so small falls from 0.90 (FIFO) to 0.59 of waiting jobs. |
 | Trigger feedback (finding, task 2.6) | The waiting-queue trigger flips more than predicted: 6.6 switches/day vs 4.3 from the neutral replay; 28% reversals within 2 h; 21 of 45 gaps at the 60-min minimum | Favoring a class drains it from the queue (SPEC §6.5). Mechanism is correct; the trigger signal (Q-A: arrivals instead of the waiting queue) or longer dwell/persistence are the levers for Phase 3. |
 | Minimum stay per state (requested 2026-11-26) | `dwell_s` in `config/triggers.yaml` may be one value or a table per state; the default stays 60 min for every state | In the adaptive week small and medium left at the 60-min minimum 8 of 16 and 8 of 9 times; large only 2 of 9. Open-loop replay: 120 min for small and medium, 60 for large and mix, gives 4.9 switches/day vs 6.6 (SPEC §6.5). No simulator change. |
+| Step 6 open questions (approved 2026-11-26) | E-A mean wait as the primary metric; E-B run A1, A2 and A3; E-C bar `S*`, the best single static setting; E-D guards +25% size-class wait, −1 point utilization, −0.05 Jain; E-E three runs of C0 and A1 on seed 1 of each scenario | Defaults approved with the Step 6 spec (SPEC §8.9). |
+| Typical-site reference B1 (requested 2026-11-26) | SchedMD's multifactor configuration example, as published: fair share 10000, age 1000, job size 1000 (larger requests first), 14-day half-life and maximum age; also a candidate for `S*` | Slurm's own default (all weights 0) is FIFO, already B0. None of C0–C3 is what a site typically runs, so B1 tests the adaptive policy against a realistic fixed setting. |
 | Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
@@ -92,3 +98,4 @@ lengths or dates beyond the change log.
 | 2026-11-26 | `ff274cc` | 2.5: apply test of the policy hook |
 | 2026-11-26 | `5c5e520` | 2.2: trigger calibration on the neutral K week |
 | 2026-11-26 | `5de3e8f` | 2.6: adaptive K week with the queue-state policy |
+| 2026-11-26 | `836cd4a` | Per-state minimum stay for the queue-state policy |
