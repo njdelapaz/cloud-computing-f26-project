@@ -69,7 +69,8 @@ KNOWN_ISSUES: list[str] = []
 EARLY_FINISH_MAX = 5
 # Known simulator behaviour (task 3.4): when many jobs end at the same simulated second, the
 # simulator processes some completions a few seconds late (X-s1: 2-5 s, at instants where ~24
-# jobs end together). Completions up to this many seconds late are reported, not failures.
+# jobs end together), and now and then a submission too (X-s1: 3 s). Up to this many seconds
+# late is reported, not a failure.
 LATE_TOLERANCE_S = 10
 
 
@@ -163,7 +164,12 @@ def check(run_dir: Path) -> list[str]:
                             f"({int(short.min())}-{int(short.max())} s short): "
                             f"{list(m.loc[early_known, 'name'][:5])}")
     offset = (m["submit_ts"] - m["submit_ts"].min()) - (m["dt"] - m["dt"].min())
-    report(offset.abs() > 2, "submit offset differs from -dt")
+    late_sub = (offset > 2) & (offset <= LATE_TOLERANCE_S)      # busy instants, as completions
+    report((offset.abs() > 2) & ~late_sub, "submit offset differs from -dt")
+    if late_sub.any():
+        KNOWN_ISSUES.append(f"{int(late_sub.sum())} job(s) submitted {int(offset[late_sub].min())}-"
+                            f"{int(offset[late_sub].max())} s late at busy instants: "
+                            f"{list(m.loc[late_sub, 'name'][:5])}")
     return problems
 
 

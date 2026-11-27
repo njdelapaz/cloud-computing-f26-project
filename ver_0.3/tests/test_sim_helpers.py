@@ -228,3 +228,12 @@ def test_completions_a_few_seconds_late_are_a_known_issue(tmp_path):
     assert check(ok) == [] and "completed 3-5 s late" in KNOWN_ISSUES[0]
     bad = _fake_run(tmp_path / "b", [1000, 1000 + LATE_TOLERANCE_S + 1]) if (tmp_path / "b").mkdir() is None else None
     assert any("run time differs" in p for p in check(bad))
+
+
+def test_submissions_a_few_seconds_late_are_a_known_issue(tmp_path):
+    from sim.check_run import KNOWN_ISSUES, check
+    run = _fake_run(tmp_path, [1000, 1000])
+    acct = (run / "out/slurm_acct.out").read_text().replace(
+        "2024-01-01T00:00:01|2024-01-01T00:00:01", "2024-01-01T00:00:05|2024-01-01T00:00:05")
+    (run / "out/slurm_acct.out").write_text(acct)               # second job 4 s late
+    assert check(run) == [] and any("submitted 4-4 s late" in k for k in KNOWN_ISSUES)
