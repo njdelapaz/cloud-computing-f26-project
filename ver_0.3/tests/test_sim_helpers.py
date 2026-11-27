@@ -258,3 +258,12 @@ def test_refused_submissions_reads_the_container_log(monkeypatch):
     monkeypatch.setattr(batch.subprocess, "run",
                         lambda cmd, **kw: subprocess.CompletedProcess(cmd, 1, "", "no such container"))
     assert batch.refused_submissions("slurmsim-x") == 0
+
+
+def test_a_job_killed_at_its_limit_a_few_seconds_late_is_a_known_issue(tmp_path):
+    from sim.check_run import KNOWN_ISSUES, check
+    run = _fake_run(tmp_path, [1000, 3602], state=["COMPLETED", "TIMEOUT"])
+    ev = (run / "events.txt").read_text().splitlines()
+    ev[1] = ev[1].replace("-sim-walltime 1000", "-sim-walltime 3600")     # runs to its 60-min limit
+    (run / "events.txt").write_text("\n".join(ev) + "\n")
+    assert check(run) == [] and "completed 2-2 s late" in KNOWN_ISSUES[0]

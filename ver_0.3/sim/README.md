@@ -207,8 +207,9 @@ completions a few seconds late. Every run shows it at 1 s (within the check's to
 jobs in the `Y-s1` C0 pilot). On `X-s1`, with its 19,000-job queue, the C0 pilot had 93 jobs
 completing 2-5 s late, at 18 instants where a median of 24 jobs ended together (a typical
 instant has 1), and the dropped N-s3 C3 run one job 11 s late. Submissions can lag the same
-way (3-5 s). `sim/check_run.py` reports completions and submissions up to `LATE_TOLERANCE_S`
-(60 s) late as a known issue; later ones fail the run. Seconds on a job's run time do not affect the waits.
+way (3-5 s), and a job meant to run to its time limit can be killed a few seconds late
+(`Y-s3` C0: 2 s, ending `TIMEOUT`). `sim/check_run.py` reports all of these up to
+`LATE_TOLERANCE_S` (60 s) late as a known issue; later ones fail the run. Seconds on a job's run time do not affect the waits.
 
 ## Full-week reference run (FIFO, `K-s1`)
 

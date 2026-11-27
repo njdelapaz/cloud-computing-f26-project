@@ -149,8 +149,9 @@ def check(run_dir: Path) -> list[str]:
     early = off & ~known & (m["elapsed_s"] < expected_run) & (m["State"] == "COMPLETED")
     early_known = early if int(early.sum()) <= EARLY_FINISH_MAX else early & False
     late_by = m["elapsed_s"] - expected_run
+    # COMPLETED, or TIMEOUT for a job meant to run to its limit (killed a few seconds late)
     late_known = off & ~known & (late_by > 0) & (late_by <= LATE_TOLERANCE_S) & \
-        (m["State"] == "COMPLETED")
+        ((m["State"] == "COMPLETED") | ((m["State"] == "TIMEOUT") & (m["runtime_s"] >= m["limit_s"])))
     report(off & ~known & ~early_known & ~late_known, "run time differs from -sim-walltime")
     if late_known.any():
         KNOWN_ISSUES.append(f"{int(late_known.sum())} job(s) completed "
