@@ -8,15 +8,13 @@ time_start:
   X: 1719792000   # 2024-07-01
   Y: 1719792000   # 2024-07-01
 
-# The nine policies (SPEC §8.2). priority: config/priority/<id>.conf (+ .qos, .static);
-# triggers: a file in config/ (adaptive only; the run starts in `priority`).
+# The five policies compared (SPEC §8.2). priority: config/priority/<id>.conf (+ .qos,
+# .static); triggers: a file in config/ (adaptive only; the run starts in `priority`).
+# Fixed settings are C0 (neutral) and B1 (typical site) only: B0, C1, C2 and C3 were dropped
+# from the comparison on 2026-11-27 (requested). C1-C3 remain the adaptive policies' states.
 policies:
-  B0: {kind: static, priority: B0}
   B1: {kind: static, priority: B1}
   C0: {kind: static, priority: C0}
-  C1: {kind: static, priority: C1}
-  C2: {kind: static, priority: C2}
-  C3: {kind: static, priority: C3}
   A1: {kind: adaptive, priority: C0, triggers: triggers.yaml}
   A2: {kind: adaptive, priority: C0, triggers: triggers_A2.yaml}
   A3: {kind: adaptive, priority: C0, triggers: triggers_A3.yaml}

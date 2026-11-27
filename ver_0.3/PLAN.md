@@ -275,12 +275,12 @@ answers to SPEC §8.9.)
 and the run costs are in `PROGRESS.md`.
 
 ### 3.5 One-week evaluation runs
-- Run the matrix: 9 policies × 9 workloads, one batch per workload.
+- Run the matrix: 5 policies (B1, C0, A1–A3; SPEC §8.2) × 9 workloads, one batch per workload.
 - Run the 6 extra repeat runs: C0 and A1 on seed 1 of each scenario.
 - Every run passes its checks, or is rerun once, or is excluded and listed (SPEC §8.4).
 - Write `results/phase3/metrics.csv`, one row per run.
 
-**Done when:** all 93 runs are accounted for and `metrics.csv` is committed.
+**Done when:** all 57 runs are accounted for and `metrics.csv` is committed.
 
 ### 3.6 Analysis of the one-week results
 - Compute the noise bands, `S*`, the paired differences and the pass rules. Write
@@ -368,7 +368,7 @@ Decisions for Steps 4–6 are made when their spec is written (2.1, 3.1).
 | # | Risk | Mitigation |
 |---|---|---|
 | R7 | Run-to-run variation hides real differences (two FIFO runs of one slice: 88 vs 51 min mean wait). | Paired comparisons on the same workload, three seeds, a measured noise band (SPEC §8.6). "No difference beyond noise" is a valid answer and is reported as such. |
-| R8 | Host load changes how the simulator behaves. | All nine policies of a workload run in one batch, so they share conditions. The noise band includes a run made alone (SPEC §8.4). |
+| R8 | Host load changes how the simulator behaves. | All policies of a workload run in one batch, so they share conditions. The noise band includes a run made alone (SPEC §8.4). |
 | R9 | `X` and `Y` runs are slow or heavy (up to 3.4 times `K`'s jobs). | The pilot (3.4) measures them before the matrix and sets the batch size. |
 | R10 | The arrivals signal is noisy for large jobs, a few an hour. | 60-minute window and an arrivals gate (SPEC §8.3). Reported as is; no tuning on evaluation weeks. |
 

@@ -129,6 +129,8 @@ def collect() -> pd.DataFrame:
         if ".attempt" in done.parent.name:          # a failed first attempt kept by sim.batch
             continue
         d = json.loads(done.read_text())
+        if d["policy"] not in cfg["policies"]:      # runs of policies dropped from the comparison
+            continue
         row = {k: d[k] for k in ("workload", "scenario", "seed", "policy", "role", "ok",
                                  "attempt", "image_id", "real_s")}
         if d["ok"]:

@@ -19,7 +19,8 @@ Build a mechanism that switches Slurm's multifactor priority weights while the c
 simulate it to answer:
 
 > Can switching priority weights based on the live cluster state adapt to changing workloads
-> and provide better overall service than any single fixed weight setting?
+> and provide better overall service than a fixed weight setting: the neutral configuration
+> (C0) or a typical site setting (B1)?
 
 What counts as "better" is defined in §8.1 and §8.6.
 
@@ -733,17 +734,20 @@ minimum stays (§6.5). B1 is taken as published, with no tuning at all. Evaluati
 
 | Id | Kind | Setting |
 |---|---|---|
-| B0 | static | FIFO (§5.3): Slurm's out-of-the-box behaviour, since every weight defaults to 0 |
 | B1 | static | A typical site setting: SchedMD's multifactor example, fair share first (below) |
-| C0 | static | neutral |
-| C1 | static | favor large |
-| C2 | static | favor small |
-| C3 | static | favor medium |
+| C0 | static | neutral (§5.3) |
 | A1 | adaptive | The Phase 2 trigger: waiting-queue shares, 60-minute minimum stay in every state (§6) |
 | A2 | adaptive | A1 with minimum stays of 120 min for small and medium, 60 min for large and mix (§6.5) |
 | A3 | adaptive | A1 with the arrivals signal (§8.3) in place of the waiting queue |
 
 All adaptive runs start in `mix` (C0) and use the same thresholds, persistence and tick.
+
+**Fixed settings compared (changed 2026-11-27, requested).** Only C0 and B1. FIFO (B0) and the
+single-class configurations C1–C3 run fixed are not compared: C1–C3 exist to be switched to,
+and C0 and B1 are the fixed settings a site would choose between. Runs of B0 and C1–C3 made
+before the change (all of `N`, and `Y-s1`) are kept but left out of the comparison. On
+`N-s1`, C2 run fixed had the lowest mean wait of all nine (65 min, against C0's 75 and the
+adaptive variants' 88–111), which the report notes.
 
 **B1, the typical site setting.** The configuration example on Slurm's multifactor priority
 page (`priority_multifactor.html`), used as published:
@@ -767,10 +771,9 @@ PriorityWeightQOS=0
   two waiting jobs), fair share decides most of B1's order. Age and job size act as
   tie-breakers.
 
-**The bar.** `S*`, the best single static setting, is the one of B0, B1 and C0–C3 with the lowest
-primary metric averaged over all nine evaluation workloads. That is what an operator would
-pick to use everywhere. The best static setting of each workload, chosen with hindsight, is
-also reported, to show how much room any policy had.
+**The bar.** `S*` is whichever of C0 and B1 has the lower primary metric averaged over all
+nine evaluation workloads: the one of the two an operator would pick to use everywhere. The
+better of the two on each workload, chosen with hindsight, is also reported.
 
 ### 8.3 Arrivals signal (A3)
 
@@ -810,18 +813,18 @@ all 770 ticks matched sacct and the window differences, and replay was exact.
 | Item | Value |
 |---|---|
 | Workloads | `N`, `X`, `Y` × seeds 1–3: nine workloads |
-| Policies | the nine in §8.2 |
-| Matrix | 9 × 9 = 81 one-week runs |
+| Policies | the five in §8.2 |
+| Matrix | 5 × 9 = 45 one-week runs |
 | Pilot | C0 and A1 on seed 1 of each scenario, run alone: 6 runs |
 | Repeat runs | C0 and A1 on seed 1 of each scenario, three runs each: the pilot run, the matrix run and one more, so 6 more runs |
-| Total | 93 runs |
+| Total | 57 runs (plus 16 runs of the dropped fixed settings made before the change: B0 and C1–C3 on N-s1–N-s3 and Y-s1) |
 
 - **Same build for every run.** One image (after the A3 change) and the same settings:
   priority every minute, ticks every 10 minutes, no `DebugFlags=Priority` (its log runs to
   gigabytes a week; ordering was verified in §5.5 and §7.6).
 - **Each run drains.** Submissions span the 7 days and the run continues until every job has
   ended, as in Phase 2 (`K` took about 14 simulated days).
-- **Batches.** The nine policies of one workload run together as one batch, so host load
+- **Batches.** The policies of one workload run together as one batch, so host load
   affects them alike. The pilot shows whether the host carries nine at once (memory, CPU)
   and how long `X` and `Y` take. `K` took 1 h 14 min to 1 h 19 min real time per run; `X`
   and `Y` have 2–3.4 times as many jobs.
@@ -891,7 +894,7 @@ weeks favors it slightly. The scale-up (§8.7) uses new weeks, so it checks that
 The brief says one week first, scale later. Once the one-week answer is in:
 - **`M`:** four consecutive eligible weeks, weeks 11–14 (2024-03-18 to 2024-04-14), thinned
   to `ρ*` like `K` and `N`, seeds 1–3.
-- **Policies:** `S*`, C0, and the best adaptive variant from §8.6. A1 is added if it is not
+- **Policies:** C0, B1 and the best adaptive variant from §8.6. A1 is added if it is not
   the best. That is 9–12 runs, each about four times as long as a week.
 - **Questions:**
   - Does the one-week result hold over a month?
@@ -919,6 +922,6 @@ Defaults approved 2026-11-26.
 |---|---|---|
 | E-A | Primary metric: mean wait, or mean bounded slowdown (which weighs short jobs' waits more) | Mean wait; bounded slowdown reported |
 | E-B | Adaptive variants to run | A1, A2 and A3 |
-| E-C | The bar: the best single static setting over all workloads, or the best per workload | Best single (`S*`); per-workload best reported |
+| E-C | The bar: the best single static setting over all workloads, or the best per workload | Best single (`S*`); per-workload best reported. Since 2026-11-27 the static settings are C0 and B1 only (§8.2) |
 | E-D | Guards against `S*` | Size-class mean wait +25%, utilization −1 point, Jain −0.05 |
 | E-E | Repeat runs for the noise band | Three runs of C0 and A1 on seed 1 of each scenario |

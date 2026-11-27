@@ -139,7 +139,8 @@ def test_evaluation_config_is_consistent():
     import yaml
     from sim.batch import EVAL
     cfg = yaml.safe_load(EVAL.read_text())
-    assert len(cfg["policies"]) == 9 and len(cfg["workloads"]) == 9
+    assert set(cfg["policies"]) == {"B1", "C0", "A1", "A2", "A3"}   # SPEC §8.2 (2026-11-27)
+    assert len(cfg["workloads"]) == 9
     for pid, pol in cfg["policies"].items():
         assert (ROOT / "config/priority" / f"{pol['priority']}.conf").exists(), pid
         assert (ROOT / "config/priority" / f"{pol['priority']}.qos").exists(), pid
