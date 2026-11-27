@@ -220,3 +220,11 @@ def test_many_early_finishes_or_late_runs_fail(tmp_path):
     assert any("run time differs" in p for p in check(run))
     late = _fake_run(tmp_path / "b", [1000, 1500]) if (tmp_path / "b").mkdir() is None else None
     assert any("run time differs" in p for p in check(late))
+
+
+def test_completions_a_few_seconds_late_are_a_known_issue(tmp_path):
+    from sim.check_run import KNOWN_ISSUES, LATE_TOLERANCE_S, check
+    ok = _fake_run(tmp_path / "a", [1000, 1003, 1005]) if (tmp_path / "a").mkdir() is None else None
+    assert check(ok) == [] and "completed 3-5 s late" in KNOWN_ISSUES[0]
+    bad = _fake_run(tmp_path / "b", [1000, 1000 + LATE_TOLERANCE_S + 1]) if (tmp_path / "b").mkdir() is None else None
+    assert any("run time differs" in p for p in check(bad))

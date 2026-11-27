@@ -189,6 +189,15 @@ The effect on the metrics is negligible (1-3 jobs of ~55k end early). `sim/check
 reports up to `EARLY_FINISH_MAX` (5) such jobs in a run as a known issue; more fail the run.
 `python -m sim.batch ... --recheck` re-applies the checks to finished runs.
 
+## Known simulator behaviour: late completions at busy instants (task 3.4)
+
+When many jobs end in the same simulated second, the simulator processes some of the
+completions a few seconds late. Every run shows it at 1 s (within the check's tolerance; 247
+jobs in the `Y-s1` C0 pilot). On `X-s1`, with its 19,000-job queue, the C0 pilot had 93 jobs
+completing 2-5 s late, at 18 instants where a median of 24 jobs ended together (a typical
+instant has 1). `sim/check_run.py` reports completions up to `LATE_TOLERANCE_S` (10 s) late as
+a known issue; later ones fail the run. Seconds on a job's run time do not affect the waits.
+
 ## Full-week reference run (FIFO, `K-s1`)
 
 | Item | Value |

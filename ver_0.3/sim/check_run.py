@@ -67,6 +67,10 @@ KNOWN_ISSUES: list[str] = []
 # runs). Up to this many such early finishes in a run are reported as a known issue; more
 # fail the run, so a systematic problem still shows.
 EARLY_FINISH_MAX = 5
+# Known simulator behaviour (task 3.4): when many jobs end at the same simulated second, the
+# simulator processes some completions a few seconds late (X-s1: 2-5 s, at instants where ~24
+# jobs end together). Completions up to this many seconds late are reported, not failures.
+LATE_TOLERANCE_S = 10
 
 
 def lost_finish_jobs(run_dir: Path) -> set[int]:
@@ -142,7 +146,14 @@ def check(run_dir: Path) -> list[str]:
     known = off & m["JobIDRaw"].isin(lost) & (m["elapsed_s"] >= m["limit_s"])
     early = off & ~known & (m["elapsed_s"] < expected_run) & (m["State"] == "COMPLETED")
     early_known = early if int(early.sum()) <= EARLY_FINISH_MAX else early & False
-    report(off & ~known & ~early_known, "run time differs from -sim-walltime")
+    late_by = m["elapsed_s"] - expected_run
+    late_known = off & ~known & (late_by > 0) & (late_by <= LATE_TOLERANCE_S) & \
+        (m["State"] == "COMPLETED")
+    report(off & ~known & ~early_known & ~late_known, "run time differs from -sim-walltime")
+    if late_known.any():
+        KNOWN_ISSUES.append(f"{int(late_known.sum())} job(s) completed "
+                            f"{int(late_by[late_known].min())}-{int(late_by[late_known].max())} s "
+                            f"late at busy instants: {list(m.loc[late_known, 'name'][:5])}")
     if known.any():
         KNOWN_ISSUES.append(f"{int(known.sum())} job(s) ran to their time limit because the "
                             f"simulator lost their finish event: {list(m.loc[known, 'name'][:5])}")
