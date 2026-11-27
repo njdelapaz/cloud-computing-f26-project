@@ -70,8 +70,9 @@ EARLY_FINISH_MAX = 5
 # Known simulator behaviour (task 3.4): when many jobs end at the same simulated second, the
 # simulator processes some completions a few seconds late (X-s1: 2-5 s, at instants where ~24
 # jobs end together), and now and then a submission too (X-s1: 3 s). Up to this many seconds
-# late is reported, not a failure.
-LATE_TOLERANCE_S = 10
+# late is reported, not a failure. Lags seen: 1-11 s (N-s3 C3: 11 s); a lost finish event, by
+# contrast, costs hours. 60 s is far below anything that moves minute-scale waits.
+LATE_TOLERANCE_S = 60
 
 
 def lost_finish_jobs(run_dir: Path) -> set[int]:
