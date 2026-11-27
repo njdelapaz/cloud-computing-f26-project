@@ -925,6 +925,30 @@ What the adaptive policies do:
 - **B1 is erratic on `X`:** 54 min on `X-s2` but 900 min on `X-s3`. Fair share first does not
   protect short jobs, and under `X`'s near-saturated load its outcome swings with the seed.
 
+**While a class is favored (`evaluation/favored.py`, `results/phase3/favored.json`).** Each
+job's wait is split across the policy's states. Jobs that spent most of their wait while their
+own class was favored are compared with the same jobs in the C0 run of the same workload.
+Means are over the three seeds:
+
+| Favored class | `N` (A1 / A2 / A3) | `X` | `Y` |
+|---|---|---|---|
+| medium | −55 / −65 / −91% | +5 / −11 / −32% | −79 / −80 / −84% |
+| large | −33 / −30 / −83% | +57 / +15 / −51% | −1 / −4 / −30% |
+| small | +103 / +49 / +26% | +17 / +25 / +31% | +113 / +145 / +368% |
+
+- **Favoring medium works.** Medium jobs wait far less, and on `N` the other jobs' extra
+  waiting about cancels it out (A3: a net saving).
+- **Favoring large works on `N`, and for A3 elsewhere.** On `N` the other jobs lose more than
+  the large jobs gain (A1: 4,300 job-hours saved, 11,500 lost). A3's long large spells on
+  `X` and `Y` cost others 230,000–750,000 job-hours.
+- **Favoring small never helps small jobs.** C0 already starts short jobs first, and most
+  small jobs are short. The small state also starts when a small backlog has built up, often
+  after the policy favored large or medium. Small-state periods carry most of the adaptive
+  policies' extra waiting.
+
+The comparison uses a separate C0 run, so it carries run-to-run noise. It also folds in the
+policy's own history: a backlog built up under one state is waited out under the next.
+
 ### 8.7 Scale-up (`M`)
 
 The brief says one week first, scale later. Once the one-week answer is in:

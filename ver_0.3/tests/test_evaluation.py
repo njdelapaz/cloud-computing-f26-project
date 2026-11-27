@@ -103,3 +103,14 @@ def test_compare_missing_run_is_not_effective():
     df = df[~((df["workload"] == "Y-s2") & (df["role"] == "matrix"))]
     res = compare(df, CFG)
     assert not res["verdict"]["A1"]["Y"]["complete"] and res["answer"] == "partly"
+
+
+def test_exposure_splits_each_wait_over_the_states():
+    import numpy as np
+    from evaluation.favored import exposure
+    log = [{"t_sim": 100, "state_before": "mix", "state": "small"},
+           {"t_sim": 200, "state_before": "small", "state": "large"}]
+    ex = exposure(log, np.array([50.0, 150.0, 250.0]), np.array([150.0, 250.0, 250.0]))
+    assert ex.loc[0, "mix"] == pytest.approx(0.5) and ex.loc[0, "small"] == pytest.approx(0.5)
+    assert ex.loc[1, "small"] == pytest.approx(0.5) and ex.loc[1, "large"] == pytest.approx(0.5)
+    assert ex.loc[2, "large"] == 1.0 and ex.loc[2, "small"] == 0.0     # no wait: state at submit

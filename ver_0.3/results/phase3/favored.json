@@ -1,0 +1,2167 @@
+{
+ "method": "Usage: .venv/bin/python -m evaluation.favored\n\nFor every adaptive matrix run, each job's wait [submit, start) is split over the policy's\nstates (from controller.jsonl; a state holds from the tick that set it to the next switch).\nA job's exposure to state s is the share of its wait spent in s; a job that did not wait at\nall takes the state at its submit time. Then, per state s in small / medium / large:\n  favored  jobs of class s whose wait was mostly (>= 50%) in state s\n  others   jobs of the other two classes whose wait was mostly in state s\nEach group's mean wait is compared with the same jobs' mean wait in the C0 run of the same\nworkload (paired by job name). Writes results/phase3/favored.json.",
+ "summary": [
+  {
+   "scenario": "N",
+   "policy": "A1",
+   "state": "large",
+   "group": "favored",
+   "jobs": 634,
+   "wait_h": 13.6498,
+   "c0_wait_h": 20.4039,
+   "change": -0.331
+  },
+  {
+   "scenario": "N",
+   "policy": "A1",
+   "state": "large",
+   "group": "others",
+   "jobs": 20056,
+   "wait_h": 0.9517,
+   "c0_wait_h": 0.3786,
+   "change": 1.5133
+  },
+  {
+   "scenario": "N",
+   "policy": "A1",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 533,
+   "wait_h": 1.9685,
+   "c0_wait_h": 4.3297,
+   "change": -0.5454
+  },
+  {
+   "scenario": "N",
+   "policy": "A1",
+   "state": "medium",
+   "group": "others",
+   "jobs": 5488,
+   "wait_h": 0.3683,
+   "c0_wait_h": 0.1619,
+   "change": 1.2748
+  },
+  {
+   "scenario": "N",
+   "policy": "A1",
+   "state": "small",
+   "group": "favored",
+   "jobs": 12093,
+   "wait_h": 0.7486,
+   "c0_wait_h": 0.3686,
+   "change": 1.0308
+  },
+  {
+   "scenario": "N",
+   "policy": "A1",
+   "state": "small",
+   "group": "others",
+   "jobs": 669,
+   "wait_h": 2.4272,
+   "c0_wait_h": 2.5394,
+   "change": -0.0442
+  },
+  {
+   "scenario": "N",
+   "policy": "A2",
+   "state": "large",
+   "group": "favored",
+   "jobs": 712,
+   "wait_h": 15.6741,
+   "c0_wait_h": 22.4958,
+   "change": -0.3032
+  },
+  {
+   "scenario": "N",
+   "policy": "A2",
+   "state": "large",
+   "group": "others",
+   "jobs": 22175,
+   "wait_h": 1.1636,
+   "c0_wait_h": 0.4892,
+   "change": 1.3784
+  },
+  {
+   "scenario": "N",
+   "policy": "A2",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 674,
+   "wait_h": 1.3284,
+   "c0_wait_h": 3.7751,
+   "change": -0.6481
+  },
+  {
+   "scenario": "N",
+   "policy": "A2",
+   "state": "medium",
+   "group": "others",
+   "jobs": 6150,
+   "wait_h": 0.4755,
+   "c0_wait_h": 0.1833,
+   "change": 1.5937
+  },
+  {
+   "scenario": "N",
+   "policy": "A2",
+   "state": "small",
+   "group": "favored",
+   "jobs": 15338,
+   "wait_h": 0.5057,
+   "c0_wait_h": 0.3402,
+   "change": 0.4863
+  },
+  {
+   "scenario": "N",
+   "policy": "A2",
+   "state": "small",
+   "group": "others",
+   "jobs": 892,
+   "wait_h": 1.5908,
+   "c0_wait_h": 2.6458,
+   "change": -0.3988
+  },
+  {
+   "scenario": "N",
+   "policy": "A3",
+   "state": "large",
+   "group": "favored",
+   "jobs": 319,
+   "wait_h": 1.5732,
+   "c0_wait_h": 9.0795,
+   "change": -0.8267
+  },
+  {
+   "scenario": "N",
+   "policy": "A3",
+   "state": "large",
+   "group": "others",
+   "jobs": 10614,
+   "wait_h": 1.3163,
+   "c0_wait_h": 1.2673,
+   "change": 0.0386
+  },
+  {
+   "scenario": "N",
+   "policy": "A3",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 1052,
+   "wait_h": 0.5607,
+   "c0_wait_h": 6.0774,
+   "change": -0.9077
+  },
+  {
+   "scenario": "N",
+   "policy": "A3",
+   "state": "medium",
+   "group": "others",
+   "jobs": 8318,
+   "wait_h": 0.4118,
+   "c0_wait_h": 0.1783,
+   "change": 1.3095
+  },
+  {
+   "scenario": "N",
+   "policy": "A3",
+   "state": "small",
+   "group": "favored",
+   "jobs": 26292,
+   "wait_h": 0.3722,
+   "c0_wait_h": 0.2943,
+   "change": 0.2647
+  },
+  {
+   "scenario": "N",
+   "policy": "A3",
+   "state": "small",
+   "group": "others",
+   "jobs": 1463,
+   "wait_h": 5.4349,
+   "c0_wait_h": 5.4472,
+   "change": -0.0023
+  },
+  {
+   "scenario": "X",
+   "policy": "A1",
+   "state": "large",
+   "group": "favored",
+   "jobs": 354,
+   "wait_h": 6.1157,
+   "c0_wait_h": 3.9074,
+   "change": 0.5652
+  },
+  {
+   "scenario": "X",
+   "policy": "A1",
+   "state": "large",
+   "group": "others",
+   "jobs": 1833,
+   "wait_h": 1.4918,
+   "c0_wait_h": 0.3681,
+   "change": 3.053
+  },
+  {
+   "scenario": "X",
+   "policy": "A1",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 6640,
+   "wait_h": 11.0571,
+   "c0_wait_h": 10.4978,
+   "change": 0.0533
+  },
+  {
+   "scenario": "X",
+   "policy": "A1",
+   "state": "medium",
+   "group": "others",
+   "jobs": 5461,
+   "wait_h": 13.8019,
+   "c0_wait_h": 2.5182,
+   "change": 4.4808
+  },
+  {
+   "scenario": "X",
+   "policy": "A1",
+   "state": "small",
+   "group": "favored",
+   "jobs": 209630,
+   "wait_h": 6.7064,
+   "c0_wait_h": 5.752,
+   "change": 0.1659
+  },
+  {
+   "scenario": "X",
+   "policy": "A1",
+   "state": "small",
+   "group": "others",
+   "jobs": 764,
+   "wait_h": 10.1408,
+   "c0_wait_h": 4.117,
+   "change": 1.4632
+  },
+  {
+   "scenario": "X",
+   "policy": "A2",
+   "state": "large",
+   "group": "favored",
+   "jobs": 413,
+   "wait_h": 6.2974,
+   "c0_wait_h": 5.4983,
+   "change": 0.1453
+  },
+  {
+   "scenario": "X",
+   "policy": "A2",
+   "state": "large",
+   "group": "others",
+   "jobs": 3357,
+   "wait_h": 0.4599,
+   "c0_wait_h": 0.1097,
+   "change": 3.1922
+  },
+  {
+   "scenario": "X",
+   "policy": "A2",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 6632,
+   "wait_h": 9.0166,
+   "c0_wait_h": 10.1865,
+   "change": -0.1149
+  },
+  {
+   "scenario": "X",
+   "policy": "A2",
+   "state": "medium",
+   "group": "others",
+   "jobs": 7151,
+   "wait_h": 11.0648,
+   "c0_wait_h": 2.9036,
+   "change": 2.8108
+  },
+  {
+   "scenario": "X",
+   "policy": "A2",
+   "state": "small",
+   "group": "favored",
+   "jobs": 211987,
+   "wait_h": 7.1162,
+   "c0_wait_h": 5.698,
+   "change": 0.2489
+  },
+  {
+   "scenario": "X",
+   "policy": "A2",
+   "state": "small",
+   "group": "others",
+   "jobs": 579,
+   "wait_h": 9.3931,
+   "c0_wait_h": 4.2121,
+   "change": 1.23
+  },
+  {
+   "scenario": "X",
+   "policy": "A3",
+   "state": "large",
+   "group": "favored",
+   "jobs": 1433,
+   "wait_h": 3.9764,
+   "c0_wait_h": 8.0929,
+   "change": -0.5087
+  },
+  {
+   "scenario": "X",
+   "policy": "A3",
+   "state": "large",
+   "group": "others",
+   "jobs": 30105,
+   "wait_h": 30.6036,
+   "c0_wait_h": 5.5712,
+   "change": 4.4932
+  },
+  {
+   "scenario": "X",
+   "policy": "A3",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 5481,
+   "wait_h": 4.7889,
+   "c0_wait_h": 7.0242,
+   "change": -0.3182
+  },
+  {
+   "scenario": "X",
+   "policy": "A3",
+   "state": "medium",
+   "group": "others",
+   "jobs": 892,
+   "wait_h": 6.8072,
+   "c0_wait_h": 1.2865,
+   "change": 4.2913
+  },
+  {
+   "scenario": "X",
+   "policy": "A3",
+   "state": "small",
+   "group": "favored",
+   "jobs": 202208,
+   "wait_h": 7.2846,
+   "c0_wait_h": 5.5757,
+   "change": 0.3065
+  },
+  {
+   "scenario": "X",
+   "policy": "A3",
+   "state": "small",
+   "group": "others",
+   "jobs": 934,
+   "wait_h": 37.4446,
+   "c0_wait_h": 24.0639,
+   "change": 0.556
+  },
+  {
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "large",
+   "group": "favored",
+   "jobs": 1327,
+   "wait_h": 1.6877,
+   "c0_wait_h": 1.7074,
+   "change": -0.0116
+  },
+  {
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "large",
+   "group": "others",
+   "jobs": 19843,
+   "wait_h": 0.1076,
+   "c0_wait_h": 0.0525,
+   "change": 1.0512
+  },
+  {
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 2279,
+   "wait_h": 0.2653,
+   "c0_wait_h": 1.2434,
+   "change": -0.7867
+  },
+  {
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "medium",
+   "group": "others",
+   "jobs": 10649,
+   "wait_h": 0.2752,
+   "c0_wait_h": 0.0288,
+   "change": 8.5421
+  },
+  {
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "small",
+   "group": "favored",
+   "jobs": 76113,
+   "wait_h": 1.0311,
+   "c0_wait_h": 0.4839,
+   "change": 1.1306
+  },
+  {
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "small",
+   "group": "others",
+   "jobs": 2096,
+   "wait_h": 2.8523,
+   "c0_wait_h": 2.5638,
+   "change": 0.1125
+  },
+  {
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "large",
+   "group": "favored",
+   "jobs": 701,
+   "wait_h": 1.9418,
+   "c0_wait_h": 2.0155,
+   "change": -0.0366
+  },
+  {
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "large",
+   "group": "others",
+   "jobs": 11470,
+   "wait_h": 0.2504,
+   "c0_wait_h": 0.0864,
+   "change": 1.8972
+  },
+  {
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 4796,
+   "wait_h": 0.2448,
+   "c0_wait_h": 1.2437,
+   "change": -0.8031
+  },
+  {
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "medium",
+   "group": "others",
+   "jobs": 24946,
+   "wait_h": 0.3498,
+   "c0_wait_h": 0.0557,
+   "change": 5.2859
+  },
+  {
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "small",
+   "group": "favored",
+   "jobs": 71507,
+   "wait_h": 1.2237,
+   "c0_wait_h": 0.4994,
+   "change": 1.4502
+  },
+  {
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "small",
+   "group": "others",
+   "jobs": 2529,
+   "wait_h": 2.2632,
+   "c0_wait_h": 1.6617,
+   "change": 0.362
+  },
+  {
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "large",
+   "group": "favored",
+   "jobs": 2317,
+   "wait_h": 1.6678,
+   "c0_wait_h": 2.3922,
+   "change": -0.3028
+  },
+  {
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "large",
+   "group": "others",
+   "jobs": 56537,
+   "wait_h": 4.7853,
+   "c0_wait_h": 0.6322,
+   "change": 6.5693
+  },
+  {
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 2012,
+   "wait_h": 0.3113,
+   "c0_wait_h": 1.9617,
+   "change": -0.8413
+  },
+  {
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "medium",
+   "group": "others",
+   "jobs": 3208,
+   "wait_h": 1.8834,
+   "c0_wait_h": 0.0899,
+   "change": 19.9465
+  },
+  {
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "small",
+   "group": "favored",
+   "jobs": 69522,
+   "wait_h": 2.12,
+   "c0_wait_h": 0.4534,
+   "change": 3.6754
+  },
+  {
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "small",
+   "group": "others",
+   "jobs": 1993,
+   "wait_h": 4.5281,
+   "c0_wait_h": 3.4665,
+   "change": 0.3062
+  }
+ ],
+ "per_run": [
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "small",
+   "group": "favored",
+   "jobs": 4000,
+   "wait_h": 0.2259,
+   "c0_wait_h": 0.073
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "small",
+   "group": "others",
+   "jobs": 288,
+   "wait_h": 1.2793,
+   "c0_wait_h": 0.9227
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 115,
+   "wait_h": 1.3814,
+   "c0_wait_h": 2.1788
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "medium",
+   "group": "others",
+   "jobs": 1637,
+   "wait_h": 0.3408,
+   "c0_wait_h": 0.1185
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "large",
+   "group": "favored",
+   "jobs": 175,
+   "wait_h": 7.6422,
+   "c0_wait_h": 14.394
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "large",
+   "group": "others",
+   "jobs": 5324,
+   "wait_h": 0.9352,
+   "c0_wait_h": 0.1237
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "small",
+   "group": "favored",
+   "jobs": 6290,
+   "wait_h": 0.3496,
+   "c0_wait_h": 0.2169
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "small",
+   "group": "others",
+   "jobs": 391,
+   "wait_h": 1.1759,
+   "c0_wait_h": 1.1826
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 260,
+   "wait_h": 0.8631,
+   "c0_wait_h": 2.4694
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "medium",
+   "group": "others",
+   "jobs": 2829,
+   "wait_h": 0.5111,
+   "c0_wait_h": 0.2394
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "large",
+   "group": "favored",
+   "jobs": 185,
+   "wait_h": 11.2844,
+   "c0_wait_h": 18.7129
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "large",
+   "group": "others",
+   "jobs": 6062,
+   "wait_h": 1.3024,
+   "c0_wait_h": 0.4446
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "small",
+   "group": "favored",
+   "jobs": 10291,
+   "wait_h": 0.5556,
+   "c0_wait_h": 0.2804
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "small",
+   "group": "others",
+   "jobs": 623,
+   "wait_h": 9.0905,
+   "c0_wait_h": 8.0069
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 356,
+   "wait_h": 0.4861,
+   "c0_wait_h": 8.5243
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "medium",
+   "group": "others",
+   "jobs": 2712,
+   "wait_h": 0.3734,
+   "c0_wait_h": 0.2336
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "large",
+   "group": "favored",
+   "jobs": 91,
+   "wait_h": 1.5446,
+   "c0_wait_h": 3.3104
+  },
+  {
+   "workload": "N-s1",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "large",
+   "group": "others",
+   "jobs": 3912,
+   "wait_h": 1.371,
+   "c0_wait_h": 1.2598
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "small",
+   "group": "favored",
+   "jobs": 3619,
+   "wait_h": 1.0908,
+   "c0_wait_h": 0.6425
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "small",
+   "group": "others",
+   "jobs": 202,
+   "wait_h": 4.5087,
+   "c0_wait_h": 4.585
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 312,
+   "wait_h": 1.1652,
+   "c0_wait_h": 3.054
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "medium",
+   "group": "others",
+   "jobs": 2947,
+   "wait_h": 0.1853,
+   "c0_wait_h": 0.1028
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "large",
+   "group": "favored",
+   "jobs": 230,
+   "wait_h": 14.1866,
+   "c0_wait_h": 21.4476
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "large",
+   "group": "others",
+   "jobs": 6314,
+   "wait_h": 1.0048,
+   "c0_wait_h": 0.4091
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "small",
+   "group": "favored",
+   "jobs": 4479,
+   "wait_h": 0.7286,
+   "c0_wait_h": 0.5922
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "small",
+   "group": "others",
+   "jobs": 236,
+   "wait_h": 2.8069,
+   "c0_wait_h": 4.2885
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 274,
+   "wait_h": 1.0485,
+   "c0_wait_h": 3.6901
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "medium",
+   "group": "others",
+   "jobs": 2077,
+   "wait_h": 0.2549,
+   "c0_wait_h": 0.1657
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "large",
+   "group": "favored",
+   "jobs": 231,
+   "wait_h": 13.0711,
+   "c0_wait_h": 20.5613
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "large",
+   "group": "others",
+   "jobs": 7385,
+   "wait_h": 0.6777,
+   "c0_wait_h": 0.2546
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "small",
+   "group": "favored",
+   "jobs": 7238,
+   "wait_h": 0.2422,
+   "c0_wait_h": 0.337
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "small",
+   "group": "others",
+   "jobs": 374,
+   "wait_h": 1.3818,
+   "c0_wait_h": 2.5918
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 391,
+   "wait_h": 0.4596,
+   "c0_wait_h": 2.4213
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "medium",
+   "group": "others",
+   "jobs": 2904,
+   "wait_h": 0.2128,
+   "c0_wait_h": 0.1762
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "large",
+   "group": "favored",
+   "jobs": 123,
+   "wait_h": 1.1291,
+   "c0_wait_h": 7.9831
+  },
+  {
+   "workload": "N-s2",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "large",
+   "group": "others",
+   "jobs": 3078,
+   "wait_h": 0.9721,
+   "c0_wait_h": 0.9802
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "small",
+   "group": "favored",
+   "jobs": 4474,
+   "wait_h": 0.9392,
+   "c0_wait_h": 0.4114
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "small",
+   "group": "others",
+   "jobs": 179,
+   "wait_h": 1.9252,
+   "c0_wait_h": 2.832
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 106,
+   "wait_h": 4.97,
+   "c0_wait_h": 10.4183
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "medium",
+   "group": "others",
+   "jobs": 904,
+   "wait_h": 1.0147,
+   "c0_wait_h": 0.433
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "large",
+   "group": "favored",
+   "jobs": 229,
+   "wait_h": 17.7015,
+   "c0_wait_h": 23.9483
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A1",
+   "state": "large",
+   "group": "others",
+   "jobs": 8418,
+   "wait_h": 0.9222,
+   "c0_wait_h": 0.517
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "small",
+   "group": "favored",
+   "jobs": 4569,
+   "wait_h": 0.502,
+   "c0_wait_h": 0.263
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "small",
+   "group": "others",
+   "jobs": 265,
+   "wait_h": 1.1198,
+   "c0_wait_h": 3.3419
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 140,
+   "wait_h": 2.7405,
+   "c0_wait_h": 6.3664
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "medium",
+   "group": "others",
+   "jobs": 1244,
+   "wait_h": 0.7626,
+   "c0_wait_h": 0.0852
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "large",
+   "group": "favored",
+   "jobs": 296,
+   "wait_h": 20.4489,
+   "c0_wait_h": 26.3698
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A2",
+   "state": "large",
+   "group": "others",
+   "jobs": 8728,
+   "wait_h": 1.4783,
+   "c0_wait_h": 0.7188
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "small",
+   "group": "favored",
+   "jobs": 8763,
+   "wait_h": 0.2641,
+   "c0_wait_h": 0.2753
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "small",
+   "group": "others",
+   "jobs": 466,
+   "wait_h": 3.8008,
+   "c0_wait_h": 4.3169
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 305,
+   "wait_h": 0.7775,
+   "c0_wait_h": 7.9084
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "medium",
+   "group": "others",
+   "jobs": 2702,
+   "wait_h": 0.6642,
+   "c0_wait_h": 0.125
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "large",
+   "group": "favored",
+   "jobs": 105,
+   "wait_h": 2.1183,
+   "c0_wait_h": 15.3637
+  },
+  {
+   "workload": "N-s3",
+   "scenario": "N",
+   "policy": "A3",
+   "state": "large",
+   "group": "others",
+   "jobs": 3624,
+   "wait_h": 1.5495,
+   "c0_wait_h": 1.5192
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "small",
+   "group": "favored",
+   "jobs": 70550,
+   "wait_h": 6.4522,
+   "c0_wait_h": 6.0931
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "small",
+   "group": "others",
+   "jobs": 275,
+   "wait_h": 8.1202,
+   "c0_wait_h": 6.2637
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 2190,
+   "wait_h": 6.0536,
+   "c0_wait_h": 12.0208
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "medium",
+   "group": "others",
+   "jobs": 2115,
+   "wait_h": 6.9591,
+   "c0_wait_h": 2.6352
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "large",
+   "group": "favored",
+   "jobs": 61,
+   "wait_h": 5.5133,
+   "c0_wait_h": 4.3328
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "large",
+   "group": "others",
+   "jobs": 534,
+   "wait_h": 0.8031,
+   "c0_wait_h": 1.0525
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "small",
+   "group": "favored",
+   "jobs": 70698,
+   "wait_h": 6.5567,
+   "c0_wait_h": 6.0694
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "small",
+   "group": "others",
+   "jobs": 259,
+   "wait_h": 9.3537,
+   "c0_wait_h": 5.2345
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 2084,
+   "wait_h": 6.9969,
+   "c0_wait_h": 11.0278
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "medium",
+   "group": "others",
+   "jobs": 2375,
+   "wait_h": 7.961,
+   "c0_wait_h": 2.8257
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "large",
+   "group": "favored",
+   "jobs": 27,
+   "wait_h": 19.7515,
+   "c0_wait_h": 9.1599
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "large",
+   "group": "others",
+   "jobs": 1960,
+   "wait_h": 0.0124,
+   "c0_wait_h": 0.1297
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "small",
+   "group": "favored",
+   "jobs": 70134,
+   "wait_h": 6.123,
+   "c0_wait_h": 6.0245
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "small",
+   "group": "others",
+   "jobs": 203,
+   "wait_h": 2.8519,
+   "c0_wait_h": 4.4164
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 1865,
+   "wait_h": 1.8232,
+   "c0_wait_h": 10.4969
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "medium",
+   "group": "others",
+   "jobs": 293,
+   "wait_h": 2.6776,
+   "c0_wait_h": 0.6548
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "large",
+   "group": "favored",
+   "jobs": 465,
+   "wait_h": 2.5194,
+   "c0_wait_h": 5.0957
+  },
+  {
+   "workload": "X-s1",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "large",
+   "group": "others",
+   "jobs": 8013,
+   "wait_h": 8.3289,
+   "c0_wait_h": 4.914
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "small",
+   "group": "favored",
+   "jobs": 69549,
+   "wait_h": 6.7911,
+   "c0_wait_h": 4.7658
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "small",
+   "group": "others",
+   "jobs": 173,
+   "wait_h": 24.334,
+   "c0_wait_h": 1.7517
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 2193,
+   "wait_h": 21.4256,
+   "c0_wait_h": 9.3507
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "medium",
+   "group": "others",
+   "jobs": 1903,
+   "wait_h": 22.4275,
+   "c0_wait_h": 0.6439
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "large",
+   "group": "favored",
+   "jobs": 237,
+   "wait_h": 4.8778,
+   "c0_wait_h": 2.4299
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "large",
+   "group": "others",
+   "jobs": 862,
+   "wait_h": 2.3905,
+   "c0_wait_h": 0.1095
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "small",
+   "group": "favored",
+   "jobs": 69551,
+   "wait_h": 5.1154,
+   "c0_wait_h": 4.7674
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "small",
+   "group": "others",
+   "jobs": 206,
+   "wait_h": 8.1392,
+   "c0_wait_h": 2.589
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 2242,
+   "wait_h": 11.8203,
+   "c0_wait_h": 11.0423
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "medium",
+   "group": "others",
+   "jobs": 2738,
+   "wait_h": 9.499,
+   "c0_wait_h": 1.4715
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "large",
+   "group": "favored",
+   "jobs": 201,
+   "wait_h": 2.9125,
+   "c0_wait_h": 6.2581
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "large",
+   "group": "others",
+   "jobs": 698,
+   "wait_h": 1.4931,
+   "c0_wait_h": 0.1252
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "small",
+   "group": "favored",
+   "jobs": 73633,
+   "wait_h": 8.9005,
+   "c0_wait_h": 4.5927
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "small",
+   "group": "others",
+   "jobs": 534,
+   "wait_h": 63.6998,
+   "c0_wait_h": 40.0455
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 1746,
+   "wait_h": 5.7448,
+   "c0_wait_h": 4.9657
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "medium",
+   "group": "others",
+   "jobs": 310,
+   "wait_h": 11.623,
+   "c0_wait_h": 1.1367
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "large",
+   "group": "favored",
+   "jobs": 577,
+   "wait_h": 3.103,
+   "c0_wait_h": 9.9601
+  },
+  {
+   "workload": "X-s2",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "large",
+   "group": "others",
+   "jobs": 3122,
+   "wait_h": 5.2926,
+   "c0_wait_h": 2.9248
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "small",
+   "group": "favored",
+   "jobs": 69531,
+   "wait_h": 6.8795,
+   "c0_wait_h": 6.3925
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "small",
+   "group": "others",
+   "jobs": 316,
+   "wait_h": 4.1289,
+   "c0_wait_h": 3.5438
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 2257,
+   "wait_h": 5.8376,
+   "c0_wait_h": 10.1347
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "medium",
+   "group": "others",
+   "jobs": 1443,
+   "wait_h": 12.4562,
+   "c0_wait_h": 4.8186
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "large",
+   "group": "favored",
+   "jobs": 56,
+   "wait_h": 12.0113,
+   "c0_wait_h": 9.697
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A1",
+   "state": "large",
+   "group": "others",
+   "jobs": 437,
+   "wait_h": 0.5607,
+   "c0_wait_h": 0.0417
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "small",
+   "group": "favored",
+   "jobs": 71738,
+   "wait_h": 9.6075,
+   "c0_wait_h": 6.234
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "small",
+   "group": "others",
+   "jobs": 114,
+   "wait_h": 11.7482,
+   "c0_wait_h": 4.8223
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 2306,
+   "wait_h": 8.1161,
+   "c0_wait_h": 8.5943
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "medium",
+   "group": "others",
+   "jobs": 2038,
+   "wait_h": 16.7855,
+   "c0_wait_h": 4.9182
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "large",
+   "group": "favored",
+   "jobs": 185,
+   "wait_h": 8.0115,
+   "c0_wait_h": 4.1385
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A2",
+   "state": "large",
+   "group": "others",
+   "jobs": 699,
+   "wait_h": 0.6831,
+   "c0_wait_h": 0.0381
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "small",
+   "group": "favored",
+   "jobs": 58441,
+   "wait_h": 6.6428,
+   "c0_wait_h": 6.2755
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "small",
+   "group": "others",
+   "jobs": 197,
+   "wait_h": 1.922,
+   "c0_wait_h": 0.9894
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 1870,
+   "wait_h": 6.8542,
+   "c0_wait_h": 5.4829
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "medium",
+   "group": "others",
+   "jobs": 289,
+   "wait_h": 5.8282,
+   "c0_wait_h": 2.0876
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "large",
+   "group": "favored",
+   "jobs": 391,
+   "wait_h": 6.998,
+   "c0_wait_h": 8.9019
+  },
+  {
+   "workload": "X-s3",
+   "scenario": "X",
+   "policy": "A3",
+   "state": "large",
+   "group": "others",
+   "jobs": 18970,
+   "wait_h": 44.1781,
+   "c0_wait_h": 6.2844
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "small",
+   "group": "favored",
+   "jobs": 24759,
+   "wait_h": 0.7205,
+   "c0_wait_h": 0.4184
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "small",
+   "group": "others",
+   "jobs": 731,
+   "wait_h": 2.3681,
+   "c0_wait_h": 2.2471
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 953,
+   "wait_h": 0.3502,
+   "c0_wait_h": 1.6364
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "medium",
+   "group": "others",
+   "jobs": 5631,
+   "wait_h": 0.3202,
+   "c0_wait_h": 0.03
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "large",
+   "group": "favored",
+   "jobs": 481,
+   "wait_h": 0.8363,
+   "c0_wait_h": 1.0809
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "large",
+   "group": "others",
+   "jobs": 8398,
+   "wait_h": 0.0398,
+   "c0_wait_h": 0.0248
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "small",
+   "group": "favored",
+   "jobs": 24679,
+   "wait_h": 1.5377,
+   "c0_wait_h": 0.4461
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "small",
+   "group": "others",
+   "jobs": 1162,
+   "wait_h": 1.9332,
+   "c0_wait_h": 1.5467
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 1547,
+   "wait_h": 0.494,
+   "c0_wait_h": 1.5512
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "medium",
+   "group": "others",
+   "jobs": 10060,
+   "wait_h": 0.4548,
+   "c0_wait_h": 0.0284
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "large",
+   "group": "favored",
+   "jobs": 257,
+   "wait_h": 1.6687,
+   "c0_wait_h": 1.7614
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "large",
+   "group": "others",
+   "jobs": 4997,
+   "wait_h": 0.1576,
+   "c0_wait_h": 0.0479
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "small",
+   "group": "favored",
+   "jobs": 20063,
+   "wait_h": 1.242,
+   "c0_wait_h": 0.458
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "small",
+   "group": "others",
+   "jobs": 540,
+   "wait_h": 4.0313,
+   "c0_wait_h": 3.3264
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 792,
+   "wait_h": 0.4623,
+   "c0_wait_h": 2.6083
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "medium",
+   "group": "others",
+   "jobs": 1558,
+   "wait_h": 3.4404,
+   "c0_wait_h": 0.0688
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "large",
+   "group": "favored",
+   "jobs": 885,
+   "wait_h": 1.5361,
+   "c0_wait_h": 2.3136
+  },
+  {
+   "workload": "Y-s1",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "large",
+   "group": "others",
+   "jobs": 25775,
+   "wait_h": 5.1063,
+   "c0_wait_h": 0.5972
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "small",
+   "group": "favored",
+   "jobs": 25718,
+   "wait_h": 1.3095,
+   "c0_wait_h": 0.558
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "small",
+   "group": "others",
+   "jobs": 738,
+   "wait_h": 2.5466,
+   "c0_wait_h": 2.5646
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 831,
+   "wait_h": 0.179,
+   "c0_wait_h": 0.9181
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "medium",
+   "group": "others",
+   "jobs": 3124,
+   "wait_h": 0.0904,
+   "c0_wait_h": 0.0166
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "large",
+   "group": "favored",
+   "jobs": 390,
+   "wait_h": 1.1248,
+   "c0_wait_h": 1.4256
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "large",
+   "group": "others",
+   "jobs": 4835,
+   "wait_h": 0.2386,
+   "c0_wait_h": 0.1269
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "small",
+   "group": "favored",
+   "jobs": 24404,
+   "wait_h": 1.1438,
+   "c0_wait_h": 0.5367
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "small",
+   "group": "others",
+   "jobs": 762,
+   "wait_h": 3.7034,
+   "c0_wait_h": 2.4684
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 1967,
+   "wait_h": 0.0759,
+   "c0_wait_h": 0.4208
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "medium",
+   "group": "others",
+   "jobs": 7486,
+   "wait_h": 0.3152,
+   "c0_wait_h": 0.0585
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "large",
+   "group": "favored",
+   "jobs": 261,
+   "wait_h": 2.1576,
+   "c0_wait_h": 2.2648
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "large",
+   "group": "others",
+   "jobs": 2321,
+   "wait_h": 0.6491,
+   "c0_wait_h": 0.1197
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "small",
+   "group": "favored",
+   "jobs": 19218,
+   "wait_h": 4.8423,
+   "c0_wait_h": 0.4542
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "small",
+   "group": "others",
+   "jobs": 528,
+   "wait_h": 3.7029,
+   "c0_wait_h": 2.4296
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 807,
+   "wait_h": 0.2118,
+   "c0_wait_h": 0.2658
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "medium",
+   "group": "others",
+   "jobs": 946,
+   "wait_h": 0.5259,
+   "c0_wait_h": 0.0634
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "large",
+   "group": "favored",
+   "jobs": 751,
+   "wait_h": 1.6556,
+   "c0_wait_h": 1.6306
+  },
+  {
+   "workload": "Y-s2",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "large",
+   "group": "others",
+   "jobs": 17223,
+   "wait_h": 6.2867,
+   "c0_wait_h": 0.4726
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "small",
+   "group": "favored",
+   "jobs": 25636,
+   "wait_h": 1.0517,
+   "c0_wait_h": 0.4729
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "small",
+   "group": "others",
+   "jobs": 627,
+   "wait_h": 3.7765,
+   "c0_wait_h": 2.932
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 495,
+   "wait_h": 0.2466,
+   "c0_wait_h": 1.0327
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "medium",
+   "group": "others",
+   "jobs": 1894,
+   "wait_h": 0.4465,
+   "c0_wait_h": 0.0454
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "large",
+   "group": "favored",
+   "jobs": 456,
+   "wait_h": 3.0672,
+   "c0_wait_h": 2.6094
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A1",
+   "state": "large",
+   "group": "others",
+   "jobs": 6610,
+   "wait_h": 0.098,
+   "c0_wait_h": 0.0331
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "small",
+   "group": "favored",
+   "jobs": 22424,
+   "wait_h": 0.9649,
+   "c0_wait_h": 0.5175
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "small",
+   "group": "others",
+   "jobs": 605,
+   "wait_h": 1.0833,
+   "c0_wait_h": 0.8664
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 1282,
+   "wait_h": 0.2034,
+   "c0_wait_h": 2.1351
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "medium",
+   "group": "others",
+   "jobs": 7400,
+   "wait_h": 0.2422,
+   "c0_wait_h": 0.0898
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "large",
+   "group": "favored",
+   "jobs": 183,
+   "wait_h": 2.0175,
+   "c0_wait_h": 2.0169
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A2",
+   "state": "large",
+   "group": "others",
+   "jobs": 4152,
+   "wait_h": 0.1393,
+   "c0_wait_h": 0.1143
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "small",
+   "group": "favored",
+   "jobs": 30241,
+   "wait_h": 0.9724,
+   "c0_wait_h": 0.4499
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "small",
+   "group": "others",
+   "jobs": 925,
+   "wait_h": 5.289,
+   "c0_wait_h": 4.1402
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "medium",
+   "group": "favored",
+   "jobs": 413,
+   "wait_h": 0.2158,
+   "c0_wait_h": 4.0356
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "medium",
+   "group": "others",
+   "jobs": 704,
+   "wait_h": 0.2616,
+   "c0_wait_h": 0.1722
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "large",
+   "group": "favored",
+   "jobs": 681,
+   "wait_h": 1.8524,
+   "c0_wait_h": 3.3342
+  },
+  {
+   "workload": "Y-s3",
+   "scenario": "Y",
+   "policy": "A3",
+   "state": "large",
+   "group": "others",
+   "jobs": 13539,
+   "wait_h": 2.2642,
+   "c0_wait_h": 0.9018
+  }
+ ]
+}
