@@ -31,6 +31,32 @@
     "reversals_within_2h": 13,
     "minutes_between_switches_median": 80.0,
     "switches_at_minimum_dwell": 21,
+    "stays_by_state": {
+      "large": {
+        "stays": 9,
+        "minimum_stay_min": 60.0,
+        "median_stay_min": 160.0,
+        "at_minimum": 2
+      },
+      "medium": {
+        "stays": 9,
+        "minimum_stay_min": 60.0,
+        "median_stay_min": 60.0,
+        "at_minimum": 8
+      },
+      "mix": {
+        "stays": 11,
+        "minimum_stay_min": 60.0,
+        "median_stay_min": 140.0,
+        "at_minimum": 3
+      },
+      "small": {
+        "stays": 16,
+        "minimum_stay_min": 60.0,
+        "median_stay_min": 80.0,
+        "at_minimum": 8
+      }
+    },
     "gated_ticks": 252
   },
   "ok": true

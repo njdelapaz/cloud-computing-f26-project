@@ -73,7 +73,9 @@ def main() -> None:
     }
     header = ("# Queue-state triggers (SPEC §6). Parameters are SPEC §6.6 defaults (approved\n"
               "# 2026-11-26); quantiles are each size class's share of waiting jobs in a C0 run\n"
-              "# of K, written by: .venv/bin/python -m controller.calibrate RUN_DIR\n")
+              "# of K, written by: .venv/bin/python -m controller.calibrate RUN_DIR\n"
+              "# dwell_s is the minimum stay in a state, in simulated seconds: one value for\n"
+              "# every state, or a table such as {mix: 3600, large: 3600, small: 7200, medium: 7200}.\n")
     TRIGGERS.write_text(header + yaml.safe_dump(cfg, sort_keys=False, width=100))
 
     # Replay the policy over the calibration ticks (states it would pick on this queue).

@@ -22,10 +22,23 @@ class Params:
     p_enter: float                     # a class state starts at this percentile
     p_exit: float                      # a class state ends below this percentile
     persist_ticks: int                 # candidate must repeat this many ticks
-    dwell_s: int                       # minimum simulated seconds between switches
+    # Minimum simulated seconds in a state before leaving it (time since the last switch):
+    # one value for every state, or a table {state: seconds} covering every state.
+    dwell_s: int | dict[str, int]
     state_config: dict[str, str]       # state -> configuration id
     quantiles: dict[str, list[float]]  # class -> 101 share quantiles (q0..q100) from calibration
     initial_state: str = "mix"
+
+    def __post_init__(self) -> None:
+        if isinstance(self.dwell_s, dict):
+            missing = sorted(set(self.state_config) - set(self.dwell_s))
+            unknown = sorted(set(self.dwell_s) - set(self.state_config))
+            if missing or unknown:
+                raise ValueError(f"dwell_s table: missing states {missing}, unknown {unknown}")
+
+    def dwell_for(self, state: str) -> int:
+        """Minimum stay in `state` before the policy may leave it."""
+        return int(self.dwell_s[state] if isinstance(self.dwell_s, dict) else self.dwell_s)
 
     @classmethod
     def from_dict(cls, d: dict) -> "Params":
@@ -107,7 +120,8 @@ def decide(t_sim: int, counts: dict[str, int], memory: Memory, params: Params
             exit_ok, why = False, f"{mem.state} still at P{cur} >= {params.p_exit:g}"
     persist_ok = mem.streak >= params.persist_ticks
     since = None if mem.last_switch_t is None else t_sim - mem.last_switch_t
-    dwell_ok = since is None or since >= params.dwell_s
+    dwell = params.dwell_for(mem.state)
+    dwell_ok = since is None or since >= dwell
 
     if exit_ok and persist_ok and dwell_ok:
         mem.state, mem.last_switch_t = cand, t_sim
@@ -116,6 +130,6 @@ def decide(t_sim: int, counts: dict[str, int], memory: Memory, params: Params
     else:
         blocks = [b for b, ok in [(why, exit_ok),
                                   (f"streak {mem.streak} < {params.persist_ticks}", persist_ok),
-                                  (f"{since}s since switch < {params.dwell_s}", dwell_ok)] if not ok]
+                                  (f"{since}s since switch < {dwell}", dwell_ok)] if not ok]
         d.reason = "hold: " + "; ".join(blocks)
     return d, mem

@@ -5,7 +5,8 @@ Usage: .venv/bin/python -m controller.summarize RUN_DIR
 Checks that every policy tick was logged by both sides (controller.jsonl and slurmctld.log),
 that every switch the controller asked for was applied in the simulator, that replay
 reproduces every decision, and that the run check passes. Reports switches per simulated
-day, time in each state, and reversals (a switch back to the previous state within 2 h).
+day, time in each state, reversals (a switch back to the previous state within 2 h), and
+how long each state lasted against its minimum stay (dwell_s, one value or one per state).
 Writes RUN_DIR/../<run name>_summary.json next to the run.
 """
 from __future__ import annotations
@@ -17,6 +18,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from controller.policy import Params
 from controller.replay import replay
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,6 +58,14 @@ def summarize(run_dir: Path) -> dict:
             wk_rev += 1
         prev = r
     gaps = wk_sw["t_sim"].diff().dropna() / 60
+    # Stays between switches, by the state that was left. A stay is "at the minimum" when the
+    # switch came at the first tick the state's own minimum stay allowed.
+    params = Params.from_dict(json.loads((pol / "params.json").read_text()))
+    tick_s = int(df["t_sim"].diff().median()) if len(df) > 1 else 0
+    stays = pd.DataFrame({"state": wk_sw["state"].iloc[:-1].to_numpy(),
+                          "stay_s": wk_sw["t_sim"].diff().dropna().to_numpy()})
+    stays["at_min"] = [s <= params.dwell_for(st) + tick_s for st, s in zip(stays["state"], stays["stay_s"])]
+    by_state = stays.groupby("state")
 
     problems = check(run_dir)
     res = {
@@ -77,7 +87,12 @@ def summarize(run_dir: Path) -> dict:
             "time_share_by_state": {k: round(float(v / wk_time.sum()), 3) for k, v in wk_time.items()},
             "reversals_within_2h": wk_rev,
             "minutes_between_switches_median": float(gaps.median()) if len(gaps) else None,
-            "switches_at_minimum_dwell": int((gaps <= 70).sum()),
+            "switches_at_minimum_dwell": int(stays["at_min"].sum()),
+            "stays_by_state": {st: {"stays": int(len(g)),
+                                    "minimum_stay_min": params.dwell_for(st) / 60,
+                                    "median_stay_min": float(g["stay_s"].median() / 60),
+                                    "at_minimum": int(g["at_min"].sum())}
+                               for st, g in by_state},
             "gated_ticks": int(wk["reason"].str.contains("waiting <").sum()),
         },
     }

@@ -1,5 +1,6 @@
 """Tests for the queue-state policy (SPEC §6.4), the tick command and replay (SPEC §7)."""
 import json
+from dataclasses import replace
 
 import pytest
 
@@ -23,11 +24,11 @@ LARGE = {"small": 80, "medium": 10, "large": 10}       # large share 0.10: above
 MEDIUM = {"small": 70, "medium": 28, "large": 2}       # medium share 0.28: above its range
 
 
-def run_ticks(seq, memory=None, t0=0, step=600):
+def run_ticks(seq, memory=None, t0=0, step=600, params=PARAMS):
     memory = memory or Memory()
     out = []
     for i, counts in enumerate(seq):
-        d, memory = decide(t0 + i * step, counts, memory, PARAMS)
+        d, memory = decide(t0 + i * step, counts, memory, params)
         out.append(d)
     return out, memory
 
@@ -65,6 +66,32 @@ def test_dwell_blocks_quick_second_switch():
     assert not ds[3].switch and "since switch" in ds[3].reason   # t=1800: 1200 s < 3600
     later, mem = run_ticks([MEDIUM], mem, t0=600 + 3600)
     assert later[0].switch and later[0].state == "medium" and later[0].config == "C3"
+
+
+PER_STATE = replace(PARAMS, dwell_s={"mix": 3600, "large": 3600, "small": 7200, "medium": 7200})
+
+
+def test_per_state_minimum_stay():
+    assert PER_STATE.dwell_for("small") == 7200 and PER_STATE.dwell_for("large") == 3600
+    assert PARAMS.dwell_for("small") == 3600                       # one value for every state
+    # 70 minutes into large (60-min stay): leaving is allowed
+    mem = Memory(state="large", candidate="large", streak=5, last_switch_t=0)
+    ds, _ = run_ticks([MIX, MIX], mem, t0=3600, params=PER_STATE)
+    assert ds[1].switch and ds[1].state == "mix"
+    # 70 minutes into small (120-min stay): held, then leaves once 120 minutes have passed
+    drop = {"small": 72, "medium": 14, "large": 14}                # small at P8, large at P100
+    mem = Memory(state="small", candidate="small", streak=5, last_switch_t=0)
+    ds, mem = run_ticks([drop, drop], mem, t0=3600, params=PER_STATE)
+    assert not ds[1].switch and ds[1].reason == "hold: 4200s since switch < 7200"
+    ds, mem = run_ticks([drop], mem, t0=7200, params=PER_STATE)
+    assert ds[0].switch and ds[0].state == "large" and mem.last_switch_t == 7200
+
+
+def test_minimum_stay_table_must_name_every_state():
+    with pytest.raises(ValueError, match="missing states \\['medium'\\]"):
+        replace(PARAMS, dwell_s={"mix": 3600, "large": 3600, "small": 7200})
+    with pytest.raises(ValueError, match="unknown \\['tiny'\\]"):
+        replace(PARAMS, dwell_s={"mix": 1, "large": 1, "small": 1, "medium": 1, "tiny": 1})
 
 
 def test_stays_in_state_between_exit_and_enter():

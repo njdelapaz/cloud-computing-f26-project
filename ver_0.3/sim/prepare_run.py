@@ -128,6 +128,8 @@ def write_policy_dir(run_dir: Path, c_run: Path, initial: str, adaptive: bool) -
             raise ValueError(f"initial config {initial} does not match the initial state's "
                              f"config in {TRIGGERS}")
         params["initial_state"] = trig.get("initial_state", "mix")
+        from controller.policy import Params
+        Params.from_dict(params)   # fail here, not at every tick, on a bad dwell_s table
         (pol / "params.json").write_text(json.dumps(params, indent=1) + "\n")
         tick = pol / "tick.sh"
         tick.write_text("#!/bin/sh\n# Run by the simulator at every policy tick.\n"

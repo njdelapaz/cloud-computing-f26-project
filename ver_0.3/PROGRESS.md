@@ -70,6 +70,7 @@ lengths or dates beyond the change log.
 | Step 4 open questions (approved 2026-11-26) | Q-A waiting queue; Q-B count jobs; Q-C enter P80 / exit P60, 60-min dwell | Defaults approved with the Step 4–5 spec. |
 | Trigger calibration source | Neutral C0 run of K, not FIFO | The waiting queue's class mix depends on the configuration: under C0 short jobs start fast, so small falls from 0.90 (FIFO) to 0.59 of waiting jobs. |
 | Trigger feedback (finding, task 2.6) | The waiting-queue trigger flips more than predicted: 6.6 switches/day vs 4.3 from the neutral replay; 28% reversals within 2 h; 21 of 45 gaps at the 60-min minimum | Favoring a class drains it from the queue (SPEC §6.5). Mechanism is correct; the trigger signal (Q-A: arrivals instead of the waiting queue) or longer dwell/persistence are the levers for Phase 3. |
+| Minimum stay per state (requested 2026-11-26) | `dwell_s` in `config/triggers.yaml` may be one value or a table per state; the default stays 60 min for every state | In the adaptive week small and medium left at the 60-min minimum 8 of 16 and 8 of 9 times; large only 2 of 9. Open-loop replay: 120 min for small and medium, 60 for large and mix, gives 4.9 switches/day vs 6.6 (SPEC §6.5). No simulator change. |
 | Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
@@ -90,3 +91,4 @@ lengths or dates beyond the change log.
 | 2026-11-26 | `c235b6d` | 2.4: simulator policy hook (patch, image, `--policy` run setup) |
 | 2026-11-26 | `ff274cc` | 2.5: apply test of the policy hook |
 | 2026-11-26 | `5c5e520` | 2.2: trigger calibration on the neutral K week |
+| 2026-11-26 | `5de3e8f` | 2.6: adaptive K week with the queue-state policy |

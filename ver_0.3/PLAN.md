@@ -217,6 +217,8 @@ their defaults; `PROGRESS.md` updated. (Met 2026-11-26; the trigger feedback fin
 ### 3.1 Specify Step 6
 - Add the SPEC section for simulation and evaluation: what is compared, which metrics, how
   many runs, and what counts as "effective".
+- Include the trigger variants worth comparing against the Phase 2 trigger: the arrivals
+  signal (SPEC §6.6, Q-A) and longer minimum stays for small and medium (SPEC §6.5).
 - Then expand the rest of Phase 3 in this plan.
 
 **Done when:** the new SPEC section and the expanded Phase 3 tasks are agreed and committed.

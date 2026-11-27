@@ -533,7 +533,8 @@ At each tick:
    - Otherwise the candidate state is `mix`.
 3. **Hysteresis.** Leave the current state only if all of these hold:
    - the candidate has been the same for `k = 2` consecutive ticks;
-   - at least `T_dwell = 60` minutes have passed since the last switch;
+   - the current state has lasted its minimum stay `T_dwell` (time since the last switch;
+     60 minutes by default, set for every state at once or per state, §6.6);
    - when the current state is a class `c`, its `P_c` has dropped below `P_exit` (60), or
      another class has reached `P_enter` with a higher percentile than `c`.
 4. **Output.** The state's configuration (§6.1), and whether it changed.
@@ -557,6 +558,30 @@ Step 6 will report switch rates and reversals. If they are high, the alternative
   between switches were at the 60-minute minimum.
 - Time in each state: mix 48%, small 24%, large 22%, medium 6%.
 
+The flapping comes from small and medium. Every time either was left, it was because its own
+share had fallen below `P_exit`:
+
+| State | Stays | Median stay | Left at the 60-min minimum | Reversed within 2 h |
+|---|---|---|---|---|
+| small | 16 | 80 min | 8 | 10 |
+| medium | 9 | 60 min | 8 | 2 |
+| large | 9 | 160 min | 2 | 5 |
+| mix | 11 | 140 min | 3 | 5 |
+
+Large jobs start slowly, so favoring them does not empty the queue as fast. Large usually
+ended because another class overtook it. This is why the minimum stay can be set per state.
+
+Replaying the policy offline over the queue this run saw (open loop: it cannot show how each
+switch would change the queue) gives:
+
+| Minimum stay | Switches a day | Time in mix / small / medium / large |
+|---|---|---|
+| 60 min for every state (this run) | 6.6 | 48 / 24 / 6 / 22% |
+| 120 min for small and medium, 60 for large and mix | 4.9 | 43 / 26 / 8 / 22% |
+| 120 min for every state | 4.3 | 45 / 25 / 7 / 24% |
+
+Whether fewer switches gives shorter waits needs closed-loop runs (Step 6).
+
 ### 6.6 Parameters and open questions
 
 | Parameter | Default | Where |
@@ -565,7 +590,7 @@ Step 6 will report switch rates and reversals. If they are high, the alternative
 | Minimum waiting jobs `n_min` | 20 | same |
 | Enter / exit percentile | 80 / 60 | same |
 | Persistence `k` | 2 ticks | same |
-| Dwell `T_dwell` | 60 minutes | same |
+| Minimum stay `T_dwell` | 60 minutes for every state; `dwell_s` may instead be a table with one value per state (`mix`, `small`, `medium`, `large`) | same |
 | Calibration | `K-s1` week under C0 | same |
 
 **Open questions** (defaults approved 2026-11-26):

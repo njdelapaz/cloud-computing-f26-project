@@ -1,6 +1,8 @@
 # Queue-state triggers (SPEC §6). Parameters are SPEC §6.6 defaults (approved
 # 2026-11-26); quantiles are each size class's share of waiting jobs in a C0 run
 # of K, written by: .venv/bin/python -m controller.calibrate RUN_DIR
+# dwell_s is the minimum stay in a state, in simulated seconds: one value for
+# every state, or a table such as {mix: 3600, large: 3600, small: 7200, medium: 7200}.
 tick_s: 600
 n_min: 20
 p_enter: 80
