@@ -187,3 +187,36 @@ def test_batch_timeout_stops_the_container(monkeypatch):
     code, why = batch.simulate(Path("results/phase3/runs/X-s1/C0"), 60, 3600)
     assert code is None and "did not finish within 1 h" in why
     assert calls[-1] == ["docker", "rm", "-f", "slurmsim-results-phase3-runs-X-s1-C0"]
+
+
+def _fake_run(tmp_path, elapsed, state="COMPLETED"):
+    """A one-node run dir with len(elapsed) jobs of 1000 s run time and a 60-min limit."""
+    (tmp_path / "out").mkdir(exist_ok=True)
+    ev, rows = [], ["JobID|JobIDRaw|Account|User|Submit|Start|End|Elapsed|State|NNodes|NCPUS|"
+                    "ReqMem|Timelimit|QOS|NodeList|JobName"]
+    for i, e in enumerate(elapsed):
+        name = f"jobid_{1001 + i}"
+        ev.append(f"-dt {i} -e submit_batch_job | -J {name} -sim-walltime 1000 --uid=u1 -t 60 "
+                  f"-n 1 --ntasks-per-node=1 -N 1 --mem=1000 -A a1 -p normal -q small pseudo.job")
+        st = state if isinstance(state, str) else state[i]
+        rows.append(f"{1001 + i}|{1001 + i}|a1|u1|2024-01-01T00:00:{i:02d}|2024-01-01T00:00:{i:02d}|"
+                    f"2024-01-01T01:00:00|00:{e // 60:02d}:{e % 60:02d}|{st}|1|1|1000M|01:00:00|small|n01|{name}")
+    (tmp_path / "events.txt").write_text("\n".join(ev) + "\n")
+    (tmp_path / "out/slurm_acct.out").write_text("\n".join(rows) + "\n")
+    (tmp_path / "out/slurmctld.log").write_text("")
+    return tmp_path
+
+
+def test_a_few_early_finishes_are_a_known_issue(tmp_path):
+    from sim.check_run import KNOWN_ISSUES, check
+    run = _fake_run(tmp_path, [1000, 1000, 400])           # one job 600 s short
+    assert check(run) == []
+    assert KNOWN_ISSUES and "completed early by the simulator (600-600 s short)" in KNOWN_ISSUES[0]
+
+
+def test_many_early_finishes_or_late_runs_fail(tmp_path):
+    from sim.check_run import EARLY_FINISH_MAX, check
+    run = _fake_run(tmp_path / "a", [400] * (EARLY_FINISH_MAX + 1)) if (tmp_path / "a").mkdir() is None else None
+    assert any("run time differs" in p for p in check(run))
+    late = _fake_run(tmp_path / "b", [1000, 1500]) if (tmp_path / "b").mkdir() is None else None
+    assert any("run time differs" in p for p in check(late))

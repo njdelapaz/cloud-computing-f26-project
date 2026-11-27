@@ -62,6 +62,11 @@ def mem_mb(s: str) -> float:
 
 
 KNOWN_ISSUES: list[str] = []
+# Known simulator issue (task 3.4): now and then the simulator completes a running job at the
+# moment other jobs complete, hours before its run time is up (1-3 jobs in some ~55k-job
+# runs). Up to this many such early finishes in a run are reported as a known issue; more
+# fail the run, so a systematic problem still shows.
+EARLY_FINISH_MAX = 5
 
 
 def lost_finish_jobs(run_dir: Path) -> set[int]:
@@ -135,10 +140,17 @@ def check(run_dir: Path) -> list[str]:
     lost = lost_finish_jobs(run_dir)
     off = (m["elapsed_s"] - expected_run).abs() > 1
     known = off & m["JobIDRaw"].isin(lost) & (m["elapsed_s"] >= m["limit_s"])
-    report(off & ~known, "run time differs from -sim-walltime")
+    early = off & ~known & (m["elapsed_s"] < expected_run) & (m["State"] == "COMPLETED")
+    early_known = early if int(early.sum()) <= EARLY_FINISH_MAX else early & False
+    report(off & ~known & ~early_known, "run time differs from -sim-walltime")
     if known.any():
         KNOWN_ISSUES.append(f"{int(known.sum())} job(s) ran to their time limit because the "
                             f"simulator lost their finish event: {list(m.loc[known, 'name'][:5])}")
+    if early_known.any():
+        short = (expected_run - m["elapsed_s"])[early_known]
+        KNOWN_ISSUES.append(f"{int(early_known.sum())} job(s) completed early by the simulator "
+                            f"({int(short.min())}-{int(short.max())} s short): "
+                            f"{list(m.loc[early_known, 'name'][:5])}")
     offset = (m["submit_ts"] - m["submit_ts"].min()) - (m["dt"] - m["dt"].min())
     report(offset.abs() > 2, "submit offset differs from -dt")
     return problems

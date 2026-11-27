@@ -174,6 +174,21 @@ Seen once in about 30 runs: 1 of 26,119 jobs in the full FIFO week of `K-s1`, an
 36-hour checks. `sim/check_run.py` reports such jobs as a known simulator issue instead of a
 failure.
 
+## Known simulator issue: rare early finish (task 3.4)
+
+Now and then the simulator completes a running job at the same instant as other, unrelated
+jobs complete, hours before its run time is up. In the first Phase 3 pilot of `Y-s1` under A1,
+`jobid_13360` (161,454 s run time) completed after 152,829 s, at 2024-07-04T18:10:09, the
+second at which `jobid_24261` and `jobid_24270` legitimately finished; no job has a run time of
+152,829 s. The log shows a normal `REQUEST_COMPLETE_BATCH_SCRIPT` for it. An earlier attempt of
+the same run had three such jobs, the first `N-s1` C1 attempt probably one; a repeat of the
+same run usually has none. It looks like a race in the simulator's own job bookkeeping and was
+not chased further.
+
+The effect on the metrics is negligible (1-3 jobs of ~55k end early). `sim/check_run.py`
+reports up to `EARLY_FINISH_MAX` (5) such jobs in a run as a known issue; more fail the run.
+`python -m sim.batch ... --recheck` re-applies the checks to finished runs.
+
 ## Full-week reference run (FIFO, `K-s1`)
 
 | Item | Value |

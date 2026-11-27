@@ -3,6 +3,7 @@
 Usage:
   .venv/bin/python -m sim.batch --workloads N-s1 [X-s1 ...|all] [--policies all|A1,C0]
                                 [--role matrix|pilot|repeat] [--parallel 9] [--dry-run]
+                                [--recheck]     re-run the checks of finished runs only
 
 Policies, workloads, start times and the run folder come from config/evaluation.yaml. A run
 of policy P on workload W goes to <run_root>/W/P (role matrix), W/P-pilot or W/P-repeat.
@@ -181,6 +182,22 @@ def run_one(cfg: dict, workload: str, policy: str, role: str, mon: Monitor | Non
     return rec
 
 
+def recheck(cfg: dict, workload: str, policy: str, role: str) -> dict | None:
+    """Re-run the checks of a finished run (e.g. after a check rule changed); update done.json."""
+    run_dir = run_dir_for(cfg, workload, policy, role)
+    done = ROOT / run_dir / "done.json"
+    if not done.exists() or not (ROOT / run_dir / "out" / "slurm_acct.out").exists():
+        return None
+    rec = json.loads(done.read_text())
+    chk = check_run_dir(run_dir, cfg["policies"][policy]["kind"] == "adaptive")
+    rec.update({"ok": not chk["problems"], "problems": chk["problems"][:20],
+                "known_issues": chk["known_issues"], "summary_ok": chk["summary_ok"],
+                "rechecked": datetime.now(timezone.utc).isoformat(timespec="seconds")})
+    done.write_text(json.dumps(rec, indent=2) + "\n")
+    log_attempt({**rec, "finished": rec["rechecked"]})
+    return rec
+
+
 def main() -> int:
     cfg = yaml.safe_load(EVAL.read_text())
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -189,6 +206,8 @@ def main() -> int:
     p.add_argument("--role", choices=list(SUFFIX), default="matrix")
     p.add_argument("--parallel", type=int, default=9)
     p.add_argument("--dry-run", action="store_true")
+    p.add_argument("--recheck", action="store_true",
+                   help="re-run the checks of finished runs and update their done.json")
     a = p.parse_args()
     workloads = cfg["workloads"] if a.workloads == ["all"] else a.workloads
     policies = list(cfg["policies"]) if a.policies == "all" else a.policies.split(",")
@@ -203,6 +222,12 @@ def main() -> int:
         for w, pol in jobs:
             print(run_dir_for(cfg, w, pol, a.role))
         return 0
+    if a.recheck:
+        out = [r for w, pol in jobs if (r := recheck(cfg, w, pol, a.role))]
+        for r in out:
+            print(f"{r['workload']:6} {r['policy']:3} {r['role']:6} ok={r['ok']} "
+                  f"known={r['known_issues']} problems={r['problems'][:2]}")
+        return 0 if all(r["ok"] for r in out) else 1
     if shutil.which("docker") is None:
         p.error("docker not found")
     img = image_id()
