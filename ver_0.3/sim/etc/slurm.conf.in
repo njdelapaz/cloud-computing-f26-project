@@ -24,6 +24,10 @@ SlurmctldTimeout=300
 SlurmdTimeout=300
 InactiveLimit=0
 MinJobAge=300
+# Slurm's default (10,000) caps the jobs slurmctld holds at once (pending, running and
+# finished within MinJobAge). X's flood day exceeds it, and Slurm then rejects
+# submissions (task 3.4). 200,000 is above any workload's whole job count.
+MaxJobCount=200000
 KillWait=30
 Waittime=0
 

@@ -148,3 +148,42 @@ def test_evaluation_config_is_consistent():
     for w in cfg["workloads"] + cfg["repeats"]["workloads"]:
         assert w.split("-")[0] in cfg["time_start"]
     assert set(cfg["repeats"]["policies"]) <= set(cfg["policies"])
+
+
+def test_rejected_submissions_are_counted(tmp_path):
+    from sim.check_run import rejected_submissions
+    (tmp_path / "out").mkdir()
+    (tmp_path / "out/slurmctld.log").write_text(
+        "[2024-07-02T10:00:00] error: job_allocate: MaxJobCount limit from slurm.conf reached (10000)\n"
+        "[2024-07-02T10:00:00] error: SBATCH: Batch job submission failed: Unexpected message received\n"
+        "[2024-07-02T10:00:01] error: job_allocate: MaxJobCount limit from slurm.conf reached (10000)\n"
+        "[2024-07-02T10:00:01] error: SBATCH: Batch job submission failed: Unexpected message received\n"
+        "[2024-07-02T10:00:02] sched: Allocate JobId=1001\n")
+    assert rejected_submissions(tmp_path) == {
+        "MaxJobCount limit from slurm.conf reached (N)": 2, "submission failed": 2}
+
+
+def test_slurm_conf_holds_every_job_of_the_largest_workload():
+    import re
+    import pandas as pd
+    conf = (ROOT / "sim/etc/slurm.conf.in").read_text()
+    limit = int(re.search(r"^MaxJobCount=(\d+)$", conf, re.M).group(1))
+    largest = max(len(pd.read_parquet(f, columns=["job_id"]))
+                  for f in (ROOT / "workloads/traces").glob("*/jobs.parquet"))
+    assert limit >= 2 * largest
+
+
+def test_batch_timeout_stops_the_container(monkeypatch):
+    import subprocess
+    from sim import batch
+    calls = []
+
+    def fake_run(cmd, **kw):
+        calls.append(cmd)
+        if cmd[0].endswith("run_sim.sh"):
+            raise subprocess.TimeoutExpired(cmd, kw.get("timeout"))
+        return subprocess.CompletedProcess(cmd, 0, "", "")
+    monkeypatch.setattr(batch.subprocess, "run", fake_run)
+    code, why = batch.simulate(Path("results/phase3/runs/X-s1/C0"), 60, 3600)
+    assert code is None and "did not finish within 1 h" in why
+    assert calls[-1] == ["docker", "rm", "-f", "slurmsim-results-phase3-runs-X-s1-C0"]

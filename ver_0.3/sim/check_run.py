@@ -78,6 +78,22 @@ def lost_finish_jobs(run_dir: Path) -> set[int]:
     return ids
 
 
+def rejected_submissions(run_dir: Path) -> dict[str, int]:
+    """Submissions slurmctld refused, by reason (e.g. MaxJobCount reached, task 3.4)."""
+    log = run_dir / "out" / "slurmctld.log"
+    out: dict[str, int] = {}
+    if log.exists():
+        with open(log, errors="replace") as fh:
+            for line in fh:
+                if "Batch job submission failed" in line:
+                    out["submission failed"] = out.get("submission failed", 0) + 1
+                elif "job_allocate:" in line and "error:" in line:
+                    reason = line.split("job_allocate:", 1)[1].strip()
+                    reason = re.sub(r"\(\d+\)", "(N)", reason)
+                    out[reason] = out.get(reason, 0) + 1
+    return out
+
+
 def check(run_dir: Path) -> list[str]:
     KNOWN_ISSUES.clear()
     run_dir = ROOT / run_dir
@@ -91,6 +107,8 @@ def check(run_dir: Path) -> list[str]:
     dup = counts[counts > 1]
     if missing:
         problems.append(f"{len(missing)} job(s) missing from sacct, e.g. {sorted(missing)[:5]}")
+    for reason, n in rejected_submissions(run_dir).items():
+        problems.append(f"{n} submission(s) rejected by slurmctld: {reason}")
     if len(dup):
         problems.append(f"{len(dup)} job(s) appear more than once, e.g. {list(dup.index[:5])}")
 

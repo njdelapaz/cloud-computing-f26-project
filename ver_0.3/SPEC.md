@@ -56,6 +56,7 @@ What counts as "better" is defined in §8.1 and §8.6.
 | Partition | `normal`, all nodes, `MaxTime=7-00:00:00`, default |
 | QOS | `small`, `medium`, `large`: one per size class (§4.1), identical limits, used only to carry priority (§5). `normal` exists but is unused. |
 | Scheduler | Slurm default (`SchedulerType=sched/backfill`, default backfill parameters) |
+| Job limit | `MaxJobCount=200000`. Slurm's default of 10,000 rejected submissions on `X`'s flood day (task 3.4); 200,000 is above any workload's whole job count |
 | Resource selection | `select/cons_tres` with `CR_Core_Memory`, so memory is a consumable resource |
 | Priority plugin | `priority/multifactor` |
 | Priority recalculation | `PriorityCalcPeriod=1` (every minute; tunable later) |

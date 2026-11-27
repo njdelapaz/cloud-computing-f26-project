@@ -126,6 +126,8 @@ def collect() -> pd.DataFrame:
     cfg = settings()
     rows = []
     for done in sorted((ROOT / cfg["run_root"]).glob("*/*/done.json")):
+        if ".attempt" in done.parent.name:          # a failed first attempt kept by sim.batch
+            continue
         d = json.loads(done.read_text())
         row = {k: d[k] for k in ("workload", "scenario", "seed", "policy", "role", "ok",
                                  "attempt", "image_id", "real_s")}

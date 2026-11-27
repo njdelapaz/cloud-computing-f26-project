@@ -149,6 +149,19 @@ kept as `slurmsim:v03-phase2`). With the submission counter added, it passed
 
 Batches of Phase 3 runs go through `sim/batch.py` (SPEC §8.4).
 
+## Job limit: `MaxJobCount` (task 3.4)
+
+Slurm's default `MaxJobCount` (10,000) caps the jobs `slurmctld` holds at once: pending,
+running, and finished within `MinJobAge`. On `X`'s small-short flood day the first Phase 3
+pilot went past it, and `slurmctld` rejected 8,739 (C0) and 9,493 (A1) submissions
+(`job_allocate: MaxJobCount limit from slurm.conf reached`). The simulator had already put
+those jobs in its own active-job list, so its end condition (no active jobs) never held: the
+runs went on idling past simulated day 70 with every node free. `slurm.conf.in` now sets
+`MaxJobCount=200000`, above any workload's whole job count. `sim/check_run.py` reports
+rejected submissions by reason, and `sim/batch.py` stops a run after `run_timeout_h` hours of
+real time (`config/evaluation.yaml`). Phase 1–2 runs never reached the limit: their checks
+found no missing jobs.
+
 ## Known simulator issue: rare lost finish event
 
 Rarely, the simulator processes a stray "batch script complete" request for a job while it is

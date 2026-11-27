@@ -31,6 +31,7 @@ repeats:
 
 run_root: results/phase3/runs
 dtstart: 60
+run_timeout_h: 12           # real time; a run still going is stopped and counts as failed
 
 # Metrics (SPEC §8.5) and pass rules (SPEC §8.6, E-A to E-D)
 metrics:

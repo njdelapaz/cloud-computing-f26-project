@@ -10,9 +10,12 @@ of policy P on workload W goes to <run_root>/W/P (role matrix), W/P-pilot or W/P
 For each run: prepare (sim.prepare_run), simulate (sim/run_sim.sh with the slurmsim:v03
 image), then check: sim.check_run for every run, and controller.summarize for adaptive runs
 (every tick logged on both sides, every switch applied, replay exact). A run that fails is
-rerun once. Each run folder gets done.json (outcome, attempt, image id, real time, peak
-container memory, mean CPU, disk use); a run whose done.json says ok is skipped, so a batch
-can be resumed. One line per finished run is appended to results/phase3/batches.jsonl.
+rerun once; the failed attempt's folder is kept as <run>.attempt1. A run still going after
+run_timeout_h hours of real time is stopped and counts as failed (a simulator that keeps
+jobs it never ran in its active list never ends, task 3.4). Each run folder gets done.json
+(outcome, attempt, image id, real time, peak container memory, mean CPU, disk use); a run
+whose done.json says ok is skipped, so a batch can be resumed. One line per attempt is
+appended to results/phase3/batches.jsonl.
 """
 from __future__ import annotations
 
@@ -111,6 +114,28 @@ def check_run_dir(run_dir: Path, adaptive: bool) -> dict:
         return out
 
 
+def log_attempt(rec: dict) -> None:
+    with _log_lock:
+        LOG.parent.mkdir(parents=True, exist_ok=True)
+        with open(LOG, "a") as fh:
+            fh.write(json.dumps({k: rec.get(k) for k in (
+                "workload", "policy", "role", "ok", "attempt", "real_s", "peak_mem_mb",
+                "cpu_pct_mean", "disk_mb", "image_id", "finished", "problems")}) + "\n")
+
+
+def simulate(run_dir: Path, dtstart: int, timeout_s: float) -> tuple[int | None, str | None]:
+    """Run sim/run_sim.sh; returns (exit code, problem). Stops the container on timeout."""
+    try:
+        proc = subprocess.run([str(ROOT / "sim" / "run_sim.sh"), str(run_dir), str(dtstart)],
+                              env={**os.environ, "SLURMSIM_IMAGE": IMAGE}, timeout=timeout_s)
+    except subprocess.TimeoutExpired:
+        subprocess.run(["docker", "rm", "-f", container_name(run_dir)], capture_output=True)
+        return None, f"did not finish within {timeout_s / 3600:g} h of real time; stopped"
+    if proc.returncode != 0:
+        return proc.returncode, f"run_sim.sh exited {proc.returncode}"
+    return 0, None
+
+
 def run_one(cfg: dict, workload: str, policy: str, role: str, mon: Monitor | None,
             img: str) -> dict:
     run_dir = run_dir_for(cfg, workload, policy, role)
@@ -128,11 +153,10 @@ def run_one(cfg: dict, workload: str, policy: str, role: str, mon: Monitor | Non
                     cfg["time_start"][scen], policy="adaptive" if adaptive else None,
                     triggers=ROOT / "config" / pol.get("triggers", "triggers.yaml"))
         started = time.time()
-        proc = subprocess.run([str(ROOT / "sim" / "run_sim.sh"), str(run_dir), str(cfg["dtstart"])],
-                              env={**os.environ, "SLURMSIM_IMAGE": IMAGE})
+        code, why = simulate(run_dir, cfg["dtstart"], cfg.get("run_timeout_h", 12) * 3600)
         real_s = time.time() - started
-        chk = check_run_dir(run_dir, adaptive) if proc.returncode == 0 else \
-            {"problems": [f"run_sim.sh exited {proc.returncode}"], "known_issues": [], "summary_ok": None}
+        chk = check_run_dir(run_dir, adaptive) if code == 0 else \
+            {"problems": [why], "known_issues": [], "summary_ok": None}
         name = container_name(run_dir)
         disk = sum(f.stat().st_size for f in (ROOT / run_dir).rglob("*") if f.is_file()) / 2**20
         cpu = mon.cpu.get(name, []) if mon else []
@@ -146,14 +170,14 @@ def run_one(cfg: dict, workload: str, policy: str, role: str, mon: Monitor | Non
                "disk_mb": round(disk, 1),
                "finished": datetime.now(timezone.utc).isoformat(timespec="seconds")}
         done.write_text(json.dumps(rec, indent=2) + "\n")
+        log_attempt(rec)
         if rec["ok"]:
             break
-    with _log_lock:
-        LOG.parent.mkdir(parents=True, exist_ok=True)
-        with open(LOG, "a") as fh:
-            fh.write(json.dumps({k: rec[k] for k in ("workload", "policy", "role", "ok", "attempt",
-                                                    "real_s", "peak_mem_mb", "cpu_pct_mean",
-                                                    "disk_mb", "image_id", "finished")}) + "\n")
+        if attempt == 1:                 # keep the failed attempt; prepare_run clears run_dir
+            kept = ROOT / run_dir.parent / f"{run_dir.name}.attempt1"
+            if kept.exists():
+                shutil.rmtree(kept)
+            (ROOT / run_dir).rename(kept)
     return rec
 
 
