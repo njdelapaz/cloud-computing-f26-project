@@ -3,7 +3,7 @@
 Status tracker for [PLAN.md](PLAN.md). It records status, decisions and results only; no task
 lengths or dates beyond the change log.
 
-**Current phase:** 3; 3.1–3.5 done; 3.6 (analysis) in progress
+**Current phase:** 3; 3.1–3.6 done; next is 3.7 (scale-up on `M`)
 
 ## Phase tracker
 
@@ -27,7 +27,7 @@ lengths or dates beyond the change log.
 | 3.3 Arrivals variant (A3) | done | Hook counts submissions by QOS (image rebuilt; Phase 2 image kept as `slurmsim:v03-phase2`); policy `signal: arrivals`; calibrated on the K-s1 workload; hook-off smoke matches the Phase 2 image; apply test passes again; A3 slice: 770 ticks match sacct, replay exact |
 | 3.4 Pilot | done | Six pilot runs pass (after `MaxJobCount=200000` and the known-issue rules below). Per run: N 71 min, 1.1 GB, 155 MB disk; Y 126 min, 2.6 GB, 350 MB; X 177–183 min, 4.1 GB, 540 MB; under one core each. The N-s1 batch of nine took 71–101 min, the same as alone. Batch size: nine at once for every scenario; one X batch at a time (36 GB). Pilot (one seed): A1 mean wait above C0's on N (102 vs 76 min), X (371 vs 324) and Y (48 vs 36) |
 | 3.5 One-week evaluation runs | done | 57 runs (45 matrix: B1, C0, A1–A3 × N, X, Y × 3 seeds; 6 pilot; 6 repeat), all pass under the current check rules (`results/phase3/metrics.csv`). Real time per run (median / max): N 73 / 101 min, Y 138 / 196 min, X 181 / 275 min; peak 1.1 / 2.7 / 4.3 GB. Known simulator issues over all 57: 1,940 completions and 319 submissions seconds late, 163 lost finish events (138 on X, ~7 per X run), 2 early finishes. 16 runs of the dropped B0 and C1–C3 kept aside |
-| 3.6 Analysis of the one-week results | not started | |
+| 3.6 Analysis of the one-week results | done | **Answer: no** (SPEC §8.6). `S*` = C0 (142 min mean wait over 9 workloads; B1 280). No adaptive variant effective anywhere: 26 of 27 comparisons worse than C0 (15 beyond the 22–31% noise bands); the one win (A3, N-s2, −25%) fails the small-job guard. Adaptive policies shift waits from medium/large jobs to small ones (~90% of jobs). `results/phase3/comparison.json`, five figures `results/phase3/fig_*.png` |
 | 3.7 Scale up (`M`) | not started | |
 | 3.8 Report | not started | |
 
@@ -79,6 +79,7 @@ lengths or dates beyond the change log.
 | Job limit (finding, task 3.4) | `MaxJobCount=200000` in `slurm.conf.in` | Slurm's default 10,000 rejected 8,739–9,493 submissions on X's flood day; the simulator then never ended (rejected jobs stay in its active list). Runs from before the change are set aside, so every Phase 3 run has the same settings. Phase 1–2 runs never reached the limit. |
 | Startup race (finding, task 3.5) | `sim/batch.py` starts containers 20 s apart and stops and retries a run whose controller refuses a submission in its first 15 min | With ~27 runs starting together, N-s3 A2 (and the dropped N-s2 C3) started slurmctld before the accounts were loaded: all 19,836 submissions were refused and the run never ended. The simulator cannot take account updates after startup. N-s3 A2 is rerun. |
 | Fixed settings compared (requested 2026-11-27) | Only C0 and B1; B0 and C1–C3 dropped from the comparison (5 policies × 9 workloads = 45 matrix runs, 57 in all) | C1–C3 are the states the adaptive policies switch to; C0 and B1 are the fixed choices a site would weigh. Runs of the dropped settings already made (N, Y-s1) are kept but not compared. Noted: on N-s1, C2 fixed had the lowest mean wait (65 min vs C0 75, adaptive 88–111). |
+| Repeat-run shift (finding, task 3.6) | Noise bands kept as specified (0.22 N, 0.31 X, 0.24 Y) | In all six repeat sets the third run (made 15:44–19:00 UTC alongside X-s3) came out higher than the other two, by up to 31% on X. The count of runs sharing the host does not explain it. The bands are therefore conservative; the verdict does not depend on them (every adaptive comparison but one is worse than C0 or breaks a guard). |
 | Early finishes (finding, task 3.4) | Up to 5 jobs per run that the simulator completes early count as a known simulator issue, not a run failure (`sim/check_run.py`, `EARLY_FINISH_MAX`) | Rare simulator glitch: a job completes at another job's completion instant, hours early (1–3 jobs of ~55k in some runs; a repeat usually has none). Failing such runs would cost reruns and could exclude runs for no effect on the metrics; more than 5 still fails. |
 | Late completions (finding, task 3.4) | Completions and submissions up to 60 s late count as a known simulator issue (`LATE_TOLERANCE_S`; 10 s at first) | At instants where many jobs end together the simulator processes some completions late: 1 s in every run, 2–5 s for 93 jobs in the X-s1 C0 pilot (19k-job queue), 11 s for one job in N-s3 C3. No effect on minute-scale waits; a lost finish event costs hours, so later than 60 s still fails. |
 | Pilot runs together (deviation, task 3.4) | The six pilot runs run at once, not one at a time | Each simulation uses under one core of 32 and about 1–2.6 GB, and the N-s1 runs took 69–73 min both alone-ish and in the batch of nine; one at a time would take most of a day. |

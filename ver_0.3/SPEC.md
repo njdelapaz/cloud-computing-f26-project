@@ -889,6 +889,42 @@ runs of seed 1. A difference counts only if it is larger than `b_s` times `S*`'s
 All three variants are reported, not only the best. Picking the best of three on the same
 weeks favors it slightly. The scale-up (§8.7) uses new weeks, so it checks that choice.
 
+**Result (task 3.6; `results/phase3/comparison.json`, `results/phase3/fig_*.png`).**
+The answer is **no**.
+
+- **The bar:** `S*` is C0, at a mean wait of 142 min over the nine workloads against B1's
+  280. C0 is the better fixed setting on 8 of 9 workloads; B1 wins only `X-s2`.
+- **Noise bands:** 0.22 on `N`, 0.31 on `X`, 0.24 on `Y`. In all six repeat sets the
+  third run, made alongside the `X-s3` batch, came out higher than the other two (by up to
+  31% on `X`). The number of runs sharing the host does not explain it, so the bands are
+  conservative.
+- **No adaptive variant is effective on any scenario.** Of the 27 comparisons with `S*`:
+  - 26 are worse than C0 (15 beyond the noise band) and 1 is better;
+  - the only win beyond noise, A3 on `N-s2` (−25%), fails the small-job guard;
+  - the only run within noise with every guard holding is A3 on `X-s1` (+7%);
+  - the small-job guard fails in 22 of 27, utilization in 13, fairness in none.
+
+Mean wait in minutes, mean of the three seeds:
+
+| Scenario | C0 | B1 | A1 | A2 | A3 |
+|---|---|---|---|---|---|
+| `N` | **73** | 154 | 94 | 83 | 82 |
+| `X` | **321** | 547 | 412 | 417 | 597 |
+| `Y` | **33** | 139 | 55 | 60 | 189 |
+
+What the adaptive policies do:
+- **They move waiting from medium and large jobs onto small jobs.** On `N`, medium jobs wait
+  1.6–4.3 h instead of 6.7 h and large jobs about 15 h instead of 19.5 h (A1, A2), while
+  small jobs wait 55–63 min instead of 25. Small jobs are about 90% of all jobs, so the mean
+  rises.
+- **On `X` they help on the days built for them and lose elsewhere.** They gain on the
+  large-long and memory-heavy days and lose on the natural and one-account days
+  (`fig_x_days.png`).
+- **A3 is the weakest on `X` and `Y`.** One or two large arrivals in an hour make large look
+  unusual, so it favors large for long stretches (61% of the `Y` week) and small jobs wait.
+- **B1 is erratic on `X`:** 54 min on `X-s2` but 900 min on `X-s3`. Fair share first does not
+  protect short jobs, and under `X`'s near-saturated load its outcome swings with the seed.
+
 ### 8.7 Scale-up (`M`)
 
 The brief says one week first, scale later. Once the one-week answer is in:
