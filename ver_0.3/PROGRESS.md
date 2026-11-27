@@ -3,7 +3,7 @@
 Status tracker for [PLAN.md](PLAN.md). It records status, decisions and results only; no task
 lengths or dates beyond the change log.
 
-**Current phase:** 3; 3.1–3.4 done; 3.5 (one-week evaluation runs) in progress
+**Current phase:** 3; 3.1–3.5 done; 3.6 (analysis) in progress
 
 ## Phase tracker
 
@@ -26,7 +26,7 @@ lengths or dates beyond the change log.
 | 3.2 Evaluation tooling | done | B1 rendered and its static keys applied per run; trigger variants as overlays (`triggers_A2.yaml`, `triggers_A3.yaml`); `config/evaluation.yaml`; `evaluation/metrics.py` (K runs: 119.5 / 84.1 min mean wait, matching Phase 2), `evaluation/compare.py`, `sim/batch.py`; B1 check run passes (`results/phase3/image_checks.json`); 121 tests pass |
 | 3.3 Arrivals variant (A3) | done | Hook counts submissions by QOS (image rebuilt; Phase 2 image kept as `slurmsim:v03-phase2`); policy `signal: arrivals`; calibrated on the K-s1 workload; hook-off smoke matches the Phase 2 image; apply test passes again; A3 slice: 770 ticks match sacct, replay exact |
 | 3.4 Pilot | done | Six pilot runs pass (after `MaxJobCount=200000` and the known-issue rules below). Per run: N 71 min, 1.1 GB, 155 MB disk; Y 126 min, 2.6 GB, 350 MB; X 177–183 min, 4.1 GB, 540 MB; under one core each. The N-s1 batch of nine took 71–101 min, the same as alone. Batch size: nine at once for every scenario; one X batch at a time (36 GB). Pilot (one seed): A1 mean wait above C0's on N (102 vs 76 min), X (371 vs 324) and Y (48 vs 36) |
-| 3.5 One-week evaluation runs | in progress | From 2026-11-27 five policies per workload (B1, C0, A1–A3). N-s1, N-s2 done (all pass); N-s3 done except A2 (rerun after the startup race) |
+| 3.5 One-week evaluation runs | done | 57 runs (45 matrix: B1, C0, A1–A3 × N, X, Y × 3 seeds; 6 pilot; 6 repeat), all pass under the current check rules (`results/phase3/metrics.csv`). Real time per run (median / max): N 73 / 101 min, Y 138 / 196 min, X 181 / 275 min; peak 1.1 / 2.7 / 4.3 GB. Known simulator issues over all 57: 1,940 completions and 319 submissions seconds late, 163 lost finish events (138 on X, ~7 per X run), 2 early finishes. 16 runs of the dropped B0 and C1–C3 kept aside |
 | 3.6 Analysis of the one-week results | not started | |
 | 3.7 Scale up (`M`) | not started | |
 | 3.8 Report | not started | |
