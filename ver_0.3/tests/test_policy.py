@@ -145,3 +145,69 @@ def test_tick_command_fails_cleanly_on_bad_snapshot(tmp_path):
                        capture_output=True, text=True)
     assert r.returncode == 1 and "failed" in r.stderr
     assert not (tmp_path / "decision.json").exists()
+
+
+# --- arrivals signal (SPEC §8.3) ---------------------------------------------------------
+
+ARR = replace(PARAMS, signal="arrivals")
+
+
+def test_arrivals_from_totals_uses_window_baseline():
+    from controller.tick import arrivals_from_totals
+    hist, out = [], []
+    for k in range(1, 9):                       # ticks every 600 s; 10 small jobs per tick
+        t = 600 * k
+        c, hist = arrivals_from_totals(hist, t, {"small": 10 * k, "large": k}, window_s=3600)
+        out.append(c)
+    assert out[0] == {"small": 10, "medium": 0, "large": 1}     # since the start
+    assert out[5] == {"small": 60, "medium": 0, "large": 6}     # t=3600: baseline is the start
+    assert out[6] == {"small": 60, "medium": 0, "large": 6}     # t=4200: baseline t=600
+    assert all(h[0] >= 4800 - 3600 for h in hist[1:]) and len(hist) <= 8
+
+
+def test_arrivals_signal_gates_on_waiting_and_arrivals():
+    d, _ = decide(0, LARGE, Memory(), ARR, waiting=10)
+    assert d.reason == "hold: 10 waiting < 20" and d.waiting == 10
+    d, _ = decide(0, {"small": 8, "medium": 1, "large": 1}, Memory(), ARR, waiting=50)
+    assert d.reason == "hold: 10 arrivals < 20"
+    with pytest.raises(ValueError, match="needs the number of waiting jobs"):
+        decide(0, LARGE, Memory(), ARR)
+
+
+def test_arrivals_signal_switches_on_arrival_mix():
+    mem = Memory()
+    for i in range(2):
+        d, mem = decide(600 * i, LARGE, mem, ARR, waiting=50)   # arrivals: large at P100
+    assert d.switch and d.state == "large" and d.waiting == 50 and d.counts == LARGE
+
+
+def test_tick_with_arrivals_and_replay(tmp_path):
+    from dataclasses import asdict
+    (tmp_path / "params.json").write_text(json.dumps(asdict(ARR)))
+    total = {"small": 0, "medium": 0, "large": 0}
+    outs = []
+    for i, step in enumerate([MIX, LARGE, LARGE, LARGE]):     # arrivals per tick
+        total = {q: total[q] + step[q] for q in total}
+        waiting = [{"id": j, "qos": "small"} for j in range(30)]
+        (tmp_path / "state.json").write_text(json.dumps(
+            {"t_sim": 600 * i, "config": "C0", "submitted": total, "waiting": waiting, "nodes": []}))
+        outs.append(tick_run(tmp_path)["config"])
+    log = [json.loads(l) for l in (tmp_path / "controller.jsonl").read_text().splitlines()]
+    assert log[0]["signal"] == "arrivals" and log[0]["waiting"] == 30
+    assert log[0]["waiting_counts"] == {"small": 30, "medium": 0, "large": 0}
+    assert log[1]["counts"] == {q: MIX[q] + LARGE[q] for q in MIX}     # window covers both ticks
+    assert "C1" in outs
+    assert replay(tmp_path) == []
+
+
+def test_tick_arrivals_needs_counter_in_snapshot(tmp_path):
+    from dataclasses import asdict
+    (tmp_path / "params.json").write_text(json.dumps(asdict(ARR)))
+    (tmp_path / "state.json").write_text(json.dumps({"t_sim": 0, "config": "C0", "waiting": []}))
+    with pytest.raises(ValueError, match="no 'submitted' totals"):
+        tick_run(tmp_path)
+
+
+def test_signal_must_be_known():
+    with pytest.raises(ValueError, match="signal must be"):
+        replace(PARAMS, signal="queue")

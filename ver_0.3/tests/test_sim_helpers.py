@@ -66,3 +66,85 @@ def test_prepare_run_renders_everything(tmp_path):
     finally:
         import shutil
         shutil.rmtree(ROOT / "results/_test")
+
+
+def test_b1_static_keys_replace_the_template():
+    import json
+    import shutil
+    run = Path("results/_test/b1")
+    out = prepare_run(run, ROOT / "sim/smoke/events.txt", ROOT / "sim/smoke/accounts.txt",
+                      ROOT / "config/priority/B1.conf")
+    try:
+        conf = (out / "etc/slurm.conf").read_text()
+        lines = conf.splitlines()
+        for key, value in [("PriorityDecayHalfLife", "14-0"), ("PriorityMaxAge", "14-0"),
+                           ("PriorityFavorSmall", "NO"), ("PriorityWeightPartition", "1000"),
+                           ("PriorityCalcPeriod", "1")]:
+            assert [l for l in lines if l.startswith(f"{key}=")] == [f"{key}={value}"]
+        assert not any(l.startswith("PriorityFlags=") for l in lines)
+        weights = (out / "etc/priority_weights.conf").read_text()
+        assert "PriorityWeightFairshare=10000" in weights and "PriorityWeightAge=1000" in weights
+        # the other configurations keep the template's keys
+        c0 = prepare_run(Path("results/_test/c0"), ROOT / "sim/smoke/events.txt",
+                         ROOT / "sim/smoke/accounts.txt", ROOT / "config/priority/C0.conf")
+        assert "PriorityFlags=SMALL_RELATIVE_TO_TIME" in (c0 / "etc/slurm.conf").read_text()
+    finally:
+        shutil.rmtree(ROOT / "results/_test")
+
+
+def test_apply_static_rejects_unknown_key(tmp_path):
+    from sim.prepare_run import apply_static
+    f = tmp_path / "x.static"
+    f.write_text("PriorityNoSuchKey=1\n")
+    with pytest.raises(ValueError, match="appears 0 times"):
+        apply_static("PriorityMaxAge=1-0\n", f)
+
+
+@pytest.mark.parametrize("variant,check", [
+    ("triggers.yaml", lambda p: p["dwell_s"] == 3600 and "signal" not in p),
+    ("triggers_A2.yaml", lambda p: p["dwell_s"]["small"] == 7200 and p["dwell_s"]["large"] == 3600),
+    ("triggers_A3.yaml", lambda p: p["signal"] == "arrivals" and p["window_s"] == 3600
+                                   and p["dwell_s"] == 3600),
+])
+def test_trigger_variants_reach_params(variant, check):
+    import json
+    import shutil
+    from controller.policy import Params
+    run = Path("results/_test/adaptive")
+    out = prepare_run(run, ROOT / "sim/smoke/events.txt", ROOT / "sim/smoke/accounts.txt",
+                      ROOT / "config/priority/C0.conf", policy="adaptive",
+                      triggers=ROOT / "config" / variant)
+    try:
+        params = json.loads((out / "policy/params.json").read_text())
+        assert check(params)
+        Params.from_dict(params)
+        assert len(params["quantiles"]["small"]) == 101
+    finally:
+        shutil.rmtree(ROOT / "results/_test")
+
+
+def test_batch_run_names_match_run_sim():
+    import yaml
+    from sim.batch import EVAL, _mem_mb, container_name, run_dir_for
+    cfg = yaml.safe_load(EVAL.read_text())
+    assert str(run_dir_for(cfg, "X-s2", "A3", "matrix")) == "results/phase3/runs/X-s2/A3"
+    assert str(run_dir_for(cfg, "N-s1", "C0", "pilot")) == "results/phase3/runs/N-s1/C0-pilot"
+    # sim/run_sim.sh: "slurmsim-" + path with '/' -> '-' and other characters dropped
+    assert container_name(Path("results/phase3/runs/N-s1/C0-pilot/")) == \
+        "slurmsim-results-phase3-runs-N-s1-C0-pilot"
+    assert _mem_mb("1.5GiB") == 1536 and _mem_mb("300MiB") == 300 and _mem_mb("--") == 0
+
+
+def test_evaluation_config_is_consistent():
+    import yaml
+    from sim.batch import EVAL
+    cfg = yaml.safe_load(EVAL.read_text())
+    assert len(cfg["policies"]) == 9 and len(cfg["workloads"]) == 9
+    for pid, pol in cfg["policies"].items():
+        assert (ROOT / "config/priority" / f"{pol['priority']}.conf").exists(), pid
+        assert (ROOT / "config/priority" / f"{pol['priority']}.qos").exists(), pid
+        if pol["kind"] == "adaptive":
+            assert (ROOT / "config" / pol["triggers"]).exists(), pid
+    for w in cfg["workloads"] + cfg["repeats"]["workloads"]:
+        assert w.split("-")[0] in cfg["time_start"]
+    assert set(cfg["repeats"]["policies"]) <= set(cfg["policies"])

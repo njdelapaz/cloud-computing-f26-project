@@ -1,0 +1,5 @@
+# A2 trigger (SPEC §8.2): triggers.yaml with longer minimum stays for small and medium
+# (SPEC §6.5: in the adaptive K week those states left at the 60-min minimum 8 of 16 and
+# 8 of 9 times; large only 2 of 9). Every other parameter comes from the base file.
+base: triggers.yaml
+dwell_s: {mix: 3600, large: 3600, small: 7200, medium: 7200}

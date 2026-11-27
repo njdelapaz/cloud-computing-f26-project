@@ -633,7 +633,7 @@ and replayed on its own.
 | Component | Where | Responsibility |
 |---|---|---|
 | Policy tick | patch to `contribs/sim/` (new event `SIM_POLICY_TICK`) | Fires every `Δ` simulated seconds from the first job's submission, and runs steps 1–4. |
-| Snapshot | patch | Writes `state.json`: simulated time, active configuration, and for each waiting job its id, QOS, CPUs, memory, time limit, account and time waited; plus allocated CPU and memory per node. |
+| Snapshot | patch | Writes `state.json`: simulated time, active configuration, jobs submitted so far per QOS (§8.3), and for each waiting job its id, QOS, CPUs, memory, time limit, account and time waited; plus allocated CPU and memory per node. |
 | Policy | `controller/policy.py` | A pure function of the snapshot, its own small memory (current state, candidate streak, last switch time) and the parameters. Returns the configuration and the reason. No I/O. |
 | Command | `controller/tick.py`, run as `PolicyCommand` | Reads the snapshot and memory, calls the policy, writes `decision.json` and the updated memory, and appends to the controller log. |
 | Apply | patch | Sets `slurm_conf.priority_weight_*` from the configuration's `.conf` file and calls the priority plugin's reconfigure entry. It applies the three QOS priorities from the `.qos` file through the accounting manager's QOS update, which also recomputes Slurm's normalized QOS priorities. Then it schedules an immediate priority recalculation. |
@@ -784,12 +784,25 @@ Arrivals do not depend on the configuration, so they cannot feed back.
 - **Gate.** Hold when fewer than `n_min` (20) jobs are waiting, or fewer than 20 jobs arrived
   in the window.
 - **Snapshot.** Finished jobs leave `slurmctld`'s job list after `MinJobAge` (300 s), so
-  arrivals cannot be read from it. The hook records each job's size QOS and submit time when
-  the simulator submits it, and `state.json` gains `"arrivals": {"small": n, "medium": n,
-  "large": n}`. This is a change to `sim/patches/policy_hook.patch`, so the image is rebuilt
-  before any evaluation run.
-- **Check.** At every tick of an A3 run, the logged arrival counts must equal those computed
-  from the run's sacct submit times.
+  arrivals cannot be read from it. The hook counts each job by its size QOS (the `-q`
+  argument) when the simulator submits it, and `state.json` gains the running totals,
+  `"submitted": {"small": n, "medium": n, "large": n}`. The controller keeps the totals of
+  recent ticks and takes the difference over the window. This is a change to
+  `sim/patches/policy_hook.patch`, so the image is rebuilt before any evaluation run.
+- **Check.** At every tick of an A3 run, the logged totals must match the run's sacct submit
+  times, and the arrivals must be the totals' difference over the window.
+
+**Calibration (task 3.3, `config/triggers_A3.yaml`, `results/phase3/arrival_calibration.json`).**
+Over the `K-s1` week, 981 of 1,008 ticks had at least 20 arrivals in the previous hour (median
+145). Median shares: small 0.92, medium 0.07, large 0.00. Large jobs arrive one to five an
+hour, so its share is 0 in most windows, and one or two large arrivals put it near the top of
+its range. A replay over the week (arrivals for the signal, the C0 run's queue for the gate)
+spends 36% of the time in large, 27% in small, 21% in mix and 17% in medium, with 7.9
+switches a day. Arrivals do not answer back, so runs should see about the same rate.
+Following risk R10, this is reported, not tuned.
+
+**Check result (task 3.3, `results/phase3/image_checks.json`).** On a 24-hour `K-s1` slice,
+all 770 ticks matched sacct and the window differences, and replay was exact.
 
 ### 8.4 Runs
 

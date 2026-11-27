@@ -252,8 +252,8 @@ answers to SPEC §8.9.)
   factors that grow with the request, not with a shorter time limit.
 
 ### 3.3 Arrivals variant (A3)
-- Extend the hook (SPEC §8.3): record each submitted job's size QOS and submit time, and add
-  `arrivals` to `state.json`. Rebuild the image.
+- Extend the hook (SPEC §8.3): count each submitted job by its size QOS, and add the running
+  totals (`submitted`) to `state.json`. Rebuild the image.
 - Give the policy a `signal` parameter (`waiting` or `arrivals`) and the arrivals gate.
 - Calibrate the arrival-share percentiles from the `K-s1` workload. Write
   `config/triggers_A3.yaml`.

@@ -103,8 +103,11 @@ this simulator unless the RPC thread is re-enabled.
 ## Policy hook (SPEC §7, tasks 2.4–2.5)
 
 `sim/patches/policy_hook.patch` adds to the simulator:
-- a cyclic `SIM_POLICY_TICK` event, which writes `policy/state.json` (waiting jobs and
-  per-node allocation), runs `PolicyCommand` and applies the configuration it returns;
+- a cyclic `SIM_POLICY_TICK` event, which writes `policy/state.json` (jobs submitted so far
+  per QOS, waiting jobs and per-node allocation), runs `PolicyCommand` and applies the
+  configuration it returns;
+- a count of every submitted job by its `-q` QOS, kept for the arrivals signal (SPEC §8.3,
+  task 3.3), since finished jobs leave the job list after `MinJobAge`;
 - a `-dt <s> -e set_priority_config | <id>` event, for fixed-time switches;
 - an apply step. It validates `policy/configs/<id>.{conf,qos}`, sets the QOS priorities
   through the accounting manager, sets the `PriorityWeight*` values and reloads the priority
@@ -113,8 +116,12 @@ this simulator unless the RPC thread is re-enabled.
 `sim.conf` settings: `PolicyDir`, `InitialConfig`, `PolicyTickSeconds` and `PolicyCommand`.
 `sim/prepare_run.py` writes them:
 - `--policy scheduled`: fixed-time switches only;
-- `--policy adaptive`: policy ticks, with `params.json` from `config/triggers.yaml` and a
+- `--policy adaptive`: policy ticks, with `params.json` from `config/triggers.yaml` (or a
+  variant overlay given with `--triggers`, such as `config/triggers_A3.yaml`) and a
   `tick.sh` that runs `controller.tick`.
+
+A configuration with a `.static` file (B1, SPEC §8.2) replaces the template's static priority
+keys in `slurm.conf` for its runs.
 
 Without `PolicyDir`, nothing changes. A smoke run on the patched image matched the unpatched
 one: same nodes, and start times within the 1 s jitter between repeat runs.
@@ -126,6 +133,21 @@ one: same nodes, and start times within the 1 s jitter between repeat runs.
 - A switch to a missing configuration (C9) was rejected and C1 kept.
 - A run whose policy command always fails logged every failed tick, never switched, and ran
   every job as specified.
+
+**Phase 3 image** (task 3.3; `slurmsim:v03`, `sha256:e74713c5ab32…`; the Phase 2 image is
+kept as `slurmsim:v03-phase2`). With the submission counter added, it passed
+(`results/phase3/image_checks.json`, `results/phase3/apply_test.json`):
+- the smoke run with the hook off matched the Phase 2 image job for job: same nodes, same
+  start times;
+- the apply test again: every switch recomputed all waiting jobs (121, 129, 115 and 48)
+  within 2 simulated seconds, C9 was rejected, and the failing command changed nothing;
+- a 24-hour `K-s1` slice under A3: at all 770 ticks the logged totals matched sacct's submit
+  times, the arrivals were the totals' differences over the window, and replay was exact;
+- a 24-hour `K-s1` slice under B1 with `DebugFlags=Priority`: B1's weights were logged, and
+  the job-size factor was the same for every job with a given CPU request (0.032 for 1 CPU
+  up to 0.051 for 20) whatever its time limit.
+
+Batches of Phase 3 runs go through `sim/batch.py` (SPEC §8.4).
 
 ## Known simulator issue: rare lost finish event
 

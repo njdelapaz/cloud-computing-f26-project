@@ -107,12 +107,50 @@ def render(template: Path, values: dict[str, str]) -> str:
     return text
 
 
-def write_policy_dir(run_dir: Path, c_run: Path, initial: str, adaptive: bool) -> list[str]:
+def load_triggers(path: Path) -> dict:
+    """A triggers file. One with `base: <file>` is an overlay on that file (same folder):
+    its keys replace the base's (SPEC §8.2 variants A2, A3)."""
+    path = Path(path)
+    trig = yaml.safe_load(path.read_text())
+    if "base" in trig:
+        base = load_triggers(path.parent / trig.pop("base"))
+        trig = {**base, **trig}
+    return trig
+
+
+PARAM_KEYS = ("n_min", "p_enter", "p_exit", "persist_ticks", "dwell_s", "state_config",
+              "quantiles", "signal", "window_s", "n_min_arrivals")
+
+
+def apply_static(text: str, static_path: Path) -> str:
+    """Replace the template's static priority keys with a setting's own (SPEC §8.2, B1).
+
+    static_path holds 'Key=Value' lines; an empty value removes the key. Each key must
+    appear exactly once in the template, so nothing is silently added or duplicated.
+    """
+    lines = text.splitlines()
+    for raw in Path(static_path).read_text().splitlines():
+        if not raw.strip() or raw.lstrip().startswith("#"):
+            continue
+        key, value = raw.split("=", 1)
+        hits = [i for i, l in enumerate(lines) if l.startswith(f"{key}=")]
+        if len(hits) != 1:
+            raise ValueError(f"{static_path}: {key} appears {len(hits)} times in slurm.conf")
+        if value.strip():
+            lines[hits[0]] = f"{key}={value.strip()}"
+        else:
+            del lines[hits[0]]
+    return "\n".join(lines) + "\n"
+
+
+def write_policy_dir(run_dir: Path, c_run: Path, initial: str, adaptive: bool,
+                     triggers: Path = TRIGGERS) -> list[str]:
     """Set up RUN_DIR/policy for the simulator's policy hook (SPEC §7.2).
 
     Copies every configuration (config/priority/*.conf, *.qos) to policy/configs/. With
-    adaptive, also writes policy/params.json from config/triggers.yaml and policy/tick.sh,
-    the command the simulator runs at each tick. Returns the sim.conf lines to add.
+    adaptive, also writes policy/params.json from the triggers file (config/triggers.yaml,
+    or a variant overlay such as config/triggers_A2.yaml) and policy/tick.sh, the command
+    the simulator runs at each tick. Returns the sim.conf lines to add.
     """
     pol = run_dir / "policy"
     (pol / "configs").mkdir(parents=True)
@@ -121,12 +159,11 @@ def write_policy_dir(run_dir: Path, c_run: Path, initial: str, adaptive: bool) -
     lines = ["", "## ver_0.3 policy hook (SPEC §7)", f"PolicyDir = {c_run / 'policy'}",
              f"InitialConfig = {initial}"]
     if adaptive:
-        trig = yaml.safe_load(TRIGGERS.read_text())
-        params = {k: trig[k] for k in ("n_min", "p_enter", "p_exit", "persist_ticks",
-                                       "dwell_s", "state_config", "quantiles")}
+        trig = load_triggers(triggers)
+        params = {k: trig[k] for k in PARAM_KEYS if k in trig}
         if trig["state_config"].get(trig.get("initial_state", "mix")) != initial:
             raise ValueError(f"initial config {initial} does not match the initial state's "
-                             f"config in {TRIGGERS}")
+                             f"config in {triggers}")
         params["initial_state"] = trig.get("initial_state", "mix")
         from controller.policy import Params
         Params.from_dict(params)   # fail here, not at every tick, on a bad dwell_s table
@@ -141,11 +178,13 @@ def write_policy_dir(run_dir: Path, c_run: Path, initial: str, adaptive: bool) -
 
 def prepare_run(run_dir: Path, events: Path, accounts: Path, priority: Path,
                 time_start: int = 1_704_067_200, extra_conf: list[str] | None = None,
-                policy: str | None = None) -> Path:
+                policy: str | None = None, triggers: Path = TRIGGERS) -> Path:
     """extra_conf: lines appended to slurm.conf (e.g. 'DebugFlags=Priority').
 
     policy: None (no hook), "scheduled" (configurations available for set_priority_config
-    events) or "adaptive" (policy ticks too). The run starts in the --priority configuration.
+    events) or "adaptive" (policy ticks too, with parameters from `triggers`). The run starts
+    in the --priority configuration. If that configuration has a .static file (B1), its keys
+    replace the template's static priority keys.
     """
     run_dir = (ROOT / run_dir).resolve()
     if ROOT not in run_dir.parents:
@@ -159,6 +198,9 @@ def prepare_run(run_dir: Path, events: Path, accounts: Path, priority: Path,
               "EVENTS": str(c_run / "events.txt"), "TIME_START": f"{float(time_start):.1f}"}
     for name in ["slurm.conf", "slurmdbd.conf", "sim.conf"]:
         (etc / name).write_text(render(TEMPLATES / f"{name}.in", values))
+    static = Path(priority).with_suffix(".static")
+    if static.exists():
+        (etc / "slurm.conf").write_text(apply_static((etc / "slurm.conf").read_text(), static))
     if extra_conf:
         with open(etc / "slurm.conf", "a") as f:
             f.write("\n# Added for this run\n" + "\n".join(extra_conf) + "\n")
@@ -172,7 +214,8 @@ def prepare_run(run_dir: Path, events: Path, accounts: Path, priority: Path,
     if policy:
         if policy not in ("scheduled", "adaptive"):
             raise ValueError(f"unknown policy mode {policy}")
-        lines = write_policy_dir(run_dir, c_run, Path(priority).stem, policy == "adaptive")
+        lines = write_policy_dir(run_dir, c_run, Path(priority).stem, policy == "adaptive",
+                                 triggers)
         with open(etc / "sim.conf", "a") as f:
             f.write("\n".join(lines) + "\n")
     return run_dir
@@ -189,9 +232,11 @@ def main() -> None:
                    help="line to append to slurm.conf; repeatable")
     p.add_argument("--policy", choices=["scheduled", "adaptive"],
                    help="enable the policy hook: fixed-time switches only, or policy ticks")
+    p.add_argument("--triggers", type=Path, default=TRIGGERS,
+                   help="triggers file for --policy adaptive (default config/triggers.yaml)")
     a = p.parse_args()
     print(prepare_run(a.run_dir, a.events, a.accounts, a.priority, a.time_start, a.extra_conf,
-                      a.policy))
+                      a.policy, a.triggers))
 
 
 if __name__ == "__main__":

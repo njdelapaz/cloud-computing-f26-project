@@ -21,7 +21,9 @@ def replay(policy_dir: Path) -> list[str]:
     lines = (policy_dir / "controller.jsonl").read_text().splitlines()
     for i, line in enumerate(lines):
         rec = json.loads(line)
-        d, memory = decide(rec["t_sim"], rec["counts"], memory, params)
+        # with the arrivals signal, counts are arrivals and the gate also needs the waiting total
+        d, memory = decide(rec["t_sim"], rec["counts"], memory, params,
+                           waiting=rec["waiting"] if params.signal == "arrivals" else None)
         for key in ("state", "switch", "config", "candidate"):
             if getattr(d, key) != rec[key]:
                 mismatches.append(f"tick {i} (t={rec['t_sim']}): {key} replay={getattr(d, key)!r} "

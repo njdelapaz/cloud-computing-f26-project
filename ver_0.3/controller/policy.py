@@ -1,4 +1,5 @@
-"""Queue-state policy (SPEC §6.4): pick a configuration from the waiting queue's class mix.
+"""Queue-state policy (SPEC §6.4): pick a configuration from the class mix of the waiting
+queue, or of recent arrivals (SPEC §8.3).
 
 Pure functions, standard library only: this runs inside the simulator container (Python
 3.10, no third-party packages) as well as on the host for tests and replay.
@@ -28,8 +29,18 @@ class Params:
     state_config: dict[str, str]       # state -> configuration id
     quantiles: dict[str, list[float]]  # class -> 101 share quantiles (q0..q100) from calibration
     initial_state: str = "mix"
+    # What the shares are taken from: the waiting queue (SPEC §6.2) or the jobs submitted in
+    # the last window_s seconds (SPEC §8.3). With arrivals, a tick also holds when fewer than
+    # n_min_arrivals jobs arrived in the window.
+    signal: str = "waiting"
+    window_s: int = 3600
+    n_min_arrivals: int = 20
 
     def __post_init__(self) -> None:
+        if self.signal not in ("waiting", "arrivals"):
+            raise ValueError(f"signal must be 'waiting' or 'arrivals', got {self.signal!r}")
+        if self.n_min < 1 or self.n_min_arrivals < 1:
+            raise ValueError("n_min and n_min_arrivals must be at least 1")
         if isinstance(self.dwell_s, dict):
             missing = sorted(set(self.state_config) - set(self.dwell_s))
             unknown = sorted(set(self.dwell_s) - set(self.state_config))
@@ -79,18 +90,35 @@ def percentile_rank(share: float, quantiles: list[float]) -> int:
     return max(0, min(100, k))
 
 
-def decide(t_sim: int, counts: dict[str, int], memory: Memory, params: Params
-           ) -> tuple[Decision, Memory]:
-    """One tick of SPEC §6.4. Returns the decision record and the updated memory."""
+def decide(t_sim: int, counts: dict[str, int], memory: Memory, params: Params,
+           waiting: int | None = None) -> tuple[Decision, Memory]:
+    """One tick of SPEC §6.4. Returns the decision record and the updated memory.
+
+    counts: jobs per size class in the signal: waiting jobs (signal "waiting"), or jobs
+    submitted in the last window (signal "arrivals", which also needs `waiting`, the number
+    of jobs waiting, for the gate).
+    """
     counts = {c: int(counts.get(c, 0)) for c in CLASSES}
     n = sum(counts.values())
+    if params.signal == "arrivals":
+        if waiting is None:
+            raise ValueError("the arrivals signal needs the number of waiting jobs")
+        n_wait = int(waiting)
+    else:
+        n_wait = n
     mem = Memory(**asdict(memory))
-    d = Decision(t_sim=t_sim, waiting=n, counts=counts, state_before=mem.state,
+    d = Decision(t_sim=t_sim, waiting=n_wait, counts=counts, state_before=mem.state,
                  state=mem.state, config=params.state_config[mem.state])
 
-    # 1. Gate: too few waiting jobs for priority to matter.
-    if n < params.n_min:
-        d.reason = f"hold: {n} waiting < {params.n_min}"
+    # 1. Gate: too few waiting jobs for priority to matter (or, for arrivals, too few
+    #    arrivals for their mix to mean much).
+    gate = None
+    if n_wait < params.n_min:
+        gate = f"hold: {n_wait} waiting < {params.n_min}"
+    elif params.signal == "arrivals" and n < params.n_min_arrivals:
+        gate = f"hold: {n} arrivals < {params.n_min_arrivals}"
+    if gate:
+        d.reason = gate
         d.candidate, d.streak = mem.candidate, mem.streak
         return d, mem
 

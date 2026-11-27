@@ -40,3 +40,17 @@ configs:
   C1: {name: favor large, scenario: many large jobs, qos_priority: {small: 0, medium: 50, large: 100}}
   C2: {name: favor small, scenario: many small jobs, qos_priority: {small: 100, medium: 50, large: 0}}
   C3: {name: favor medium, scenario: many medium jobs, qos_priority: {small: 0, medium: 100, large: 0}}
+
+# Fixed reference settings for Step 6 (SPEC §8.2), used as published: no tiers, no scaling.
+# `static` replaces the template's static priority keys in sim/etc/slurm.conf.in for these
+# runs; an empty value removes the key. They never switch, so the policy hook never loads them.
+references:
+  B1:
+    name: typical site setting (SchedMD multifactor configuration example, fair share first)
+    weights: {Age: 1000, QOS: 0, Fairshare: 10000, JobSize: 1000, TRES_CPU: 0, TRES_Mem: 0}
+    static:
+      PriorityDecayHalfLife: "14-0"
+      PriorityMaxAge: "14-0"
+      PriorityFavorSmall: "NO"
+      PriorityFlags: ""                # no SMALL_RELATIVE_TO_TIME: larger requests score higher
+      PriorityWeightPartition: 1000    # one partition: the same for every job

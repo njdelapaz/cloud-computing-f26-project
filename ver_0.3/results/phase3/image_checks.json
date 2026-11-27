@@ -1,0 +1,50 @@
+{
+  "image": "slurmsim:v03",
+  "image_id": "sha256:e74713c5ab322db1286466ab468fb11cbe1923b61ab9bc5eb6414a17b7fb82da",
+  "hours": 24,
+  "smoke_hook_off": {
+    "jobs": 36,
+    "matched": 36,
+    "same_node": true,
+    "max_start_diff_s": 0,
+    "run_problems": [],
+    "ok": true
+  },
+  "a3_arrivals": {
+    "ticks": 770,
+    "switches": 4,
+    "states": [
+      "large",
+      "medium",
+      "mix"
+    ],
+    "arrivals_gated_ticks": 3,
+    "totals_mismatches": [],
+    "arrivals_mismatches": [],
+    "replay_mismatches": [],
+    "run_problems": [],
+    "ok": true
+  },
+  "b1_priority": {
+    "priority_blocks": 1094,
+    "weights_ok": {
+      "Age_w": true,
+      "Fairshare_w": true,
+      "JobSize_w": true
+    },
+    "jobsize_by_cpus": {
+      "1": 0.032227,
+      "2": 0.033203,
+      "4": 0.035156,
+      "8": 0.039062,
+      "12": 0.042969,
+      "20": 0.050781
+    },
+    "cpu_values_with_several_limits": 4,
+    "jobsize_constant_per_cpu_request": true,
+    "jobsize_rises_with_cpus": true,
+    "run_problems": [],
+    "ok": true
+  },
+  "ok": true
+}

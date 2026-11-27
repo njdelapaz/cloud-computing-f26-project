@@ -124,10 +124,10 @@ index 6d6440413f..5a75feb443 100644
  typedef struct sim_event_submit_batch_job {
 diff --git a/contribs/sim/sim_policy.c b/contribs/sim/sim_policy.c
 new file mode 100644
-index 0000000000..5260f58f4f
+index 0000000000..eb4fd97da1
 --- /dev/null
 +++ b/contribs/sim/sim_policy.c
-@@ -0,0 +1,366 @@
+@@ -0,0 +1,416 @@
 +/*
 + * ver_0.3 policy hook (SPEC §7): a periodic policy tick and an in-place switch of the
 + * priority configuration (PriorityWeight* values and the size-QOS priorities).
@@ -140,6 +140,7 @@ index 0000000000..5260f58f4f
 + *   PolicyDir          directory for state.json, decision.json and configs/<id>.{conf,qos}
 + *   InitialConfig      id of the configuration the run starts with
 + * Events file: "-dt <s> -e set_priority_config | <id>" applies <id> at a fixed time.
++ * With PolicyDir set, every submission is also counted by QOS (SPEC §8.3).
 + */
 +
 +extern int64_t simulator_start_time;
@@ -148,6 +149,50 @@ index 0000000000..5260f58f4f
 +#define POLICY_NAME_LEN 64
 +
 +static char *sim_policy_current = NULL;	/* active configuration id */
++
++/*
++ * Jobs submitted so far, per QOS (SPEC §8.3). Counted at each submit event, because
++ * finished jobs leave job_list after MinJobAge. Written to state.json as "submitted";
++ * the controller turns the running totals into arrivals over its own window.
++ */
++static char sim_policy_sub_name[POLICY_MAX_QOS][POLICY_NAME_LEN];
++static uint64_t sim_policy_sub_count[POLICY_MAX_QOS];
++static int sim_policy_sub_n = 0;
++
++/* Count one submission by its QOS (the -q / --qos argument of the job's sbatch line). */
++extern void sim_policy_note_submit(sim_event_submit_batch_job_t *ev)
++{
++	const char *q = "";
++
++	if (!ev || !slurm_sim_conf->policy_dir)
++		return;
++	for (int i = 0; i < ev->argc; i++) {
++		const char *a = ev->argv[i];
++		if (!a)
++			continue;
++		if ((!strcmp(a, "-q") || !strcmp(a, "--qos")) && i + 1 < ev->argc && ev->argv[i + 1]) {
++			q = ev->argv[i + 1];
++			break;
++		}
++		if (!strncmp(a, "--qos=", 6)) {
++			q = a + 6;
++			break;
++		}
++	}
++	for (int k = 0; k < sim_policy_sub_n; k++) {
++		if (!strcmp(sim_policy_sub_name[k], q)) {
++			sim_policy_sub_count[k]++;
++			return;
++		}
++	}
++	if (sim_policy_sub_n < POLICY_MAX_QOS) {
++		snprintf(sim_policy_sub_name[sim_policy_sub_n], POLICY_NAME_LEN, "%s", q);
++		sim_policy_sub_count[sim_policy_sub_n++] = 1;
++	} else {
++		error("policy: more than %d QOS names; submission with QOS '%s' not counted",
++		      POLICY_MAX_QOS, q);
++	}
++}
 +
 +static char *_policy_path(const char *name)
 +{
@@ -337,7 +382,8 @@ index 0000000000..5260f58f4f
 +	return rc;
 +}
 +
-+/* Write PolicyDir/state.json: waiting jobs and per-node allocation (SPEC §7.2). */
++/* Write PolicyDir/state.json: submissions so far, waiting jobs and per-node allocation
++ * (SPEC §7.2, §8.3). */
 +static int _policy_write_state(const char *path, time_t now)
 +{
 +	slurmctld_lock_t job_read_lock = { .job = READ_LOCK, .node = READ_LOCK };
@@ -358,8 +404,12 @@ index 0000000000..5260f58f4f
 +	ncpu = xcalloc(node_record_count, sizeof(uint32_t));
 +	nmem = xcalloc(node_record_count, sizeof(uint64_t));
 +
-+	fprintf(f, "{\"t_sim\":%ld,\"config\":\"%s\",\"waiting\":[", (long) now,
++	fprintf(f, "{\"t_sim\":%ld,\"config\":\"%s\",\"submitted\":{", (long) now,
 +		sim_policy_current ? sim_policy_current : "");
++	for (int k = 0; k < sim_policy_sub_n; k++)
++		fprintf(f, "%s\"%s\":%" PRIu64, k ? "," : "", sim_policy_sub_name[k],
++			sim_policy_sub_count[k]);
++	fprintf(f, "},\"waiting\":[");
 +	lock_slurmctld(job_read_lock);
 +	itr = list_iterator_create(job_list);
 +	while ((job_ptr = list_next(itr))) {
@@ -495,7 +545,7 @@ index 0000000000..5260f58f4f
 +	}
 +}
 diff --git a/contribs/sim/slurmctld_controller.c b/contribs/sim/slurmctld_controller.c
-index 7fdd5867ea..2084c6f1a5 100644
+index 7fdd5867ea..1fee005faa 100644
 --- a/contribs/sim/slurmctld_controller.c
 +++ b/contribs/sim/slurmctld_controller.c
 @@ -29,6 +29,7 @@ extern void sim_slurmctld_event_main_loop();
@@ -514,7 +564,15 @@ index 7fdd5867ea..2084c6f1a5 100644
  	//time_t start_time;
  	//int jobs_submit_count=0;
  
-@@ -540,6 +542,15 @@ int64_t sim_events_loop()
+@@ -507,6 +509,7 @@ int64_t sim_events_loop()
+ 				break;
+ 			case SIM_SUBMIT_BATCH_JOB:
+ 				event_started(SUBMIT_JOB_SSIM_RT_EVENT);
++				sim_policy_note_submit((sim_event_submit_batch_job_t*)event->payload);	/* ver_0.3 */
+ 				submit_job((sim_event_submit_batch_job_t*)event->payload);
+ 				event_ended(SUBMIT_JOB_SSIM_RT_EVENT);
+ 				break;
+@@ -540,6 +543,15 @@ int64_t sim_events_loop()
  				}
  				sim_insert_event(event->when + 5*USEC_IN_SEC, SIM_SET_DB_INDEX,NULL);
  				break;

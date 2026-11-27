@@ -3,7 +3,8 @@
 Usage:
   .venv/bin/python -m sim.weights calibrate --from-check TAG      # pooled pending queues
   .venv/bin/python -m sim.weights calibrate --per-config-from TAG # each config's own queue
-  .venv/bin/python -m sim.weights render   # writes config/priority/{B0,C0..C3}.{conf,qos}
+  .venv/bin/python -m sim.weights render   # writes config/priority/{B0,C0..C3,B1}.{conf,qos}
+                                           # and B1.static (SPEC §8.2)
 
 Slurm factors (Slurm 23.11 priority/multifactor, single-node jobs on the 16-node cluster):
   QOS       = QOS priority / largest QOS priority (each job runs in its size class's QOS)
@@ -210,6 +211,13 @@ def conf_text(name: str, title: str, w: dict) -> str:
             f"PriorityWeightTRES=CPU={w['TRES_CPU']},Mem={w['TRES_Mem']}\n")
 
 
+def static_text(name: str, static: dict) -> str:
+    """Static priority keys that replace the slurm.conf template's for this setting."""
+    return (f"# {name}: static priority keys for sim/prepare_run.py; they replace the template's\n"
+            f"# lines in sim/etc/slurm.conf.in (an empty value removes the key)\n" +
+            "".join(f"{k}={'' if v is None else v}\n" for k, v in static.items()))
+
+
 def qos_text(name: str, qos_priority: dict[str, int]) -> str:
     """QOS priorities for sim/prepare_run.py: one 'qos priority' pair per line."""
     return (f"# {name}: QOS priorities (Slurm normalizes by the largest)\n" +
@@ -237,8 +245,9 @@ def render() -> dict[str, dict]:
     scales = yaml.safe_load(SCALES.read_text())
     validate(cfg)
     PRIORITY_DIR.mkdir(parents=True, exist_ok=True)
-    names = ["B0"] + list(cfg["configs"])
-    keep = {".gitkeep"} | {f"{n}{ext}" for n in names for ext in (".conf", ".qos")}
+    refs = cfg.get("references", {})
+    names = ["B0"] + list(cfg["configs"]) + list(refs)
+    keep = {".gitkeep"} | {f"{n}{ext}" for n in names for ext in (".conf", ".qos", ".static")}
     for stale in PRIORITY_DIR.iterdir():          # configurations no longer defined
         if stale.name not in keep:
             stale.unlink()
@@ -252,6 +261,12 @@ def render() -> dict[str, dict]:
         title = f"{c['name']} (for: {c['scenario']}), then shortest time limit, then fairness"
         (PRIORITY_DIR / f"{name}.conf").write_text(conf_text(name, title, w))
         (PRIORITY_DIR / f"{name}.qos").write_text(qos_text(name, c["qos_priority"]))
+    for name, r in refs.items():                   # SPEC §8.2: as published, not scaled
+        w = {k: int(r["weights"][k]) for k in B0_WEIGHTS}
+        out[name] = w
+        (PRIORITY_DIR / f"{name}.conf").write_text(conf_text(name, r["name"], w))
+        (PRIORITY_DIR / f"{name}.qos").write_text(qos_text(name, zero_qos))
+        (PRIORITY_DIR / f"{name}.static").write_text(static_text(name, r.get("static", {})))
     return out
 
 

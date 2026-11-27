@@ -1,0 +1,45 @@
+# Step 6 evaluation (SPEC §8): what sim/batch.py runs and how evaluation/compare.py judges it.
+
+# Simulated start of each scenario's week (Monday 00:00 UTC). K and N keep their source
+# week; X, Y are re-timed weeks, so any Monday will do.
+time_start:
+  K: 1706486400   # 2024-01-29
+  N: 1716163200   # 2024-05-20
+  X: 1719792000   # 2024-07-01
+  Y: 1719792000   # 2024-07-01
+
+# The nine policies (SPEC §8.2). priority: config/priority/<id>.conf (+ .qos, .static);
+# triggers: a file in config/ (adaptive only; the run starts in `priority`).
+policies:
+  B0: {kind: static, priority: B0}
+  B1: {kind: static, priority: B1}
+  C0: {kind: static, priority: C0}
+  C1: {kind: static, priority: C1}
+  C2: {kind: static, priority: C2}
+  C3: {kind: static, priority: C3}
+  A1: {kind: adaptive, priority: C0, triggers: triggers.yaml}
+  A2: {kind: adaptive, priority: C0, triggers: triggers_A2.yaml}
+  A3: {kind: adaptive, priority: C0, triggers: triggers_A3.yaml}
+
+workloads: [N-s1, N-s2, N-s3, X-s1, X-s2, X-s3, Y-s1, Y-s2, Y-s3]
+
+# Repeat sets for the noise band (SPEC §8.4, E-E): these policies on these workloads run
+# three times: alone in the pilot, in the matrix batch, and once more.
+repeats:
+  policies: [C0, A1]
+  workloads: [N-s1, X-s1, Y-s1]
+
+run_root: results/phase3/runs
+dtstart: 60
+
+# Metrics (SPEC §8.5) and pass rules (SPEC §8.6, E-A to E-D)
+metrics:
+  bsld_tau_s: 600            # bounded slowdown: (wait + run) / max(run, tau)
+  jain_min_jobs: 20          # accounts with at least this many jobs enter Jain's index
+  window_s: 604800           # cluster state over the 7-day submission window
+  sample_s: 300
+primary: wait_mean_min
+guards:
+  class_wait_ratio: 1.25     # no size class's mean wait more than 25% above S*'s
+  utilization_drop: 0.01     # utilization at most 1 point below S*'s
+  jain_drop: 0.05            # Jain's index at most 0.05 below S*'s

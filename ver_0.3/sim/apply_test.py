@@ -1,6 +1,6 @@
 """Task 2.5: test the policy hook's apply step in the simulator (SPEC §7.6 item 2).
 
-Usage: .venv/bin/python -m sim.apply_test [--hours 21]
+Usage: .venv/bin/python -m sim.apply_test [--hours 21] [--out results/phase2]
 
 Run A (scheduled switches) on the first --hours of K-s1 with DebugFlags=Priority:
   C0 at start, then C1, C9 (missing: must be rejected), C2, C3, C0 at fixed times.
@@ -9,7 +9,8 @@ Run A (scheduled switches) on the first --hours of K-s1 with DebugFlags=Priority
   and within 60 simulated seconds. C9 must be logged as an error and change nothing.
 Run B (failing command) on the smoke workload with policy ticks whose command always fails:
   every tick logs the failure, no switch happens, and all jobs run as specified.
-Writes results/phase2/apply_test.json.
+Writes OUT/apply_test.json (default results/phase2; task 3.3 reruns it into results/phase3
+with the rebuilt image).
 """
 from __future__ import annotations
 
@@ -27,7 +28,6 @@ from sim.prepare_run import ROOT, prepare_run
 from sim.priority_log import JOB, TS, WEIGHTED
 from sim.weights import qos_factors
 
-OUT = ROOT / "results" / "phase2"
 IMAGE = "slurmsim:v03"   # includes the policy hook (sim/patches/policy_hook.patch)
 # (hours, config): during K-s1's first standing queue (about 40-160 jobs waiting at 16-19 h)
 SWITCHES = [(16.5, "C1"), (17, "C9"), (17.5, "C2"), (18.5, "C3"), (19.5, "C0")]
@@ -123,8 +123,10 @@ def check_switches(run_dir: Path, start: pd.Timestamp, jobs: pd.DataFrame) -> di
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--hours", type=float, default=21)
+    p.add_argument("--out", type=Path, default=Path("results/phase2"))
     a = p.parse_args()
-    OUT.mkdir(parents=True, exist_ok=True)
+    out = ROOT / a.out
+    out.mkdir(parents=True, exist_ok=True)
     src = ROOT / "workloads" / "traces" / "K-s1"
     jobs = pd.read_parquet(src / "jobs.parquet").set_index("job_id")
 
@@ -132,15 +134,15 @@ def main() -> None:
     lines = [l for l in (src / "events.txt").read_text().splitlines()
              if int(l.split()[1]) < a.hours * 3600]
     lines += [f"-dt {int(h * 3600)} -e set_priority_config | {c}" for h, c in SWITCHES]
-    ev_a = OUT / "apply-input" / "apply_events.txt"   # inside an ignored folder
+    ev_a = out / "apply-input" / "apply_events.txt"   # inside an ignored folder
     ev_a.parent.mkdir(parents=True, exist_ok=True)
     ev_a.write_text("\n".join(lines) + "\n")
-    run_a = Path("results/phase2/apply-A")
+    run_a = a.out / "apply-A"
     prepare_run(run_a, ev_a, src / "accounts.txt", ROOT / "config" / "priority" / "C0.conf",
                 1_706_486_400, extra_conf=["DebugFlags=Priority"], policy="scheduled")
 
     # Run B: smoke workload with a policy command that always fails
-    run_b = Path("results/phase2/apply-B")
+    run_b = a.out / "apply-B"
     prepare_run(run_b, ROOT / "sim" / "smoke" / "events.txt", ROOT / "sim" / "smoke" / "accounts.txt",
                 ROOT / "config" / "priority" / "C0.conf", 1_716_163_200, policy="scheduled")
     bad = ROOT / run_b / "policy" / "fail.sh"
@@ -161,7 +163,8 @@ def main() -> None:
     res_b["ok"] = res_b["ticks_failed"] > 0 and res_b["switches"] == 0 and not res_b["run_problems"]
     result = {"A_scheduled_switches": res_a, "B_failing_command": res_b,
               "ok": bool(res_a["ok"] and not res_a["run_problems"] and res_b["ok"])}
-    (OUT / "apply_test.json").write_text(json.dumps(result, indent=2, default=str) + "\n")
+    result["image"] = IMAGE
+    (out / "apply_test.json").write_text(json.dumps(result, indent=2, default=str) + "\n")
     print(json.dumps(result, indent=2, default=str))
 
 
