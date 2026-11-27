@@ -951,6 +951,9 @@ policy's own history: a backlog built up under one state is waited out under the
 
 ### 8.7 Scale-up (`M`)
 
+*Not run: skipped on request (2026-11-27) after the one-week answer was no. `M` was not
+built.*
+
 The brief says one week first, scale later. Once the one-week answer is in:
 - **`M`:** four consecutive eligible weeks, weeks 11–14 (2024-03-18 to 2024-04-14), thinned
   to `ρ*` like `K` and `N`, seeds 1–3.

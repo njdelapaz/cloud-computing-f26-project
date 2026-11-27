@@ -18,7 +18,7 @@ stays inside `ver_0.3/`.
 |---|---|---|---|
 | 1 | 1–3: workloads, classes, weight configurations | Scenarios `K`, `N` and `X` built; 9 classes frozen; B0 and C0–C3 verified in the simulator | All Phase 1 "done when" items met |
 | 2 | 4–5: trigger states and change mechanism | Triggers calibrated on K; policy module; simulator hook; apply test; adaptive week on K | 2.2–2.6 done; replay reproduces online decisions |
-| 3 | 6: simulation of the full setup | Static and adaptive policies run on `N`, `X` and `Y`; answer to SPEC §1 by the SPEC §8.6 rules; scale-up on `M`; `REPORT.md` | 3.2–3.8 done |
+| 3 | 6: simulation of the full setup | Static and adaptive policies run on `N`, `X` and `Y`; answer to SPEC §1 by the SPEC §8.6 rules; scale-up on `M`; `REPORT.md` | 3.2–3.8 done (met 2026-11-27 with 3.7 skipped on request) |
 
 ---
 
@@ -311,7 +311,8 @@ recorded in `PROGRESS.md`.
 **Done when:** `REPORT.md` is committed.
 
 **Phase 3 exit:** 3.2–3.8 done; open questions E-A to E-E (SPEC §8.9) answered or kept at
-their defaults; `PROGRESS.md` updated.
+their defaults; `PROGRESS.md` updated. (Met 2026-11-27: 3.7 skipped on request after the
+one-week answer was no; `REPORT.md` written.)
 
 ---
 

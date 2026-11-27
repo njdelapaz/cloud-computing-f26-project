@@ -3,7 +3,7 @@
 Status tracker for [PLAN.md](PLAN.md). It records status, decisions and results only; no task
 lengths or dates beyond the change log.
 
-**Current phase:** 3; 3.1–3.6 done; next is 3.7 (scale-up on `M`)
+**Current phase:** 3 complete (3.7 skipped on request). Answer to SPEC §1: no ([REPORT.md](REPORT.md))
 
 ## Phase tracker
 
@@ -28,8 +28,8 @@ lengths or dates beyond the change log.
 | 3.4 Pilot | done | Six pilot runs pass (after `MaxJobCount=200000` and the known-issue rules below). Per run: N 71 min, 1.1 GB, 155 MB disk; Y 126 min, 2.6 GB, 350 MB; X 177–183 min, 4.1 GB, 540 MB; under one core each. The N-s1 batch of nine took 71–101 min, the same as alone. Batch size: nine at once for every scenario; one X batch at a time (36 GB). Pilot (one seed): A1 mean wait above C0's on N (102 vs 76 min), X (371 vs 324) and Y (48 vs 36) |
 | 3.5 One-week evaluation runs | done | 57 runs (45 matrix: B1, C0, A1–A3 × N, X, Y × 3 seeds; 6 pilot; 6 repeat), all pass under the current check rules (`results/phase3/metrics.csv`). Real time per run (median / max): N 73 / 101 min, Y 138 / 196 min, X 181 / 275 min; peak 1.1 / 2.7 / 4.3 GB. Known simulator issues over all 57: 1,940 completions and 319 submissions seconds late, 163 lost finish events (138 on X, ~7 per X run), 2 early finishes. 16 runs of the dropped B0 and C1–C3 kept aside |
 | 3.6 Analysis of the one-week results | done | **Answer: no** (SPEC §8.6). `S*` = C0 (142 min mean wait over 9 workloads; B1 280). No adaptive variant effective anywhere: 26 of 27 comparisons worse than C0 (15 beyond the 22–31% noise bands); the one win (A3, N-s2, −25%) fails the small-job guard. Adaptive policies shift waits from medium/large jobs to small ones (~90% of jobs). `results/phase3/comparison.json`, five figures `results/phase3/fig_*.png` |
-| 3.7 Scale up (`M`) | not started | |
-| 3.8 Report | not started | |
+| 3.7 Scale up (`M`) | skipped | Skipped on request (2026-11-27) after the one-week answer was a clear no; `M` was not built |
+| 3.8 Report | done | `REPORT.md`: answer no, with results by scenario, size class and day, the favored-class analysis, the fixed favor-small context, why switching did not pay, limitations and reproduction |
 
 ## Pinned third-party sources
 
@@ -80,6 +80,7 @@ lengths or dates beyond the change log.
 | Startup race (finding, task 3.5) | `sim/batch.py` starts containers 20 s apart and stops and retries a run whose controller refuses a submission in its first 15 min | With ~27 runs starting together, N-s3 A2 (and the dropped N-s2 C3) started slurmctld before the accounts were loaded: all 19,836 submissions were refused and the run never ended. The simulator cannot take account updates after startup. N-s3 A2 is rerun. |
 | Fixed settings compared (requested 2026-11-27) | Only C0 and B1; B0 and C1–C3 dropped from the comparison (5 policies × 9 workloads = 45 matrix runs, 57 in all) | C1–C3 are the states the adaptive policies switch to; C0 and B1 are the fixed choices a site would weigh. Runs of the dropped settings already made (N, Y-s1) are kept but not compared. Noted: on N-s1, C2 fixed had the lowest mean wait (65 min vs C0 75, adaptive 88–111). |
 | Favored-class effect (finding, task 3.6) | Reported in SPEC §8.6 (`evaluation/favored.py`) | While a class is favored, its jobs wait much less for medium (−55 to −91% on N and Y) and for large on N (−30 to −83%), but never less for small (+17 to +368%): C0 already starts short jobs first, and the small state follows backlogs the policy built. The other classes' extra waiting usually exceeds the favored class's gain. |
+| Scale-up skipped (requested 2026-11-27) | Task 3.7 not run; the report rests on the one-week results | The one-week answer is no on every scenario; a four-week run (9–12 runs, 6+ h) would test whether it holds over a month but could not reverse the one-week verdict. Listed as a limitation in REPORT.md. |
 | Repeat-run shift (finding, task 3.6) | Noise bands kept as specified (0.22 N, 0.31 X, 0.24 Y) | In all six repeat sets the third run (made 15:44–19:00 UTC alongside X-s3) came out higher than the other two, by up to 31% on X. The count of runs sharing the host does not explain it. The bands are therefore conservative; the verdict does not depend on them (every adaptive comparison but one is worse than C0 or breaks a guard). |
 | Early finishes (finding, task 3.4) | Up to 5 jobs per run that the simulator completes early count as a known simulator issue, not a run failure (`sim/check_run.py`, `EARLY_FINISH_MAX`) | Rare simulator glitch: a job completes at another job's completion instant, hours early (1–3 jobs of ~55k in some runs; a repeat usually has none). Failing such runs would cost reruns and could exclude runs for no effect on the metrics; more than 5 still fails. |
 | Late completions (finding, task 3.4) | Completions and submissions up to 60 s late count as a known simulator issue (`LATE_TOLERANCE_S`; 10 s at first) | At instants where many jobs end together the simulator processes some completions late: 1 s in every run, 2–5 s for 93 jobs in the X-s1 C0 pilot (19k-job queue), 11 s for one job in N-s3 C3. No effect on minute-scale waits; a lost finish event costs hours, so later than 60 s still fails. |
@@ -110,3 +111,15 @@ lengths or dates beyond the change log.
 | 2026-11-26 | `5de3e8f` | 2.6: adaptive K week with the queue-state policy |
 | 2026-11-26 | `836cd4a` | Per-state minimum stay for the queue-state policy |
 | 2026-11-26 | `2a68d08` | 3.1: Step 6 spec (SPEC §8) and Phase 3 tasks |
+| 2026-11-26 | `5d51f28` | 3.2-3.3: evaluation tooling and the arrivals variant (A3) |
+| 2026-11-27 | `114e8a0` | 3.4 fix: raise MaxJobCount; keep failed attempts; run timeout |
+| 2026-11-27 | `d2e22e9` | 3.4: rare early finishes as a known simulator issue; batch --recheck |
+| 2026-11-27 | `37963e5` | 3.4: completions a few seconds late as a known simulator issue |
+| 2026-11-27 | `4fc60d1` | 3.4: pilot done; submissions a few seconds late as a known issue |
+| 2026-11-27 | `352dd06` | Step 6: compare only C0 and B1 as fixed settings (requested) |
+| 2026-11-27 | `0c70e54` | 3.5: allow completions and submissions up to 60 s late (was 10 s) |
+| 2026-11-27 | `beea9b8` | 3.5: space out container starts; stop runs whose controller refuses jobs |
+| 2026-11-27 | `da741fe` | 3.5: a job killed at its limit a few seconds late is a known issue too |
+| 2026-11-27 | `dc32182` | 3.5: one-week evaluation runs done |
+| 2026-11-27 | `3c12587` | 3.6: analysis of the one-week results; answer is no |
+| 2026-11-27 | `2941ce0` | 3.6: effect on the favored class while it is favored |
