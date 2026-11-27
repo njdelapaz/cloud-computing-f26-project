@@ -13,7 +13,10 @@ image), then check: sim.check_run for every run, and controller.summarize for ad
 (every tick logged on both sides, every switch applied, replay exact). A run that fails is
 rerun once; the failed attempt's folder is kept as <run>.attempt1. A run still going after
 run_timeout_h hours of real time is stopped and counts as failed (a simulator that keeps
-jobs it never ran in its active list never ends, task 3.4). Each run folder gets done.json
+jobs it never ran in its active list never ends, task 3.4). Containers start at least
+start_gap_s apart, and a run whose controller refuses any submission is stopped at once and
+retried: with dozens of runs starting together, slurmctld can start before the accounts are
+loaded and then refuses every job (task 3.5). Each run folder gets done.json
 (outcome, attempt, image id, real time, peak container memory, mean CPU, disk use); a run
 whose done.json says ok is skipped, so a batch can be resumed. One line per attempt is
 appended to results/phase3/batches.jsonl.
@@ -42,6 +45,27 @@ IMAGE = os.environ.get("SLURMSIM_IMAGE", "slurmsim:v03")
 SUFFIX = {"matrix": "", "pilot": "-pilot", "repeat": "-repeat"}
 _check_lock = threading.Lock()       # sim.check_run keeps its known issues in a module list
 _log_lock = threading.Lock()
+_start_lock = threading.Lock()       # spaces out container starts
+_last_start = [0.0]
+REFUSED = "Batch job submission failed"
+
+
+def wait_start_slot(gap_s: float) -> None:
+    with _start_lock:
+        wait = _last_start[0] + gap_s - time.time()
+        if wait > 0:
+            time.sleep(wait)
+        _last_start[0] = time.time()
+
+
+def refused_submissions(name: str) -> int:
+    """Submissions the run's controller has refused so far (0 if the log can't be read)."""
+    r = subprocess.run(["docker", "exec", name, "grep", "-c", REFUSED,
+                        "/home/slurm/simrun/log/slurmctld.log"], capture_output=True, text=True)
+    try:
+        return int(r.stdout.strip() or 0)
+    except ValueError:
+        return 0
 
 
 def run_dir_for(cfg: dict, workload: str, policy: str, role: str) -> Path:
@@ -75,6 +99,8 @@ class Monitor(threading.Thread):
         self.names, self.every_s = names, every_s
         self.peak_mem: dict[str, float] = {}
         self.cpu: dict[str, list[float]] = {}
+        self.stopped: dict[str, str] = {}      # container -> why the watchdog stopped it
+        self.first_seen: dict[str, float] = {}
         self.stop = threading.Event()
 
     def run(self) -> None:
@@ -90,6 +116,12 @@ class Monitor(threading.Thread):
                 if name in self.names:
                     self.peak_mem[name] = max(self.peak_mem.get(name, 0.0), _mem_mb(mem.split("/")[0]))
                     self.cpu.setdefault(name, []).append(float(cpu.rstrip("%") or 0))
+                    seen = self.first_seen.setdefault(name, time.time())
+                    # the startup race shows in the first minutes; later logs are too big to grep
+                    n = refused_submissions(name) if time.time() - seen < 900 else 0
+                    if n:                       # broken run: stop it now, sim.batch retries it
+                        self.stopped[name] = f"slurmctld refused {n} submission(s); stopped early"
+                        subprocess.run(["docker", "rm", "-f", name], capture_output=True)
             self.stop.wait(self.every_s)
 
 
@@ -153,12 +185,18 @@ def run_one(cfg: dict, workload: str, policy: str, role: str, mon: Monitor | Non
                     ROOT / "config" / "priority" / f"{pol['priority']}.conf",
                     cfg["time_start"][scen], policy="adaptive" if adaptive else None,
                     triggers=ROOT / "config" / pol.get("triggers", "triggers.yaml"))
+        wait_start_slot(cfg.get("start_gap_s", 20))
+        name = container_name(run_dir)
+        if mon:
+            mon.stopped.pop(name, None)
+            mon.first_seen.pop(name, None)
         started = time.time()
         code, why = simulate(run_dir, cfg["dtstart"], cfg.get("run_timeout_h", 12) * 3600)
         real_s = time.time() - started
+        if mon and name in mon.stopped:
+            code, why = None, mon.stopped[name]
         chk = check_run_dir(run_dir, adaptive) if code == 0 else \
             {"problems": [why], "known_issues": [], "summary_ok": None}
-        name = container_name(run_dir)
         disk = sum(f.stat().st_size for f in (ROOT / run_dir).rglob("*") if f.is_file()) / 2**20
         cpu = mon.cpu.get(name, []) if mon else []
         rec = {"workload": workload, "scenario": scen, "seed": int(seed), "policy": policy,

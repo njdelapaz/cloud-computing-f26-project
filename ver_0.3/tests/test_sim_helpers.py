@@ -238,3 +238,23 @@ def test_submissions_a_few_seconds_late_are_a_known_issue(tmp_path):
         "2024-01-01T00:00:01|2024-01-01T00:00:01", "2024-01-01T00:00:05|2024-01-01T00:00:05")
     (run / "out/slurm_acct.out").write_text(acct)               # second job 4 s late
     assert check(run) == [] and any("submitted 4-4 s late" in k for k in KNOWN_ISSUES)
+
+
+def test_batch_spaces_out_starts(monkeypatch):
+    from sim import batch
+    slept = []
+    monkeypatch.setattr(batch.time, "sleep", lambda s: slept.append(s))
+    batch._last_start[0] = batch.time.time()
+    batch.wait_start_slot(20)
+    assert slept and 19 < slept[0] <= 20
+
+
+def test_refused_submissions_reads_the_container_log(monkeypatch):
+    import subprocess
+    from sim import batch
+    monkeypatch.setattr(batch.subprocess, "run",
+                        lambda cmd, **kw: subprocess.CompletedProcess(cmd, 0, "19836\n", ""))
+    assert batch.refused_submissions("slurmsim-x") == 19836
+    monkeypatch.setattr(batch.subprocess, "run",
+                        lambda cmd, **kw: subprocess.CompletedProcess(cmd, 1, "", "no such container"))
+    assert batch.refused_submissions("slurmsim-x") == 0

@@ -189,6 +189,17 @@ The effect on the metrics is negligible (1-3 jobs of ~55k end early). `sim/check
 reports up to `EARLY_FINISH_MAX` (5) such jobs in a run as a known issue; more fail the run.
 `python -m sim.batch ... --recheck` re-applies the checks to finished runs.
 
+## Startup race with many runs at once (task 3.5)
+
+With about 27 simulations starting together, two runs (`N-s3` A2 and the dropped `N-s2` C3)
+had a `slurmctld` that had not loaded the accounts from `slurmdbd`: it refused every
+submission (`_job_create: invalid account or partition for user ..., account ...`). This
+simulator never starts the RPC thread that would receive later account updates, so the run
+was broken from its first minute, and since the refused jobs stay in the simulator's active
+list it never ended (simulated day 141 after two hours). `sim/batch.py` now starts containers
+at least `start_gap_s` (20 s) apart, and stops and retries a run whose controller refuses any
+submission in its first 15 minutes.
+
 ## Known simulator behaviour: late completions at busy instants (task 3.4)
 
 When many jobs end in the same simulated second, the simulator processes some of the
