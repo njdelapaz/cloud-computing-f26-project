@@ -1,19 +1,97 @@
 scenario,seed,burst,name,start_h,hours,jobs,rho_cpu,rho_mem
-D-over,1,0,small-short flood,18,11,10295,0.3800,0.3354
-D-over,1,1,one-account burst,21,12,369,0.1819,0.3803
-D-over,1,2,large-long heavy,15,11,62,0.2065,0.2611
-D-over,1,3,memory-heavy medium,35,9,335,0.1380,0.3810
-D-over,1,4,small-short flood,26,12,7874,0.3800,0.3219
-D-over,1,5,one-account burst,7,6,174,0.1876,0.3811
-D-over,2,0,small-short flood,12,10,7104,0.3800,0.3166
-D-over,2,1,memory-heavy medium,20,6,230,0.1515,0.3825
-D-over,2,2,one-account burst,38,4,118,0.1976,0.3746
-D-over,2,3,large-long heavy,6,7,9,0.2804,0.3162
-D-over,2,4,small-short flood,21,11,9825,0.3798,0.3402
-D-over,2,5,memory-heavy medium,25,10,666,0.1446,0.3794
-D-over,3,0,small-short flood,29,12,7248,0.3801,0.3105
-D-over,3,1,large-long heavy,30,11,5,0.1356,0.4712
-D-over,3,2,one-account burst,1,12,350,0.1833,0.3805
-D-over,3,3,memory-heavy medium,12,7,207,0.1272,0.3640
-D-over,3,4,small-short flood,20,10,9309,0.3799,0.3403
-D-over,3,5,large-long heavy,30,12,14,0.2192,0.3792
+D-alt,1,0,small-short flood,0,6,4922,0.3798,0.3430
+D-alt,1,1,large,6,6,245,0.2615,0.3071
+D-alt,1,2,small-short flood,12,6,3377,0.3799,0.3111
+D-alt,1,3,large,18,6,368,0.3818,0.3673
+D-alt,1,4,small-short flood,24,6,5042,0.3799,0.3471
+D-alt,1,5,large,30,6,131,0.1301,0.0874
+D-alt,1,6,small-short flood,36,6,3546,0.3800,0.3149
+D-alt,1,7,large,42,6,236,0.3658,0.2969
+D-alt,2,0,small-short flood,0,6,5091,0.3802,0.3459
+D-alt,2,1,large,6,6,109,0.3299,0.1479
+D-alt,2,2,small-short flood,12,6,3413,0.3800,0.3083
+D-alt,2,3,large,18,6,143,0.3445,0.3104
+D-alt,2,4,small-short flood,24,6,5086,0.3799,0.3442
+D-alt,2,5,large,30,6,101,0.3237,0.3794
+D-alt,2,6,small-short flood,36,6,3479,0.3804,0.3081
+D-alt,2,7,large,42,6,308,0.3635,0.3569
+D-alt,3,0,small-short flood,0,6,5230,0.3800,0.3434
+D-alt,3,1,large,6,6,104,0.4333,0.2460
+D-alt,3,2,small-short flood,12,6,3374,0.3800,0.3118
+D-alt,3,3,large,18,6,74,0.0562,0.3146
+D-alt,3,4,small-short flood,24,6,5453,0.3801,0.3454
+D-alt,3,5,large,30,6,307,0.3912,0.3187
+D-alt,3,6,small-short flood,36,6,3356,0.3800,0.3141
+D-alt,3,7,large,42,6,146,0.3956,0.2509
+D-over,1,0,small,22,3,588,0.3797,0.3593
+D-over,1,1,large,27,3,482,0.4355,0.4377
+D-over,1,2,medium,18,3,101,0.3731,0.3794
+D-over,1,3,small,42,2,350,0.3812,0.3260
+D-over,1,4,large,33,3,107,0.4477,0.4317
+D-over,1,5,medium,7,2,62,0.5855,0.5267
+D-over,1,6,small,38,1,76,0.3311,0.2225
+D-over,1,7,large,0,3,16,0.0084,0.0144
+D-over,1,8,medium,16,3,75,0.3008,0.3660
+D-over,1,9,small,38,1,89,0.3519,0.3801
+D-over,1,10,large,45,2,13,0.0004,0.0022
+D-over,1,11,medium,13,3,79,0.1514,0.3358
+D-over,1,12,small,11,1,103,0.3799,0.3020
+D-over,1,13,large,33,3,92,0.3221,0.4143
+D-over,1,14,medium,11,3,104,0.2650,0.3822
+D-over,1,15,small,13,1,88,0.3815,0.3216
+D-over,1,16,large,15,3,49,0.3783,0.3007
+D-over,1,17,medium,22,3,123,0.1897,0.3634
+D-over,1,18,small,34,3,377,0.3799,0.3292
+D-over,1,19,large,45,3,83,0.3856,0.1359
+D-over,1,20,medium,22,1,41,0.1288,0.3685
+D-over,1,21,small,0,3,624,0.3742,0.3267
+D-over,1,22,large,38,3,35,0.0169,0.0173
+D-over,1,23,medium,42,1,8,0.3783,0.3006
+D-over,2,0,large,33,3,52,0.2080,0.4512
+D-over,2,1,small,14,1,133,0.3815,0.3334
+D-over,2,2,medium,6,2,4,0.4749,0.3562
+D-over,2,3,large,22,3,63,0.1174,0.1363
+D-over,2,4,small,42,1,178,0.3848,0.3099
+D-over,2,5,medium,32,2,114,0.2187,0.3839
+D-over,2,6,large,38,2,5,0.0007,0.0007
+D-over,2,7,small,0,3,618,0.3802,0.2976
+D-over,2,8,medium,46,1,46,0.1920,0.3745
+D-over,2,9,large,21,2,68,0.3341,0.0324
+D-over,2,10,small,30,3,444,0.3859,0.3310
+D-over,2,11,medium,20,3,132,0.2451,0.3820
+D-over,2,12,large,8,1,3,0.0395,0.0016
+D-over,2,13,small,2,3,615,0.3801,0.3263
+D-over,2,14,medium,0,1,39,0.1513,0.3814
+D-over,2,15,large,45,3,52,0.1597,0.4035
+D-over,2,16,small,32,1,138,0.3902,0.3500
+D-over,2,17,medium,15,3,55,0.2754,0.3901
+D-over,2,18,large,5,3,341,0.2827,0.3848
+D-over,2,19,small,38,3,232,0.3791,0.2534
+D-over,2,20,medium,20,2,22,0.2044,0.4921
+D-over,2,21,large,31,2,23,0.0246,0.0037
+D-over,2,22,small,45,3,362,0.3707,0.3802
+D-over,2,23,medium,17,3,72,0.3309,0.3901
+D-over,3,0,small,36,3,245,0.3824,0.2819
+D-over,3,1,medium,36,3,135,0.2408,0.3692
+D-over,3,2,large,1,3,321,0.0966,0.3800
+D-over,3,3,small,14,2,176,0.3814,0.3272
+D-over,3,4,medium,24,3,159,0.2000,0.3807
+D-over,3,5,large,38,3,87,0.1037,0.2202
+D-over,3,6,small,30,3,456,0.3861,0.2949
+D-over,3,7,medium,39,1,59,0.1758,0.3857
+D-over,3,8,large,40,2,20,0.6647,0.6654
+D-over,3,9,small,6,3,477,0.3804,0.2727
+D-over,3,10,medium,0,3,83,0.3781,0.3293
+D-over,3,11,large,17,2,5,0.4568,0.4567
+D-over,3,12,small,26,1,223,0.3804,0.3211
+D-over,3,13,medium,11,2,58,0.2640,0.3805
+D-over,3,14,large,7,3,186,0.3865,0.3283
+D-over,3,15,small,30,3,428,0.3800,0.2489
+D-over,3,16,medium,42,2,80,0.2887,0.3811
+D-over,3,17,large,46,1,33,0.1751,0.1327
+D-over,3,18,small,32,2,270,0.3838,0.3110
+D-over,3,19,medium,34,1,75,0.2456,0.3845
+D-over,3,20,large,5,1,826,0.3530,0.3637
+D-over,3,21,small,17,1,61,0.3809,0.3793
+D-over,3,22,medium,11,1,33,0.1565,0.3873
+D-over,3,23,large,8,2,25,0.0439,0.1430

@@ -1,0 +1,81 @@
+# Phase 4 setup evaluation (SPEC §9.5-9.6): what sim/batch.py runs, evaluation/metrics.py
+# measures and evaluation/select.py judges. Phase 3's config/evaluation.yaml is unchanged.
+#   .venv/bin/python -m sim.batch --config config/evaluation_setup.yaml --stage 1 \
+#       --workloads all --with-repeats
+
+# Simulated start of every D workload: 2024-07-07 12:00 UTC, so the measured days start on
+# Monday 2024-07-08 at midnight (the workloads start at noon with the warm start, SPEC §9.4).
+time_start:
+  D: 1720353600
+
+# B1 is the bar (S-A); C0 is a reference only. A4 runs start in B1 (with B1's static keys)
+# and take per-run overrides of config/triggers_A4.yaml (SPEC §9.3, §9.5).
+policies:
+  B1: {kind: static, priority: B1}
+  C0: {kind: static, priority: C0}
+  A4-tight-60: {kind: adaptive, priority: B1, triggers: triggers_A4.yaml,
+                overrides: {target_level: tight, stable_s: 3600}}
+  A4-middle-60: {kind: adaptive, priority: B1, triggers: triggers_A4.yaml,
+                 overrides: {target_level: middle, stable_s: 3600}}
+  A4-loose-60: {kind: adaptive, priority: B1, triggers: triggers_A4.yaml,
+                overrides: {target_level: loose, stable_s: 3600}}
+
+# Stage 1 picks the target level among these A4 settings; stage 2 (task 4.6) adds the
+# stabilization periods at the chosen level.
+stages:
+  1:
+    policies: [B1, C0, A4-tight-60, A4-middle-60, A4-loose-60]
+    adaptive: [A4-tight-60, A4-middle-60, A4-loose-60]
+    tie_break: looser_level        # SPEC §9.6: then the looser level
+    levels: {A4-tight-60: 0, A4-middle-60: 1, A4-loose-60: 2}   # tight < middle < loose
+    # L* (task 4.5). The rule picked loose: all three tied within the 0.36 mean noise band
+    # and loose had the fewest guard failures. Tight was chosen instead (requested
+    # 2026-11-28), SPEC §9.6.
+    chosen: A4-tight-60
+    chosen_reason: >-
+      Requested 2026-11-28 over the rule's loose. Tight has the lowest score (0.87) and is the
+      only level that beats B1 beyond noise (2 workloads, worse on none); loose fires about
+      2 times a day, never for large, with no spell on 5 of 12 workloads, so stage 2's
+      stabilization periods would barely differ. Guard failures (13 vs 18) are mostly noise:
+      the 25% class limit is under the noise band, and runs that never fired fail guards too.
+
+# Four patterns x three seeds: 12 workloads. D-lglong (large-long heavy), D-flood
+# (small-short flood) and D-mem (memory-heavy medium) are not evaluated (dropped on request,
+# 2026-11-28): a flood fills the queue with small jobs, so the policy cannot trigger, and
+# D-mem's measured jobs are all medium, so a medium boost has nothing to move them ahead of.
+# They stay built; D-lglong-s1's pilot runs are kept but left out of the metrics. D-alt and
+# D-over were redefined the same day (SPEC §9.4).
+# Workloads are listed seed by seed, so a parallel batch mixes the heavy D-alt with light ones.
+workloads: [D-nat-s1, D-acct-s1, D-alt-s1, D-over-s1, D-nat-s2, D-acct-s2, D-alt-s2, D-over-s2, D-nat-s3, D-acct-s3, D-alt-s3, D-over-s3]
+
+# Noise band (SPEC §9.6): these policies run three times on seed 1 of every pattern, as the
+# matrix run and two more, in the same batch as the workload's other runs (so they share the
+# host conditions every comparison is made under).
+repeats:
+  policies: [B1, A4-middle-60]
+  workloads: [D-nat-s1, D-acct-s1, D-alt-s1, D-over-s1]
+  roles: [repeat, repeat2]
+
+run_root: results/phase4/runs
+log: results/phase4/batches.jsonl
+metrics_out: results/phase4/metrics.csv
+dtstart: 60
+run_timeout_h: 12            # real time; a run still going is stopped and counts as failed
+start_gap_s: 20              # seconds between container starts (avoids a startup race)
+summary_window_h: 84         # controller.summarize: the workload's submission span
+
+metrics:
+  bsld_tau_s: 600
+  jain_min_jobs: 20
+  measured_only: true        # jobs of the measured days only (not warm start, lead-in, lead-out)
+  window: measured           # cluster state over the measured 48 h (manifest measured_window_s)
+  sample_s: 300
+primary: wait_mean_min
+reference: B1                # the bar (S-A)
+guards:                      # against B1 on the same workload (SPEC §9.6, §8.6)
+  class_wait_ratio: 1.25
+  utilization_drop: 0.01
+  jain_drop: 0.05
+# A level is flagged if it never fires on a pattern (no spell on any seed), or if it keeps a
+# class favored for more than this share of the measured days on average (risk R14).
+flag_active_share: 0.5

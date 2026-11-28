@@ -409,24 +409,26 @@ slice run on `D-alt` is exact.
 - Write `config/evaluation_setup.yaml` (SPEC §9.5, §9.7). Point `sim/batch.py` and
   `evaluation/metrics.py` at it, with metrics on the measured days' jobs only and cluster
   state over the measured 48 h.
-- Run B1, C0, A4-tight-60, A4-middle-60 and A4-loose-60 on the 21 workloads (105 runs), one
+- Run B1, C0, A4-tight-60, A4-middle-60 and A4-loose-60 on the 12 evaluated workloads (60 runs), one
   batch per workload.
-- Run the 28 repeat runs (B1 and A4-middle-60 on seed 1 of each pattern).
+- Run the 16 repeat runs (B1 and A4-middle-60 on seed 1 of each pattern). C0's runs are
+  postponed (requested): it is a reference only.
 - Every run passes its checks, is rerun once, or is excluded and listed (SPEC §8.4).
 - Compute the noise bands, the paired ratios against B1, the guards, and each level's score.
   Choose `L*` by the SPEC §9.6 rule.
 - Report each level's spells per day and time active by pattern. A level that never fires,
   or is active most of the day, is flagged.
 
-**Done when:** all 133 runs are accounted for, and `metrics.csv` and the stage 1 part of
+**Done when:** all 64 runs without C0 are accounted for, and `metrics.csv` and the stage 1 part of
 `results/phase4/selection.json` are committed with `L*` recorded in `PROGRESS.md`.
 
 ### 4.6 Stage 2: stabilization period
-- Run A4-`L*`-`T` for `T` ∈ {0, 30, 120, 240, 480} on the 21 workloads (105 runs).
+- Run A4-`L*`-`T` (`L*` = tight, task 4.5) for `T` ∈ {0, 30, 120, 240, 480} on the 12 workloads (60 runs), and the
+  12 postponed C0 runs.
 - Same checks as 4.5.
 - Choose `T_stable` by the SPEC §9.6 rule, with the A4-`L*`-60 runs from stage 1 included.
 
-**Done when:** all 105 runs are accounted for, and `metrics.csv` and `selection.json` are
+**Done when:** all 72 runs are accounted for, and `metrics.csv` and `selection.json` are
 updated and committed with `T_stable` recorded in `PROGRESS.md`.
 
 ### 4.7 Analysis of the setup
@@ -512,7 +514,7 @@ Decisions for Steps 4–6 are made when their spec is written (2.1, 3.1).
 
 | # | Risk | Mitigation |
 |---|---|---|
-| R11 | Two-day runs are noisier than weeks, and B1 swung widely by seed on `X` (54 vs 900 min). | Noise band per pattern from three runs of B1 and A4-middle-60 (SPEC §9.6). The target level and `T_stable` are each chosen on all 21 workloads together. |
+| R11 | Two-day runs are noisier than weeks, and B1 swung widely by seed on `X` (54 vs 900 min). | Noise band per pattern from three runs of B1 and A4-middle-60 (SPEC §9.6). The target level and `T_stable` are each chosen on all 12 workloads together. |
 | R12 | The target level and `T_stable` are tuned on the setup workloads. | Setup and tests draw from different months (weeks 1–12 against 13–23, SPEC §9.4); the five-day tests (Phase 5) judge the choice. |
 | R13 | Fair share under B1 depends on usage history, which a run of a few days barely has. | The 12-hour lead-in (S-D); reported as a limitation; the five-day tests carry more history. |
 | R14 | A target level never fires on some patterns, or keeps a class favored most of the day. | Three levels a factor of two apart (SPEC §9.3); stage 1 reports spells and time active per pattern and flags both cases (task 4.5). |

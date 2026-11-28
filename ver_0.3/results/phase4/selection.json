@@ -1,0 +1,909 @@
+{
+ "stage1": {
+  "stage": 1,
+  "reference": "B1",
+  "primary": "wait_mean_min",
+  "noise_bands": {
+   "D-nat": {
+    "workload": "D-nat-s1",
+    "band": 0.6863957068167337,
+    "sets": {
+     "B1": {
+      "runs": 3,
+      "values": [
+       35.605,
+       45.119,
+       26.648
+      ],
+      "relative_range": 0.5160950531565639
+     },
+     "A4-middle-60": {
+      "runs": 3,
+      "values": [
+       49.737,
+       25.357,
+       55.159
+      ],
+      "relative_range": 0.6863957068167337
+     }
+    }
+   },
+   "D-acct": {
+    "workload": "D-acct-s1",
+    "band": 0.2832706571988408,
+    "sets": {
+     "B1": {
+      "runs": 3,
+      "values": [
+       119.472,
+       106.181,
+       140.781
+      ],
+      "relative_range": 0.2832706571988408
+     },
+     "A4-middle-60": {
+      "runs": 3,
+      "values": [
+       118.375,
+       103.439,
+       108.072
+      ],
+      "relative_range": 0.13582874083774402
+     }
+    }
+   },
+   "D-alt": {
+    "workload": "D-alt-s1",
+    "band": 0.233202776059919,
+    "sets": {
+     "B1": {
+      "runs": 3,
+      "values": [
+       123.453,
+       97.999,
+       105.99
+      ],
+      "relative_range": 0.233202776059919
+     },
+     "A4-middle-60": {
+      "runs": 3,
+      "values": [
+       89.729,
+       97.583,
+       85.406
+      ],
+      "relative_range": 0.1339549035835197
+     }
+    }
+   },
+   "D-over": {
+    "workload": "D-over-s1",
+    "band": 0.22375249854851512,
+    "sets": {
+     "B1": {
+      "runs": 3,
+      "values": [
+       162.206,
+       166.397,
+       171.443
+      ],
+      "relative_range": 0.0554169016450488
+     },
+     "A4-middle-60": {
+      "runs": 3,
+      "values": [
+       130.814,
+       155.977,
+       164.471
+      ],
+      "relative_range": 0.22375249854851512
+     }
+    }
+   }
+  },
+  "mean_band": 0.3566554096560021,
+  "ranking": [
+   {
+    "policy": "A4-tight-60",
+    "score": 0.8670684816757889,
+    "guard_failures": 18
+   },
+   {
+    "policy": "A4-middle-60",
+    "score": 1.0155143917582587,
+    "guard_failures": 18
+   },
+   {
+    "policy": "A4-loose-60",
+    "score": 1.0734035753151523,
+    "guard_failures": 13
+   }
+  ],
+  "ties_with_lowest": [
+   "A4-tight-60",
+   "A4-middle-60",
+   "A4-loose-60"
+  ],
+  "choice": "A4-loose-60",
+  "chosen": "A4-tight-60",
+  "overridden": true,
+  "override_reason": "Requested 2026-11-28 over the rule's loose. Tight has the lowest score (0.87) and is the only level that beats B1 beyond noise (2 workloads, worse on none); loose fires about 2 times a day, never for large, with no spell on 5 of 12 workloads, so stage 2's stabilization periods would barely differ. Guard failures (13 vs 18) are mostly noise: the 25% class limit is under the noise band, and runs that never fired fail guards too.",
+  "all_complete": true,
+  "settings": {
+   "A4-tight-60": {
+    "complete": true,
+    "workloads": 12,
+    "score": 0.8670684816757889,
+    "guard_failures": 18,
+    "by_pattern": {
+     "D-nat": {
+      "ratio_geomean": 0.9152922828349465,
+      "seeds_beating_beyond_noise": 0,
+      "seeds_worse_beyond_noise": 0,
+      "spells_per_day_medium": 3.1666666666666665,
+      "spells_per_day_large": 1.6666666666666667,
+      "active_share_mean": 0.20370389999999997,
+      "guard_failures": 3,
+      "flag_never_fires": false,
+      "flag_mostly_active": false
+     },
+     "D-acct": {
+      "ratio_geomean": 0.8106782581859965,
+      "seeds_beating_beyond_noise": 1,
+      "seeds_worse_beyond_noise": 0,
+      "spells_per_day_medium": 5.666666666666667,
+      "spells_per_day_large": 1.5,
+      "active_share_mean": 0.298611,
+      "guard_failures": 6,
+      "flag_never_fires": false,
+      "flag_mostly_active": false
+     },
+     "D-alt": {
+      "ratio_geomean": 0.9139343505224363,
+      "seeds_beating_beyond_noise": 0,
+      "seeds_worse_beyond_noise": 0,
+      "spells_per_day_medium": 2.1666666666666665,
+      "spells_per_day_large": 1.8333333333333333,
+      "active_share_mean": 0.16666666666666666,
+      "guard_failures": 4,
+      "flag_never_fires": false,
+      "flag_mostly_active": false
+     },
+     "D-over": {
+      "ratio_geomean": 0.833470574445153,
+      "seeds_beating_beyond_noise": 1,
+      "seeds_worse_beyond_noise": 0,
+      "spells_per_day_medium": 5.833333333333333,
+      "spells_per_day_large": 1.0,
+      "active_share_mean": 0.28009233333333333,
+      "guard_failures": 5,
+      "flag_never_fires": false,
+      "flag_mostly_active": false
+     }
+    },
+    "per_workload": [
+     {
+      "workload": "D-nat-s1",
+      "complete": true,
+      "ratio": 0.7346213691489302,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 6.0,
+      "spells_large": 7.0,
+      "active_share": 0.277778
+     },
+     {
+      "workload": "D-acct-s1",
+      "complete": true,
+      "ratio": 0.5701377728672827,
+      "beats_beyond_noise": true,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": false
+      },
+      "spells_medium": 13.0,
+      "spells_large": 8.0,
+      "active_share": 0.4375
+     },
+     {
+      "workload": "D-alt-s1",
+      "complete": true,
+      "ratio": 0.8146663102557248,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": false,
+       "jain": true
+      },
+      "spells_medium": 7.0,
+      "spells_large": 7.0,
+      "active_share": 0.28125
+     },
+     {
+      "workload": "D-over-s1",
+      "complete": true,
+      "ratio": 0.5949471659494717,
+      "beats_beyond_noise": true,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": false
+      },
+      "spells_medium": 15.0,
+      "spells_large": 1.0,
+      "active_share": 0.329861
+     },
+     {
+      "workload": "D-nat-s2",
+      "complete": true,
+      "ratio": 0.856967338998669,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 12.0,
+      "spells_large": 2.0,
+      "active_share": 0.291667
+     },
+     {
+      "workload": "D-acct-s2",
+      "complete": true,
+      "ratio": 0.8974194582465139,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": false
+      },
+      "spells_medium": 21.0,
+      "spells_large": 1.0,
+      "active_share": 0.458333
+     },
+     {
+      "workload": "D-alt-s2",
+      "complete": true,
+      "ratio": 0.8831234874687576,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 5.0,
+      "spells_large": 0.0,
+      "active_share": 0.114583
+     },
+     {
+      "workload": "D-over-s2",
+      "complete": true,
+      "ratio": 0.8459190668100647,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": false
+      },
+      "spells_medium": 17.0,
+      "spells_large": 1.0,
+      "active_share": 0.378472
+     },
+     {
+      "workload": "D-nat-s3",
+      "complete": true,
+      "ratio": 1.218012021018495,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": false,
+       "class_medium": false,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 1.0,
+      "spells_large": 1.0,
+      "active_share": 0.0416667
+     },
+     {
+      "workload": "D-acct-s3",
+      "complete": true,
+      "ratio": 1.041286601712073,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": false
+      },
+      "spells_medium": 0.0,
+      "spells_large": 0.0,
+      "active_share": 0.0
+     },
+     {
+      "workload": "D-alt-s3",
+      "complete": true,
+      "ratio": 1.0610694483935172,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": false,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 1.0,
+      "spells_large": 4.0,
+      "active_share": 0.104167
+     },
+     {
+      "workload": "D-over-s3",
+      "complete": true,
+      "ratio": 1.1504390138554257,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": false,
+       "class_medium": true,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 3.0,
+      "spells_large": 4.0,
+      "active_share": 0.131944
+     }
+    ]
+   },
+   "A4-middle-60": {
+    "complete": true,
+    "workloads": 12,
+    "score": 1.0155143917582587,
+    "guard_failures": 18,
+    "by_pattern": {
+     "D-nat": {
+      "ratio_geomean": 1.178183923296014,
+      "seeds_beating_beyond_noise": 0,
+      "seeds_worse_beyond_noise": 0,
+      "spells_per_day_medium": 3.1666666666666665,
+      "spells_per_day_large": 0.0,
+      "active_share_mean": 0.13194633333333333,
+      "guard_failures": 6,
+      "flag_never_fires": false,
+      "flag_mostly_active": false
+     },
+     "D-acct": {
+      "ratio_geomean": 1.0043999371919807,
+      "seeds_beating_beyond_noise": 0,
+      "seeds_worse_beyond_noise": 0,
+      "spells_per_day_medium": 5.666666666666667,
+      "spells_per_day_large": 0.16666666666666666,
+      "active_share_mean": 0.2384257666666667,
+      "guard_failures": 4,
+      "flag_never_fires": false,
+      "flag_mostly_active": false
+     },
+     "D-alt": {
+      "ratio_geomean": 0.9629832578558273,
+      "seeds_beating_beyond_noise": 1,
+      "seeds_worse_beyond_noise": 1,
+      "spells_per_day_medium": 1.8333333333333333,
+      "spells_per_day_large": 0.5,
+      "active_share_mean": 0.09259270000000001,
+      "guard_failures": 3,
+      "flag_never_fires": false,
+      "flag_mostly_active": false
+     },
+     "D-over": {
+      "ratio_geomean": 0.9332668167573934,
+      "seeds_beating_beyond_noise": 0,
+      "seeds_worse_beyond_noise": 0,
+      "spells_per_day_medium": 5.333333333333333,
+      "spells_per_day_large": 0.0,
+      "active_share_mean": 0.2141204333333333,
+      "guard_failures": 5,
+      "flag_never_fires": false,
+      "flag_mostly_active": false
+     }
+    },
+    "per_workload": [
+     {
+      "workload": "D-nat-s1",
+      "complete": true,
+      "ratio": 1.3969346657454373,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": false,
+       "class_medium": false,
+       "class_large": false,
+       "utilization": true,
+       "jain": false
+      },
+      "spells_medium": 7.0,
+      "spells_large": 0.0,
+      "active_share": 0.145833
+     },
+     {
+      "workload": "D-acct-s1",
+      "complete": true,
+      "ratio": 0.9908179322351681,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": false,
+       "class_medium": true,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 16.0,
+      "spells_large": 0.0,
+      "active_share": 0.319444
+     },
+     {
+      "workload": "D-alt-s1",
+      "complete": true,
+      "ratio": 0.7268304536949284,
+      "beats_beyond_noise": true,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 8.0,
+      "spells_large": 3.0,
+      "active_share": 0.229167
+     },
+     {
+      "workload": "D-over-s1",
+      "complete": true,
+      "ratio": 0.8064683180646832,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": false
+      },
+      "spells_medium": 12.0,
+      "spells_large": 0.0,
+      "active_share": 0.236111
+     },
+     {
+      "workload": "D-nat-s2",
+      "complete": true,
+      "ratio": 0.957455687208938,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 12.0,
+      "spells_large": 0.0,
+      "active_share": 0.250006
+     },
+     {
+      "workload": "D-acct-s2",
+      "complete": true,
+      "ratio": 0.9466670642656657,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": false
+      },
+      "spells_medium": 18.0,
+      "spells_large": 0.0,
+      "active_share": 0.375
+     },
+     {
+      "workload": "D-alt-s2",
+      "complete": true,
+      "ratio": 0.9695383871863584,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 3.0,
+      "spells_large": 0.0,
+      "active_share": 0.0486111
+     },
+     {
+      "workload": "D-over-s2",
+      "complete": true,
+      "ratio": 0.8639570751539362,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 17.0,
+      "spells_large": 0.0,
+      "active_share": 0.354167
+     },
+     {
+      "workload": "D-nat-s3",
+      "complete": true,
+      "ratio": 1.2227692232666447,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": false,
+       "class_medium": false,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 0.0,
+      "spells_large": 0.0,
+      "active_share": 0.0
+     },
+     {
+      "workload": "D-acct-s3",
+      "complete": true,
+      "ratio": 1.0802615163458509,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": true,
+       "utilization": true,
+       "jain": false
+      },
+      "spells_medium": 0.0,
+      "spells_large": 1.0,
+      "active_share": 0.0208333
+     },
+     {
+      "workload": "D-alt-s3",
+      "complete": true,
+      "ratio": 1.2672377025874324,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": true,
+      "guards": {
+       "class_small": false,
+       "class_medium": false,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 0.0,
+      "spells_large": 0.0,
+      "active_share": 0.0
+     },
+     {
+      "workload": "D-over-s3",
+      "complete": true,
+      "ratio": 1.1666430456290957,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": false,
+       "class_medium": false,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 3.0,
+      "spells_large": 0.0,
+      "active_share": 0.0520833
+     }
+    ]
+   },
+   "A4-loose-60": {
+    "complete": true,
+    "workloads": 12,
+    "score": 1.0734035753151523,
+    "guard_failures": 13,
+    "by_pattern": {
+     "D-nat": {
+      "ratio_geomean": 1.1606114430100616,
+      "seeds_beating_beyond_noise": 0,
+      "seeds_worse_beyond_noise": 0,
+      "spells_per_day_medium": 1.3333333333333333,
+      "spells_per_day_large": 0.0,
+      "active_share_mean": 0.05555566666666667,
+      "guard_failures": 2,
+      "flag_never_fires": false,
+      "flag_mostly_active": false
+     },
+     "D-acct": {
+      "ratio_geomean": 0.9355431700698928,
+      "seeds_beating_beyond_noise": 0,
+      "seeds_worse_beyond_noise": 0,
+      "spells_per_day_medium": 2.1666666666666665,
+      "spells_per_day_large": 0.0,
+      "active_share_mean": 0.09027766666666666,
+      "guard_failures": 2,
+      "flag_never_fires": false,
+      "flag_mostly_active": false
+     },
+     "D-alt": {
+      "ratio_geomean": 1.2513486449609046,
+      "seeds_beating_beyond_noise": 0,
+      "seeds_worse_beyond_noise": 1,
+      "spells_per_day_medium": 0.5,
+      "spells_per_day_large": 0.0,
+      "active_share_mean": 0.020833333333333332,
+      "guard_failures": 4,
+      "flag_never_fires": false,
+      "flag_mostly_active": false
+     },
+     "D-over": {
+      "ratio_geomean": 0.9770642917819342,
+      "seeds_beating_beyond_noise": 0,
+      "seeds_worse_beyond_noise": 0,
+      "spells_per_day_medium": 3.8333333333333335,
+      "spells_per_day_large": 0.0,
+      "active_share_mean": 0.15393533333333334,
+      "guard_failures": 5,
+      "flag_never_fires": false,
+      "flag_mostly_active": false
+     }
+    },
+    "per_workload": [
+     {
+      "workload": "D-nat-s1",
+      "complete": true,
+      "ratio": 1.1878549400920106,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 0.0,
+      "spells_large": 0.0,
+      "active_share": 0.0
+     },
+     {
+      "workload": "D-acct-s1",
+      "complete": true,
+      "ratio": 0.8553050087049686,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 3.0,
+      "spells_large": 0.0,
+      "active_share": 0.0625
+     },
+     {
+      "workload": "D-alt-s1",
+      "complete": true,
+      "ratio": 0.9231043393032166,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 1.0,
+      "spells_large": 0.0,
+      "active_share": 0.0208333
+     },
+     {
+      "workload": "D-over-s1",
+      "complete": true,
+      "ratio": 0.8190757431907575,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": false
+      },
+      "spells_medium": 8.0,
+      "spells_large": 0.0,
+      "active_share": 0.166667
+     },
+     {
+      "workload": "D-nat-s2",
+      "complete": true,
+      "ratio": 0.983374752955996,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 8.0,
+      "spells_large": 0.0,
+      "active_share": 0.166667
+     },
+     {
+      "workload": "D-acct-s2",
+      "complete": true,
+      "ratio": 0.973162067564495,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": false
+      },
+      "spells_medium": 10.0,
+      "spells_large": 0.0,
+      "active_share": 0.208333
+     },
+     {
+      "workload": "D-alt-s2",
+      "complete": true,
+      "ratio": 1.0434635207219034,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 2.0,
+      "spells_large": 0.0,
+      "active_share": 0.0416667
+     },
+     {
+      "workload": "D-over-s2",
+      "complete": true,
+      "ratio": 1.0100841478259843,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": false,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 15.0,
+      "spells_large": 0.0,
+      "active_share": 0.295139
+     },
+     {
+      "workload": "D-nat-s3",
+      "complete": true,
+      "ratio": 1.3383758214159445,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": false,
+       "class_medium": false,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 0.0,
+      "spells_large": 0.0,
+      "active_share": 0.0
+     },
+     {
+      "workload": "D-acct-s3",
+      "complete": true,
+      "ratio": 0.9837512788745041,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": true,
+       "class_medium": true,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 0.0,
+      "spells_large": 0.0,
+      "active_share": 0.0
+     },
+     {
+      "workload": "D-alt-s3",
+      "complete": true,
+      "ratio": 2.034262155245948,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": true,
+      "guards": {
+       "class_small": false,
+       "class_medium": false,
+       "class_large": false,
+       "utilization": false,
+       "jain": true
+      },
+      "spells_medium": 0.0,
+      "spells_large": 0.0,
+      "active_share": 0.0
+     },
+     {
+      "workload": "D-over-s3",
+      "complete": true,
+      "ratio": 1.1274253743934457,
+      "beats_beyond_noise": false,
+      "worse_beyond_noise": false,
+      "guards": {
+       "class_small": false,
+       "class_medium": false,
+       "class_large": true,
+       "utilization": true,
+       "jain": true
+      },
+      "spells_medium": 0.0,
+      "spells_large": 0.0,
+      "active_share": 0.0
+     }
+    ]
+   }
+  }
+ }
+}

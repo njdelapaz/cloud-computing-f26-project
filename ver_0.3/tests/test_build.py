@@ -254,23 +254,40 @@ def test_day_one_account_burst():
     assert info["burst_account"] == "a0" and 0.4 <= share <= 0.6
 
 
-def test_day_alternating_blocks():
-    m = measured(make_day("alt")[0])
-    block = (m["submit_s"] - LEAD) // (6 * 3600)
-    assert set(block) == set(range(8))                               # 6-h blocks over 2 days
-    for b, cls in m.groupby(block)["class"]:
-        assert set(cls.astype(str)) == ({"sm-short"} if b % 2 == 0 else {"lg-long"})
+SIZE_CLASSES = {"small": {"sm-short", "sm-med", "sm-long"},
+                "medium": {"med-short", "med-med", "med-long"},
+                "large": {"lg-short", "lg-med", "lg-long"}}
+
+
+def test_day_alternating_blocks_on_a_natural_base():
+    kept, info = make_day("alt")
+    base = kept[kept["segment"] == "base"]
+    assert len(base) and base["submit_s"].between(MEAS[0], MEAS[1] - 1).all()
+    assert [b["name"] for b in info["bursts"]] == ["small-short flood", "large"] * 4
+    for b in info["bursts"]:                                        # 6-h blocks, in turn
+        assert b["hours"] == 6 and b["start_h"] == 6 * b["burst"] and b["jobs"] >= 1
+        jobs = kept[kept["segment"] == f"burst{b['burst']:02d}:{b['name']}"]
+        t0 = LEAD + b["start_h"] * 3600
+        assert jobs["submit_s"].between(t0, t0 + 6 * 3600 - 1).all()
+        want = {"sm-short"} if b["name"] == "small-short flood" else {"lg-short", "lg-med", "lg-long"}
+        assert set(jobs["class"].astype(str)) <= want
+    # the base runs at 60% of target and the blocks add 40%: about target over the 48 h
+    rho = max(info["measured"]["rho_cpu"], info["measured"]["rho_mem"])
+    assert 0.8 <= rho / 0.95 <= 1.2
 
 
 def test_day_overlapping_bursts_stay_in_the_measured_days():
     kept, info = make_day("over")
-    assert len(info["bursts"]) == 6
+    assert len(info["bursts"]) == 24
+    names = [b["name"] for b in info["bursts"]]
+    assert {n: names.count(n) for n in set(names)} == {"small": 8, "medium": 8, "large": 8}
     base = kept[kept["segment"] == "base"]
     assert len(base) and base["submit_s"].between(MEAS[0], MEAS[1] - 1).all()
     for b in info["bursts"]:
         jobs = kept[kept["segment"] == f"burst{b['burst']:02d}:{b['name']}"]
-        assert len(jobs) == b["jobs"] >= 1 and 3 <= b["hours"] <= 12
+        assert len(jobs) == b["jobs"] >= 1 and 1 <= b["hours"] <= 3
         assert b["start_h"] + b["hours"] <= 48
+        assert set(jobs["class"].astype(str)) <= SIZE_CLASSES[b["name"]]
         t0 = LEAD + b["start_h"] * 3600
         assert jobs["submit_s"].between(t0, t0 + b["hours"] * 3600 - 1).all(), b
 
@@ -353,15 +370,14 @@ def test_day_workloads_match_intent(d):
     elif pat == "acct":
         mem = day["mem_mb"] * day["runtime_s"]
         assert 0.4 <= mem[day["account"] == m["burst_account"]].sum() / mem.sum() <= 0.6
-    elif pat == "alt":
-        block = (day["submit_s"] - lo) // (6 * 3600)
-        assert set(block) == set(range(4 * m["measured_days"]))
-        for b, cls in day.groupby(block)["class"]:
-            assert set(cls.astype(str)) == ({"sm-short"} if b % 2 == 0 else {"lg-long"})
-    elif pat == "over":
-        assert len(day[day["segment"] == "base"]) and len(m["bursts"]) == 6
+    elif pat in ("alt", "over"):
+        assert len(day[day["segment"] == "base"])
+        assert len(m["bursts"]) == (4 * m["measured_days"] if pat == "alt" else 24)
         for b in m["bursts"]:
             jobs = day[day["segment"] == f"burst{b['burst']:02d}:{b['name']}"]
             t0 = lo + b["start_h"] * 3600
             assert len(jobs) == b["jobs"] >= 1
             assert jobs["submit_s"].between(t0, t0 + b["hours"] * 3600 - 1).all(), b
+            want = ({"sm-short"} if b["name"] == "small-short flood"
+                    else SIZE_CLASSES.get(b["name"], {"lg-short", "lg-med", "lg-long"}))
+            assert set(jobs["class"].astype(str)) <= want, b

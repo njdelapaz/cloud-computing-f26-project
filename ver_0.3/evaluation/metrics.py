@@ -1,13 +1,16 @@
-"""Task 3.2: the SPEC §8.5 metrics of one finished run, and the table of all Phase 3 runs.
+"""Tasks 3.2, 4.5: the metrics of one finished run (SPEC §8.5, §9.6), and the table of all runs.
 
 Usage:
-  .venv/bin/python -m evaluation.metrics RUN_DIR WORKLOAD     one run, printed as JSON
-  .venv/bin/python -m evaluation.metrics --collect             every run under run_root
-                                                               -> results/phase3/metrics.csv
+  .venv/bin/python -m evaluation.metrics [--config CFG] RUN_DIR WORKLOAD   one run, as JSON
+  .venv/bin/python -m evaluation.metrics [--config CFG] --collect          every run under
+                                                         run_root -> the config's metrics_out
 
 Inputs: the run's sacct output, the workload's jobs.parquet (class, size QOS, account,
 segment) and, for adaptive runs, the summary controller.summarize writes next to the run.
-Settings come from config/evaluation.yaml (metrics block).
+Settings come from the config's metrics block (config/evaluation.yaml by default; Phase 4:
+config/evaluation_setup.yaml). With measured_only, only the jobs of the measured days count
+(not the warm start, lead-in or lead-out); with window: measured, cluster state is taken over
+the workload manifest's measured_window_s.
 """
 from __future__ import annotations
 
@@ -30,8 +33,11 @@ CLASSES = ("sm-short", "sm-med", "sm-long", "med-short", "med-med", "med-long",
            "lg-short", "lg-med", "lg-long")
 
 
-def settings() -> dict:
-    return yaml.safe_load(EVAL.read_text())
+NOT_MEASURED = ("warmstart", "leadin", "leadout")
+
+
+def settings(path: Path | None = None) -> dict:
+    return yaml.safe_load((ROOT / (path or EVAL)).read_text())
 
 
 def job_table(run_dir: Path, workload: str) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -78,8 +84,8 @@ def fairness(j: pd.DataFrame, tau_s: float, min_jobs: int) -> dict:
     return {"jain_bsld": jain(per["mean"]), "jain_accounts": int(len(per))}
 
 
-def cluster(acct: pd.DataFrame, window_s: int, sample_s: int) -> dict:
-    bal = cluster_balance(acct, until_s=window_s, step=sample_s)
+def cluster(acct: pd.DataFrame, window_s: int, sample_s: int, from_s: int = 0) -> dict:
+    bal = cluster_balance(acct, until_s=window_s, step=sample_s, from_s=from_s)
     return {"util": bal["util"], "util_cpu": bal["cpu"], "util_mem": bal["mem"],
             "node_sigma": bal["sigma_u"],
             "makespan_h": float((acct["End"].max() - acct["Submit"].min()) / 3600)}
@@ -106,24 +112,64 @@ def adaptation(run_dir: Path) -> dict:
            "switches": wk["switches"], "stays_at_minimum": wk["switches_at_minimum_dwell"],
            "command_ms_median": r["command_ms_median"]}
     out.update({f"time_share_{k}": v for k, v in wk["time_share_by_state"].items()})
+    for st, g in r.get("a4", {}).get("by_state", {}).items():         # A4 spells (SPEC §9.6)
+        out[f"spells_{st}"] = g["spells"]
+        out[f"spells_per_day_{st}"] = g["per_day"]
+        out[f"spells_first_chance_{st}"] = g["started_at_first_chance"]
+    for ph, v in r.get("a4", {}).get("time_share_by_phase", {}).items():
+        out[f"phase_share_{ph}"] = v
     return out
 
 
-def run_metrics(run_dir: Path, workload: str) -> dict:
-    cfg = settings()["metrics"]
+def a4_measured(run_dir: Path, origin: int, lo: int, hi: int) -> dict:
+    """A4 spells over the measured window [origin + lo, origin + hi) (SPEC §9.6): spells
+    started in it per state, and the share of the window each class was favored."""
+    log_path = ROOT / run_dir / "policy" / "controller.jsonl"
+    log = [json.loads(l) for l in log_path.read_text().splitlines()]
+    if not log or log[0].get("signal") != "wait_target":
+        return {}
+    a, b = origin + lo, origin + hi
+    out = {}
+    active = {}
+    for r, nxt in zip(log, log[1:] + [None]):
+        t0, t1 = r["t_sim"], (nxt["t_sim"] if nxt else r["t_sim"])
+        if r["phase"] == "active":
+            overlap = max(0, min(t1, b) - max(t0, a))
+            active[r["state"]] = active.get(r["state"], 0) + overlap
+    for st in ("medium", "large"):
+        out[f"m_spells_{st}"] = sum(1 for r in log if r["switch"] and r["state"] == st
+                                    and a <= r["t_sim"] < b)
+        out[f"m_active_share_{st}"] = active.get(st, 0) / (b - a)
+    out["m_active_share"] = sum(active.values()) / (b - a)
+    return out
+
+
+def run_metrics(run_dir: Path, workload: str, full: dict | None = None) -> dict:
+    cfg = (full or settings())["metrics"]
     j, acct = job_table(run_dir, workload)
+    if cfg.get("measured_only"):
+        j = j[~j["segment"].isin(NOT_MEASURED)].copy()
+        j["day"] = ((j["Submit"] - j["Submit"].min()) // 86400).astype(int)
+    if cfg.get("window") == "measured":
+        m = json.loads((ROOT / "workloads" / "traces" / workload / "manifest.json").read_text())
+        lo, hi = m["measured_window_s"]
+        clu = cluster(acct, hi, cfg["sample_s"], from_s=lo)
+    else:
+        clu = cluster(acct, cfg["window_s"], cfg["sample_s"])
     row = {}
     row.update(service(j, cfg["bsld_tau_s"]))
     row.update(fairness(j, cfg["bsld_tau_s"], cfg["jain_min_jobs"]))
-    row.update(cluster(acct, cfg["window_s"], cfg["sample_s"]))
+    row.update(clu)
     row.update(segments(j))
     row.update(adaptation(run_dir))
+    if cfg.get("window") == "measured" and (ROOT / run_dir / "policy" / "controller.jsonl").exists():
+        row.update(a4_measured(run_dir, int(acct["Submit"].min()), lo, hi))
     return row
 
 
-def collect() -> pd.DataFrame:
+def collect(cfg: dict | None = None) -> pd.DataFrame:
     """One row per finished run under run_root (each run folder has done.json from sim.batch)."""
-    cfg = settings()
+    cfg = cfg or settings()
     rows = []
     for done in sorted((ROOT / cfg["run_root"]).glob("*/*/done.json")):
         if ".attempt" in done.parent.name:          # a failed first attempt kept by sim.batch
@@ -131,30 +177,35 @@ def collect() -> pd.DataFrame:
         d = json.loads(done.read_text())
         if d["policy"] not in cfg["policies"]:      # runs of policies dropped from the comparison
             continue
+        if d["workload"] not in cfg["workloads"]:   # workloads dropped from the evaluation
+            continue
         row = {k: d[k] for k in ("workload", "scenario", "seed", "policy", "role", "ok",
                                  "attempt", "image_id", "real_s")}
         if d["ok"]:
-            row.update(run_metrics(done.parent.relative_to(ROOT), d["workload"]))
+            row.update(run_metrics(done.parent.relative_to(ROOT), d["workload"], cfg))
         rows.append(row)
     df = pd.DataFrame(rows)
-    OUT.mkdir(parents=True, exist_ok=True)
-    df.to_csv(OUT / "metrics.csv", index=False, float_format="%.6g")
+    out = ROOT / cfg.get("metrics_out", "results/phase3/metrics.csv")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(out, index=False, float_format="%.6g")
     return df
 
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    p.add_argument("--config", type=Path, default=EVAL)
     p.add_argument("run_dir", type=Path, nargs="?")
     p.add_argument("workload", nargs="?")
     p.add_argument("--collect", action="store_true")
     a = p.parse_args()
+    cfg = settings(a.config)
     if a.collect:
-        df = collect()
-        print(f"{len(df)} runs -> {OUT / 'metrics.csv'}")
+        df = collect(cfg)
+        print(f"{len(df)} runs -> {cfg.get('metrics_out', 'results/phase3/metrics.csv')}")
         return 0
     if not (a.run_dir and a.workload):
         p.error("RUN_DIR and WORKLOAD, or --collect")
-    print(json.dumps(run_metrics(a.run_dir, a.workload), indent=2))
+    print(json.dumps(run_metrics(a.run_dir, a.workload, cfg), indent=2))
     return 0
 
 

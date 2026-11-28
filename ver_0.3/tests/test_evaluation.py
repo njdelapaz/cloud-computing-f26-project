@@ -114,3 +114,82 @@ def test_exposure_splits_each_wait_over_the_states():
     assert ex.loc[0, "mix"] == pytest.approx(0.5) and ex.loc[0, "small"] == pytest.approx(0.5)
     assert ex.loc[1, "small"] == pytest.approx(0.5) and ex.loc[1, "large"] == pytest.approx(0.5)
     assert ex.loc[2, "large"] == 1.0 and ex.loc[2, "small"] == 0.0     # no wait: state at submit
+
+
+# --------------------------------------------------------------------------- Phase 4 stage choice
+
+SETUP = yaml.safe_load((EVAL.parent / "evaluation_setup.yaml").read_text())
+
+
+def setup_table(factors: dict, noise: float = 0.05, large_factor: dict | None = None):
+    """Matrix runs of every stage-1 policy on all 21 workloads: mean wait = 100 * factor."""
+    rows = []
+    for wl in SETUP["workloads"]:
+        for pol in SETUP["stages"][1]["policies"]:
+            f = factors.get(pol, 1.0)
+            row = {"workload": wl, "policy": pol, "role": "matrix", "ok": True,
+                   "wait_mean_min": 100.0 * f, "util": 0.8, "jain_bsld": 0.4,
+                   "m_spells_medium": 3, "m_spells_large": 1, "m_active_share": 0.1}
+            for q in ("small", "medium", "large"):
+                lf = (large_factor or {}).get(pol, 1.0) if q == "large" else 1.0
+                row[f"wait_mean_min_{q}"] = 100.0 * f * lf
+            rows.append(row)
+    for wl in SETUP["repeats"]["workloads"]:                 # two more runs, +-noise
+        for pol in SETUP["repeats"]["policies"]:
+            m = next(r for r in rows if r["workload"] == wl and r["policy"] == pol)
+            for role, k in (("repeat", 1 + noise), ("repeat2", 1 - noise)):
+                rows.append({**m, "role": role, "wait_mean_min": m["wait_mean_min"] * k})
+    return pd.DataFrame(rows)
+
+
+def test_select_picks_the_lowest_score():
+    from evaluation.select import score_stage
+    r = score_stage(setup_table({"A4-tight-60": 0.7, "A4-middle-60": 0.9, "A4-loose-60": 1.0},
+                                noise=0.02), SETUP, 1)
+    assert r["mean_band"] == pytest.approx(0.04, rel=0.01)
+    assert r["choice"] == "A4-tight-60" and r["ties_with_lowest"] == ["A4-tight-60"]
+    assert r["settings"]["A4-tight-60"]["score"] == pytest.approx(0.7)
+    nat = r["settings"]["A4-tight-60"]["by_pattern"]["D-nat"]
+    assert nat["seeds_beating_beyond_noise"] == 3 and not nat["flag_never_fires"]
+
+
+def test_select_ties_go_to_fewer_guard_failures_then_the_looser_level():
+    from evaluation.select import score_stage
+    # all within a 10% band of each other: a tie; tight starves large jobs (guard fails)
+    t = setup_table({"A4-tight-60": 0.90, "A4-middle-60": 0.92, "A4-loose-60": 0.95},
+                    noise=0.05, large_factor={"A4-tight-60": 2.0})
+    r = score_stage(t, SETUP, 1)
+    assert set(r["ties_with_lowest"]) == {"A4-tight-60", "A4-middle-60", "A4-loose-60"}
+    assert r["choice"] == "A4-loose-60"                 # middle and loose: 0 failures; looser
+    assert r["settings"]["A4-tight-60"]["guard_failures"] == 12     # one per workload
+
+
+def test_select_records_an_override_of_the_rule():
+    import copy
+    from evaluation.select import score_stage
+    t = setup_table({"A4-tight-60": 0.90, "A4-middle-60": 0.92, "A4-loose-60": 0.95},
+                    noise=0.05, large_factor={"A4-tight-60": 2.0})
+    cfg = copy.deepcopy(SETUP)
+    cfg["stages"][1].pop("chosen", None)
+    r = score_stage(t, cfg, 1)
+    assert r["chosen"] == r["choice"] == "A4-loose-60" and not r["overridden"]
+    assert r["override_reason"] is None
+    cfg["stages"][1].update(chosen="A4-tight-60", chosen_reason="requested")
+    r = score_stage(t, cfg, 1)
+    assert r["choice"] == "A4-loose-60" and r["chosen"] == "A4-tight-60" and r["overridden"]
+    assert r["override_reason"] == "requested"
+    cfg["stages"][1]["chosen"] = "A4-middle-30"
+    with pytest.raises(ValueError):
+        score_stage(t, cfg, 1)
+
+
+def test_setup_stage1_choice_is_tight():
+    assert SETUP["stages"][1]["chosen"] == "A4-tight-60"     # L*, task 4.5 (requested)
+
+
+def test_select_needs_every_workload():
+    from evaluation.select import score_stage
+    t = setup_table({"A4-tight-60": 0.5})
+    t = t[~((t["workload"] == "D-alt-s2") & (t["policy"] == "A4-tight-60"))]
+    r = score_stage(t, SETUP, 1)
+    assert not r["settings"]["A4-tight-60"]["complete"] and r["choice"] != "A4-tight-60"

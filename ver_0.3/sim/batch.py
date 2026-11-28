@@ -1,12 +1,18 @@
-"""Task 3.2: run a batch of Phase 3 runs (SPEC §8.4) and check each one.
+"""Tasks 3.2, 4.5: run a batch of evaluation runs (SPEC §8.4, §9.5) and check each one.
 
 Usage:
-  .venv/bin/python -m sim.batch --workloads N-s1 [X-s1 ...|all] [--policies all|A1,C0]
-                                [--role matrix|pilot|repeat] [--parallel 9] [--dry-run]
-                                [--recheck]     re-run the checks of finished runs only
+  .venv/bin/python -m sim.batch [--config config/evaluation.yaml]
+                                --workloads N-s1 [X-s1 ...|all] [--policies all|A1,C0]
+                                [--stage N] [--with-repeats]
+                                [--role matrix|pilot|repeat|repeat2] [--parallel 9]
+                                [--dry-run] [--recheck]   re-run the checks of finished runs
 
-Policies, workloads, start times and the run folder come from config/evaluation.yaml. A run
-of policy P on workload W goes to <run_root>/W/P (role matrix), W/P-pilot or W/P-repeat.
+Policies, workloads, start times, the run folder and the batch log come from the config
+(config/evaluation.yaml for Phase 3, config/evaluation_setup.yaml for Phase 4). --stage N
+takes the policies of the config's stage N. --with-repeats adds, for the config's repeat
+workloads and policies, one run per repeat role in the same batch. A run of policy P on
+workload W goes to <run_root>/W/P (role matrix), W/P-pilot, W/P-repeat or W/P-repeat2.
+An adaptive policy may give `overrides` of its triggers file (sim.prepare_run).
 
 For each run: prepare (sim.prepare_run), simulate (sim/run_sim.sh with the slurmsim:v03
 image), then check: sim.check_run for every run, and controller.summarize for adaptive runs
@@ -19,7 +25,7 @@ retried: with dozens of runs starting together, slurmctld can start before the a
 loaded and then refuses every job (task 3.5). Each run folder gets done.json
 (outcome, attempt, image id, real time, peak container memory, mean CPU, disk use); a run
 whose done.json says ok is skipped, so a batch can be resumed. One line per attempt is
-appended to results/phase3/batches.jsonl.
+appended to the config's `log` (default results/phase3/batches.jsonl).
 """
 from __future__ import annotations
 
@@ -42,7 +48,7 @@ from sim.prepare_run import ROOT, prepare_run
 EVAL = ROOT / "config" / "evaluation.yaml"
 LOG = ROOT / "results" / "phase3" / "batches.jsonl"
 IMAGE = os.environ.get("SLURMSIM_IMAGE", "slurmsim:v03")
-SUFFIX = {"matrix": "", "pilot": "-pilot", "repeat": "-repeat"}
+SUFFIX = {"matrix": "", "pilot": "-pilot", "repeat": "-repeat", "repeat2": "-repeat2"}
 _check_lock = threading.Lock()       # sim.check_run keeps its known issues in a module list
 _log_lock = threading.Lock()
 _start_lock = threading.Lock()       # spaces out container starts
@@ -125,7 +131,7 @@ class Monitor(threading.Thread):
             self.stop.wait(self.every_s)
 
 
-def check_run_dir(run_dir: Path, adaptive: bool) -> dict:
+def check_run_dir(run_dir: Path, adaptive: bool, window_h: float = 168) -> dict:
     from sim.check_run import KNOWN_ISSUES, check
     with _check_lock:
         out = {"problems": [], "known_issues": [], "summary_ok": None}
@@ -134,7 +140,7 @@ def check_run_dir(run_dir: Path, adaptive: bool) -> dict:
             out["known_issues"] = list(KNOWN_ISSUES)
             if adaptive:
                 from controller.summarize import summarize
-                s = summarize(run_dir)
+                s = summarize(run_dir, window_h)
                 out["summary_ok"] = bool(s["ok"])
                 if not s["ok"]:
                     out["problems"].append("adaptive summary not ok: ticks "
@@ -176,15 +182,17 @@ def run_one(cfg: dict, workload: str, policy: str, role: str, mon: Monitor | Non
     if done.exists() and json.loads(done.read_text()).get("ok"):
         return {**json.loads(done.read_text()), "skipped": True}
     pol = cfg["policies"][policy]
-    scen, seed = workload.split("-s")
+    scen, seed = workload.rsplit("-s", 1)
+    t_start = cfg["time_start"].get(scen, cfg["time_start"].get(scen.split("-")[0]))
     src = ROOT / "workloads" / "traces" / workload
     adaptive = pol["kind"] == "adaptive"
     rec = {}
     for attempt in (1, 2):
         prepare_run(run_dir, src / "events.txt", src / "accounts.txt",
                     ROOT / "config" / "priority" / f"{pol['priority']}.conf",
-                    cfg["time_start"][scen], policy="adaptive" if adaptive else None,
-                    triggers=ROOT / "config" / pol.get("triggers", "triggers.yaml"))
+                    t_start, policy="adaptive" if adaptive else None,
+                    triggers=ROOT / "config" / pol.get("triggers", "triggers.yaml"),
+                    trigger_overrides=pol.get("overrides"))
         wait_start_slot(cfg.get("start_gap_s", 20))
         name = container_name(run_dir)
         if mon:
@@ -195,7 +203,7 @@ def run_one(cfg: dict, workload: str, policy: str, role: str, mon: Monitor | Non
         real_s = time.time() - started
         if mon and name in mon.stopped:
             code, why = None, mon.stopped[name]
-        chk = check_run_dir(run_dir, adaptive) if code == 0 else \
+        chk = check_run_dir(run_dir, adaptive, cfg.get("summary_window_h", 168)) if code == 0 else \
             {"problems": [why], "known_issues": [], "summary_ok": None}
         disk = sum(f.stat().st_size for f in (ROOT / run_dir).rglob("*") if f.is_file()) / 2**20
         cpu = mon.cpu.get(name, []) if mon else []
@@ -227,7 +235,8 @@ def recheck(cfg: dict, workload: str, policy: str, role: str) -> dict | None:
     if not done.exists() or not (ROOT / run_dir / "out" / "slurm_acct.out").exists():
         return None
     rec = json.loads(done.read_text())
-    chk = check_run_dir(run_dir, cfg["policies"][policy]["kind"] == "adaptive")
+    chk = check_run_dir(run_dir, cfg["policies"][policy]["kind"] == "adaptive",
+                        cfg.get("summary_window_h", 168))
     rec.update({"ok": not chk["problems"], "problems": chk["problems"][:20],
                 "known_issues": chk["known_issues"], "summary_ok": chk["summary_ok"],
                 "rechecked": datetime.now(timezone.utc).isoformat(timespec="seconds")})
@@ -236,48 +245,71 @@ def recheck(cfg: dict, workload: str, policy: str, role: str) -> dict | None:
     return rec
 
 
+def batch_jobs(cfg: dict, workloads: list[str], policies: list[str], role: str,
+               with_repeats: bool) -> list[tuple[str, str, str]]:
+    """(workload, policy, role) for every run, workload by workload; with_repeats adds the
+    repeat roles of the config's repeat policies on its repeat workloads to their batch."""
+    rep = cfg.get("repeats", {})
+    jobs = []
+    for w in workloads:
+        jobs += [(w, pol, role) for pol in policies]
+        if with_repeats and w in rep.get("workloads", []):
+            jobs += [(w, pol, r) for pol in rep.get("policies", []) if pol in policies
+                     for r in rep.get("roles", ["repeat"])]
+    return jobs
+
+
 def main() -> int:
-    cfg = yaml.safe_load(EVAL.read_text())
+    global LOG
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    p.add_argument("--config", type=Path, default=EVAL)
     p.add_argument("--workloads", nargs="+", required=True)
     p.add_argument("--policies", default="all")
+    p.add_argument("--stage", help="the policies of this stage of the config")
+    p.add_argument("--with-repeats", action="store_true")
     p.add_argument("--role", choices=list(SUFFIX), default="matrix")
     p.add_argument("--parallel", type=int, default=9)
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--recheck", action="store_true",
                    help="re-run the checks of finished runs and update their done.json")
     a = p.parse_args()
+    cfg = yaml.safe_load((ROOT / a.config).read_text())
+    LOG = ROOT / cfg.get("log", "results/phase3/batches.jsonl")
     workloads = cfg["workloads"] if a.workloads == ["all"] else a.workloads
-    policies = list(cfg["policies"]) if a.policies == "all" else a.policies.split(",")
+    if a.stage:
+        policies = list(cfg["stages"][int(a.stage)]["policies"])
+    else:
+        policies = list(cfg["policies"]) if a.policies == "all" else a.policies.split(",")
     for w in workloads:
         if not (ROOT / "workloads" / "traces" / w / "events.txt").exists():
             p.error(f"no workload {w}")
     for pol in policies:
         if pol not in cfg["policies"]:
             p.error(f"unknown policy {pol}")
-    jobs = [(w, pol) for w in workloads for pol in policies]
+    jobs = batch_jobs(cfg, workloads, policies, a.role, a.with_repeats)
     if a.dry_run:
-        for w, pol in jobs:
-            print(run_dir_for(cfg, w, pol, a.role))
+        for w, pol, role in jobs:
+            print(run_dir_for(cfg, w, pol, role))
+        print(f"{len(jobs)} runs")
         return 0
     if a.recheck:
-        out = [r for w, pol in jobs if (r := recheck(cfg, w, pol, a.role))]
+        out = [r for w, pol, role in jobs if (r := recheck(cfg, w, pol, role))]
         for r in out:
-            print(f"{r['workload']:6} {r['policy']:3} {r['role']:6} ok={r['ok']} "
+            print(f"{r['workload']:12} {r['policy']:12} {r['role']:7} ok={r['ok']} "
                   f"known={r['known_issues']} problems={r['problems'][:2]}")
         return 0 if all(r["ok"] for r in out) else 1
     if shutil.which("docker") is None:
         p.error("docker not found")
     img = image_id()
-    mon = Monitor({container_name(run_dir_for(cfg, w, pol, a.role)) for w, pol in jobs})
+    mon = Monitor({container_name(run_dir_for(cfg, w, pol, role)) for w, pol, role in jobs})
     mon.start()
     try:
         with ThreadPoolExecutor(max_workers=a.parallel) as ex:
-            results = list(ex.map(lambda wp: run_one(cfg, wp[0], wp[1], a.role, mon, img), jobs))
+            results = list(ex.map(lambda j: run_one(cfg, j[0], j[1], j[2], mon, img), jobs))
     finally:
         mon.stop.set()
     for r in results:
-        print(f"{r['workload']:6} {r['policy']:3} {r['role']:6} ok={r['ok']} attempt={r['attempt']} "
+        print(f"{r['workload']:12} {r['policy']:12} {r['role']:7} ok={r['ok']} attempt={r['attempt']} "
               f"real={r['real_s'] / 60:.0f} min mem={r.get('peak_mem_mb')} MB"
               + (" (skipped, already done)" if r.get("skipped") else "")
               + ("" if r["ok"] else f" problems={r['problems'][:2]}"))

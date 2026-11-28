@@ -76,14 +76,16 @@ def node_timeline(a: pd.DataFrame, step: int = 300) -> pd.DataFrame:
     return out
 
 
-def cluster_balance(a: pd.DataFrame, until_s: float | None = None, step: int = 300) -> dict:
+def cluster_balance(a: pd.DataFrame, until_s: float | None = None, step: int = 300,
+                    from_s: float = 0) -> dict:
     """Load balance measured on cluster state: how unevenly the 16 nodes are used.
 
     At each sample time, sigma = standard deviation across nodes of per-node utilization
-    u = (cpu + mem) / 2, and spread = max - min. Reported as time means over [0, until_s)
+    u = (cpu + mem) / 2, and spread = max - min. Reported as time means over [from_s, until_s)
     seconds from the first submission, together with mean utilization for context.
     """
     nt = node_timeline(a, step)
+    nt = nt[nt["t"] >= from_s]
     if until_s is not None:
         nt = nt[nt["t"] < until_s]
     g = nt.groupby("t")

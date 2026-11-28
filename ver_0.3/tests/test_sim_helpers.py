@@ -326,3 +326,26 @@ def test_state_at_skips_the_minute_of_a_switch():
     assert state_at(sw, pd.Timestamp("2024-07-08 01:50")) == "B1"
     assert state_at(sw, pd.Timestamp("2024-07-08 02:00")) is None
     assert state_at(sw, pd.Timestamp("2024-07-08 02:10")) == "B1L"
+
+
+def test_setup_config_is_consistent():
+    import yaml
+    from sim.batch import batch_jobs
+    from sim.prepare_run import load_triggers, resolve_triggers
+    from controller.policy import Params
+    cfg = yaml.safe_load((ROOT / "config/evaluation_setup.yaml").read_text())
+    assert len(cfg["workloads"]) == 12 and cfg["reference"] == "B1"
+    dropped = ("D-lglong", "D-flood", "D-mem")
+    assert not any(w.startswith(dropped) for w in cfg["workloads"] + cfg["repeats"]["workloads"])
+    for name, pol in cfg["policies"].items():
+        assert (ROOT / "config/priority" / f"{pol['priority']}.conf").exists()
+        if pol["kind"] == "adaptive":
+            trig = resolve_triggers(load_triggers(ROOT / "config" / pol["triggers"]),
+                                    pol.get("overrides"))
+            assert trig["state_config"]["base"] == pol["priority"] == "B1"
+            Params.from_dict({**trig, "initial_state": trig["initial_state"]})
+    st = cfg["stages"][1]
+    assert set(st["policies"]) <= set(cfg["policies"]) and set(st["adaptive"]) <= set(st["policies"])
+    assert set(cfg["repeats"]["policies"]) <= set(st["policies"])
+    jobs = batch_jobs(cfg, cfg["workloads"], st["policies"], "matrix", True)
+    assert len(jobs) == 76 and len(set(jobs)) == 76              # SPEC §9.5, stage 1

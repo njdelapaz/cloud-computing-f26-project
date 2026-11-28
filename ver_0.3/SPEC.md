@@ -1177,14 +1177,14 @@ flood is on, however long its jobs wait. The setup will show how much that matte
 | Item | Value |
 |---|---|
 | Name | `D-<pattern>-s<seed>`, seeds 1–3 |
-| Patterns | `nat` (natural mix), `flood` (small-short flood), `lglong` (large-long heavy), `acct` (one account submits about half the demand), `mem` (memory-heavy medium), `alt` (6-hour blocks alternating flood and large-long), `over` (`Y`-style: natural background at 60% of `ρ*` plus six bursts, three a day, of 3–12 h, each adding 40%). Built as in §3.5. |
+| Patterns | `nat` (natural mix), `flood` (small-short flood), `lglong` (large-long heavy), `acct` (one account submits about half the demand), `mem` (memory-heavy medium), `alt` (natural background at 60% of `ρ*`, with 6-hour blocks alternating a small-short flood and large jobs of any limit, each block adding 40%), `over` (natural background at 60% of `ρ*` plus 24 bursts of 1–3 h at seeded random times, each all small, all medium or all large jobs of any limit, the three in turn, each adding 40% while it runs). `alt` and `over` were redefined on 2026-11-28 (requested). Before, `alt` alternated a flood with large-long jobs and had no background, and `over` had six 3–12 h bursts of the flood, large-long, one-account and memory-heavy patterns. Built as in §3.5. |
 | Warm start (S-D) | At time 0, the running set of a busy cluster. Natural pool jobs are drawn in proportion to their run time, because a job running at a random moment is more likely a long one. Each keeps a seeded uniform share of its run time and its own time limit. The set is filled until allocated CPUs or memory reach `ρ*` of the cluster. Not measured, and the same for every pattern of a seed. Added 2026-11-27 (requested) after the first 4.3 check found the cluster still filling. From empty, the cluster reaches 0.72 of its busy-period load after 12 h and 0.93 after 48 h. In `N-s1`, the queue only stood from day 2: a median of 3 and 12 jobs waiting on days 0–1, against 461–608 on days 2–4. |
 | Lead-in (S-D) | 12 h of natural mix at `ρ*` after the warm start, so arrivals and a queue are under way when measuring starts. Lead-in jobs run and are scheduled, but are not measured. |
 | Measured days (S-D) | 48 h of the pattern from midnight, thinned to target over the whole window. This was one day until 2026-11-27, changed on request. With two days, one big job moves the window's load half as much; at the longest stabilization period about five spells fit; and the loose large target (24 h) can be passed while the pattern still runs. Jobs keep their time of day, so the workload starts at 12:00 with the lead-in. Each job carries `segment`: `leadin`, `leadout`, the pattern key, or for `over` `base` and `burstNN:<name>` as in `Y`. |
 | Lead-out (S-D) | 24 h of natural mix at `ρ*` after the measured days. It is run but not measured. Without it, submissions stop when the pattern ends and the queue only drains: late jobs meet no new arrivals and wait less than in steady running, and a favored spell has little left to reorder. Under B1, medium and large jobs waited 19–26 h on average in the Phase 3 weeks, so 24 h covers most measured jobs until they start. |
 | Load | Thinned to `ρ* = 0.95` in the saturated resource, as in §3.4 |
 | Source (S-F) | Setup draws only from trace weeks 1–12 (Jan–Mar; `K` is week 4). The five-day tests (§9.8) draw only from weeks 13–23 (Apr–Jun; `N` is week 20). Nothing is tuned on the months it is tested on. This is like a site tuning on past months and running on later ones. |
-| Size | 21 workloads (7 patterns × 3 seeds) |
+| Size | 21 built (7 patterns × 3 seeds); 12 evaluated (4 patterns × 3 seeds: `nat`, `acct`, `alt`, `over`). Three patterns were dropped from the evaluation on request (2026-11-28). `D-lglong` was not needed. `D-flood` cannot trigger the policy: its measured jobs are all small, so medium and large stay far below 10% of the queue (as in `D-alt`'s flood blocks, §9.3). `D-mem`'s measured jobs are all medium, so a medium boost has nothing to move them ahead of, and their order within the class stays B1's. All three stay built (`D-lglong-s1` holds the pilot runs). Flood and large jobs still appear in `alt`'s blocks, and small, medium and large bursts in `over`. |
 
 Each run drains as in §8.4: submissions span 84 h (12 + 48 + 24), and the run continues until
 every job has ended.
@@ -1216,12 +1216,20 @@ every job has ended.
 | `lglong` | 178–202 | memory 0.95–0.96 |
 | `acct` | 6,911–7,103 | memory 0.95 |
 | `mem` | 4,810–5,024 | memory 0.95 |
-| `alt` | 42,097–42,665 | memory 0.85–0.89 (each block at target) |
-| `over` | 23,252–25,720 | memory 0.92–1.07 (bursts overlap) |
+| `alt` | 23,935–24,281 | memory 0.86–0.88 (a flood block loads CPUs and a large block memory, so each resource carries blocks half the time) |
+| `over` | 10,262–10,640 | memory 0.92–0.93 (bursts overlap) |
 
-Whole workloads run from 5,864 jobs (`D-lglong-s2`) to 93,462 (`D-flood-s1`), so the flood
-workloads are about the size of an `X` week. `D-over` has six bursts per seed, 4–12 h each,
-and every seed has all four patterns at least once.
+Whole workloads run from 5,864 jobs (`D-lglong-s2`) to 93,462 (`D-flood-s1`); of the four
+evaluated patterns, `D-alt` is the largest (about 31k).
+- **`D-alt`'s blocks:** each flood block holds 3,356–5,453 jobs at 0.38. Each large block
+  holds 74–368 jobs at 0.13–0.43 (median 0.36): a few large jobs carry most of a 6-h block's
+  target.
+- **`D-over`'s bursts:** 8 of each size class per seed, covering the 48 h about once (51–57
+  burst-hours). Over the 48 hours, 15–16 h have no burst, 14–17 h have one, and 16–19 h
+  have two or more.
+- **Burst loads in `over`:** small bursts sit at 0.33–0.39 and medium at 0.34–0.59. Large
+  bursts, 3–826 jobs, sit at 0.00–0.67: in a 1–3 h window, one large job can carry the whole
+  target, or the first job drawn can carry almost none.
 
 **Warm-start check (tasks 4.2–4.3; `sim/phase4_checks.py`).**
 - **Simulated check** (`results/phase4/warmstart_check.json`). `D-nat-s1` as built was run
@@ -1272,13 +1280,31 @@ the trigger fires:
 
 | Stage | Runs | Count |
 |---|---|---|
-| 1: targets | B1, C0, A4-tight-60, A4-middle-60 and A4-loose-60 on the 21 workloads | 105 |
-| | Repeats: B1 and A4-middle-60 on seed 1 of each pattern, two more runs each | 28 |
+| 1: targets | B1, C0, A4-tight-60, A4-middle-60 and A4-loose-60 on the 12 workloads | 60 |
+| | Repeats: B1 and A4-middle-60 on seed 1 of each pattern, two more runs each | 16 |
 | | Choose the target level `L*` (§9.6) | |
-| 2: stabilization | A4-`L*`-`T` for `T` ∈ {0, 30, 120, 240, 480}; 60 comes from stage 1 | 105 |
-| Total | | 238 runs |
+| 2: stabilization | A4-`L*`-`T` for `T` ∈ {0, 30, 120, 240, 480}; 60 comes from stage 1 | 60 |
+| Total | | 136 runs (238 before `D-lglong`, `D-flood` and `D-mem` were dropped) |
 
-Batches, checks and reruns follow §8.4.
+`L*` = tight (task 4.5, §9.6 stage 1 result), so stage 2 runs A4-tight-`T`.
+
+Batches, checks and reruns follow §8.4, run by `sim/batch.py` from
+`config/evaluation_setup.yaml`.
+- **Batches:** the runs of a workload run together in one batch. The repeat runs of a
+  seed-1 workload are in its batch too, so the noise band measures run-to-run variation
+  under the same host conditions every comparison is made under. In Phase 3, the extra
+  repeat runs were made in a later batch, and all six came out higher.
+- **Parallel runs:** twelve at a time (requested 2026-11-28; ten planned), with workloads
+  in seed order, so the heavy `alt` shares the host with light patterns.
+- **C0 postponed** (requested 2026-11-28): C0 is a reference and takes no part in choosing a
+  setting, so its runs are moved out of stage 1, to run after it or alongside stage 2.
+  Stage 1 itself is then 48 main runs plus the 16 repeat runs.
+- **Pilot** (2026-11-28): the 9 stage 1 runs on `D-lglong-s1`, including C0, all passed. They
+  are kept but left out of the metrics since that pattern was dropped. The 7 runs effectively
+  under B1 throughout, the B1 runs and the A4 runs that never fired, gave mean waits of
+  123–375 min: a noise band of 0.72 on its 180 measured jobs.
+- **Stage 1 run** (2026-11-28): all 64 runs passed at the first attempt, twelve at a time.
+  Real time per run: acct 56–67 min, nat 62–108, over 62–96, alt 80–142.
 
 ### 9.6 Metrics and choice of the stabilization period
 
@@ -1310,13 +1336,63 @@ over the three runs of A4-middle-60 on seed 1, the larger of the two (§8.6).
 **Choosing the target level, then `T_stable` (S-F).** The same rule picks `L*` among the
 stage 1 settings and `T_stable` among the stage 2 settings:
 - For each setting, compute each workload's ratio of mean wait to B1's, and take the
-  geometric mean over the 21 workloads. Every pattern then counts the same, whatever its
+  geometric mean over the 12 workloads. Every pattern then counts the same, whatever its
   wait scale.
 - The lowest score wins.
 - If several settings score within the noise band of the lowest, take the one with the
   fewest guard failures (§8.6: size class +25%, utilization −1 point, Jain −0.05, all
   against B1). After that, take the looser level, or the longer `T_stable`: fewer spells,
   closer to the baseline.
+- **"Within the noise band"** (fixed before the stage 1 runs): a setting's score is above the
+  lowest by no more than the mean of the four per-pattern bands, relative to the lowest.
+  This is conservative, since the score averages 12 workloads.
+- **Flags** (risk R14): a setting is flagged on a pattern if it never fires there (no spell
+  on any seed), or if it keeps a class favored for more than half the measured days on
+  average.
+- `evaluation/select.py` writes the scores, ties, flags and choice to
+  `results/phase4/selection.json`. When the user overrides the rule, the stage's `chosen`
+  in `config/evaluation_setup.yaml` is carried forward and recorded next to the rule's
+  choice, with its reason.
+
+**Stage 1 result (task 4.5, 2026-11-28).** `L*` = **tight**, chosen on request over the
+rule's choice, loose.
+
+| Pattern | Noise band | B1 runs (mean wait, min) | A4-middle-60 runs |
+|---|---|---|---|
+| nat | 0.69 | 35.6, 45.1, 26.6 | 49.7, 25.4, 55.2 |
+| acct | 0.28 | 119.5, 106.2, 140.8 | 118.4, 103.4, 108.1 |
+| alt | 0.23 | 123.5, 98.0, 106.0 | 89.7, 97.6, 85.4 |
+| over | 0.22 | 162.2, 166.4, 171.4 | 130.8, 156.0, 164.5 |
+
+The mean band is 0.36, wider than the gaps between the levels:
+
+| Level | Score | nat / acct / alt / over | Below B1 | Beyond noise | Spells per day, medium / large | Time favored | Guard failures (of 60) |
+|---|---|---|---|---|---|---|---|
+| tight | **0.87** | 0.92 / 0.81 / 0.91 / 0.83 | 8 of 12 | better on 2, worse on 0 | 2.2–5.8 / 1.0–1.8 | 17–30% | 18 |
+| middle | 1.02 | 1.18 / 1.00 / 0.96 / 0.93 | 7 of 12 | better on 1, worse on 1 | 1.8–5.7 / 0–0.5 | 9–24% | 18 |
+| loose | 1.07 | 1.16 / 0.94 / 1.25 / 0.98 | 6 of 12 | better on 0, worse on 1 | 0.5–3.8 / 0 | 2–15% | 13 |
+
+- **The rule:** all three scores lie within 0.36 of the lowest, so all three tie. Loose has
+  the fewest guard failures, so the rule picks loose. No level is flagged.
+- **Why tight instead:**
+  - It has the lowest score, and it is the only level that beats B1 beyond noise:
+    `D-acct-s1` 0.57 and `D-over-s1` 0.60. It is worse beyond noise nowhere.
+  - On seeds 1–2, where it fired 5–22 times in the two days, it was below B1 on all eight
+    workloads. On seed 3 it fired 0–7 times, and every level was above B1 on at least 3 of
+    the 4 seed-3 workloads, including runs with no spell. That points to low single B1 runs
+    there, not to the boost.
+  - Loose fires about twice a day, never for large, and has no spell on 5 of the 12
+    workloads. Stage 2's stabilization periods only matter after a spell, so at loose they
+    would barely differ.
+  - The guard counts are mostly noise. The 25% class limit is under the noise band, and runs
+    that never fired fail guards too (loose on `D-alt-s3`: no spell, 4 failures, ratio 2.03).
+    Loose's lower count mostly reflects that it seldom fires.
+- **Cost:** boosting medium pushes large jobs back. Tight fails the large-class guard on 8
+  of the 12 workloads, and Jain on 5.
+- **Not checked:** B1 runs without the policy hook, and every A4 run has it ticking every
+  600 s. Task 2.4 only showed that the hook switched off matches the unpatched image. On the
+  seed-1 repeats, A4-middle-60 averaged below B1 on 3 of 4 patterns, so there is no sign the
+  hook alone raises waits, but no run has measured it.
 
 **Setup result.** Phase 4 reports, for the chosen setting and for all eight A4 settings:
 - whether it beats B1 beyond noise, by pattern;
@@ -1357,5 +1433,5 @@ day. S-D then changed after task 4.2: two measured days and a lead-out, then a w
 | S-C | Strength of the favored states: strict (favored class always first), soft (about one typical fair-share gap, about 2,000 points), or in between | **Answered 2026-11-27:** in between. `PriorityWeightQOS = 5000`, with only the favored class's QOS raised (§9.2) |
 | S-D | Warm start, lead-in, measured length and lead-out | **Answered 2026-11-27:** 12 h lead-in (default kept); two measured days and a 24 h lead-out, both requested after task 4.2 first built one-day workloads; a warm start, requested after the 4.3 check found the cluster still filling, and judged across seeds against a 7-day lead-in after its single-run check failed (§9.4) |
 | S-E | Favored spell and the stabilization periods tried | `T_active` 60 min for both states; `T_stable` ∈ {0, 30, 60, 120, 240, 480} min |
-| S-F | How the target level and `T_stable` are chosen, and the source split | In each stage, the lowest geometric-mean ratio of mean wait to B1 over the 21 setup workloads; ties broken by guards, then the looser level or longer period. Setup from weeks 1–12, tests from weeks 13–23. |
+| S-F | How the target level and `T_stable` are chosen, and the source split | In each stage, the lowest geometric-mean ratio of mean wait to B1 over the 12 evaluated setup workloads; ties broken by guards, then the looser level or longer period. Setup from weeks 1–12, tests from weeks 13–23. Stage 1 (2026-11-28): the rule picked loose; tight was chosen on request (§9.6). |
 | S-G | Target statistic, class gate and levels | **Answered 2026-11-27:** median wait of the class's waiting jobs. Class gate: a share of the queue, not a count (requested): 10% (confirmed), with the whole-queue gate of 20 kept. The three levels kept (medium / large): 2 / 6 h, 4 / 12 h, 8 / 24 h |

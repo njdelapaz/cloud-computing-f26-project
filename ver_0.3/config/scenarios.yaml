@@ -57,22 +57,31 @@ day:
     measured_days: 2        # the pattern; thinned to target over the whole window
     leadout_hours: 24       # natural mix after the pattern, not measured; the same for every
                             # pattern of a seed. Measured jobs keep meeting new arrivals.
+    # Evaluated in Phase 4: nat, acct, alt, over. flood, lglong and mem stay built but were
+    # dropped from the evaluation on request (2026-11-28; config/evaluation_setup.yaml).
     patterns:
       nat: {name: natural}
       flood: {name: small-short flood, classes: [sm-short]}
       lglong: {name: large-long heavy, classes: [lg-long]}
       acct: {name: one-account burst, burst_share: 0.5}
       mem: {name: memory-heavy medium, classes: [med-short, med-med, med-long], memory_bound: true}
-      alt: {name: alternating bursts, alternate: [flood, lglong], block_hours: 6}
-      over:
-        name: overlapping bursts
-        overlay:                 # as scenario Y, within the measured days
+      alt:                       # redefined 2026-11-28 (requested)
+        name: alternating blocks
+        overlay:                 # natural base all 48 h; 6 h blocks alternate a flood and large jobs
           base_share: 0.6
-          burst_share: 0.4
-          burst_count: 6         # three a day, as in Y
-          burst_hours: [3, 12]
+          burst_share: 0.4       # each block adds this share of target_rho while it runs
+          block_hours: 6         # fixed schedule: flood, large, flood, ... (8 blocks)
           patterns:
             - {name: small-short flood, classes: [sm-short]}
-            - {name: large-long heavy, classes: [lg-long]}
-            - {name: one-account burst, account: top}
-            - {name: memory-heavy medium, classes: [med-short, med-med, med-long], memory_bound: true}
+            - {name: large, classes: [lg-short, lg-med, lg-long]}
+      over:                      # redefined 2026-11-28 (requested)
+        name: overlapping bursts
+        overlay:                 # natural base all 48 h; short bursts of one size class each
+          base_share: 0.6
+          burst_share: 0.4       # each burst adds this share while it runs; 24 bursts of about
+          burst_count: 24        # 2 h cover the 48 h about once, so bursts make up about 40%
+          burst_hours: [1, 3]    # of the load (some hours have none, some overlap)
+          patterns:              # used in turn, in a seeded order
+            - {name: small, classes: [sm-short, sm-med, sm-long]}
+            - {name: medium, classes: [med-short, med-med, med-long]}
+            - {name: large, classes: [lg-short, lg-med, lg-long]}

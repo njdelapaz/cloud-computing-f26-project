@@ -269,6 +269,31 @@ def place_bursts(pool: pd.DataFrame, cfg: dict, span_h: int, offset_h: int, seed
     return parts, bursts
 
 
+def place_blocks(pool: pd.DataFrame, cfg: dict, t0: int, t1: int, seed: int, name: str,
+                 target: float, burst_account: str) -> tuple[list[pd.DataFrame], list[dict]]:
+    """Blocks of block_hours from t0 to t1, cycling through cfg['patterns'] in order; each
+    adds cfg['burst_share'] * target while it runs (D-alt). Labelled 'burstNN:<name>' like Y's
+    bursts, and listed in the same table form; start_h is relative to t0."""
+    step = int(cfg["block_hours"] * 3600)
+    parts, blocks = [], []
+    for b, s in enumerate(range(t0, t1, step)):
+        spec = cfg["patterns"][b % len(cfg["patterns"])]
+        cand = segment_candidates(pool, spec)
+        if spec.get("account") == "top":
+            cand = cand[cand["account"] == burst_account]
+        e = min(s + step, t1)
+        label = f"burst{b:02d}:{spec['name']}"
+        k = place_window(cand, s, e, target * cfg["burst_share"], seed, name, 100 + b, label,
+                         min_jobs=1)
+        parts.append(k)
+        hours = (e - s) / 3600
+        blocks.append({"burst": b, "name": spec["name"], "start_h": (s - t0) // 3600,
+                       "hours": int(hours), "jobs": int(len(k)),
+                       "rho_cpu": k["cpu_s"].sum() / (CAP_CPU * (e - s)),
+                       "rho_mem": k["mem_s"].sum() / (CAP_MEM * (e - s))})
+    return parts, blocks
+
+
 def overlay_week(jobs: pd.DataFrame, name: str, cfg: dict, seed: int, target: float
                  ) -> tuple[pd.DataFrame, dict]:
     """Scenario Y: natural background all week plus overlapping bursts at random times.
@@ -388,15 +413,12 @@ def day_workload(jobs: pd.DataFrame, scenario: str, pattern: str, cfg: dict, see
         ov = spec["overlay"]
         parts.append(place_window(pool, t0, t1, target * ov["base_share"], seed, name, 1,
                                   "base"))
-        bp, bursts = place_bursts(pool, ov, 24 * n_days, 24, seed, name, target, burst_account,
-                                  rng_for(seed, name, 999_999))
+        if "block_hours" in ov:          # a fixed schedule of blocks, patterns in turn
+            bp, bursts = place_blocks(pool, ov, t0, t1, seed, name, target, burst_account)
+        else:                            # bursts at seeded random times, as in Y
+            bp, bursts = place_bursts(pool, ov, 24 * n_days, 24, seed, name, target,
+                                      burst_account, rng_for(seed, name, 999_999))
         parts += bp
-    elif "alternate" in spec:
-        step = int(spec["block_hours"] * 3600)
-        for b, s in enumerate(range(t0, t1, step)):
-            sub = cfg["patterns"][spec["alternate"][b % len(spec["alternate"])]]
-            parts.append(segment_block(pool, sub, s, min(s + step, t1), seed, name, 1000 + b,
-                                       target, burst_account, pattern))
     else:
         parts.append(segment_days(pool, spec, 1, n_days, seed, name, 1000, target,
                                   burst_account, pattern))
