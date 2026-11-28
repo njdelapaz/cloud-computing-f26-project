@@ -338,8 +338,8 @@ S-A, S-D, S-E and S-F.)
 
 ### 4.2 Setup workloads (`D`)
 - Add a `day` section to `config/scenarios.yaml` (SPEC §9.4): the seven patterns, the
-  12-hour natural lead-in, the two measured days, the 24-hour natural lead-out, and the
-  source weeks 1–12.
+  warm start, the 12-hour natural lead-in, the two measured days, the 24-hour natural
+  lead-out, and the source weeks 1–12.
 - Extend `workloads/build.py` to build `D-<pattern>-s<seed>` with the same outputs as
   SPEC §3.6. Every job carries its `segment` (`leadin` or the pattern).
 - Write tests on a small pool:
@@ -351,6 +351,9 @@ S-A, S-D, S-E and S-F.)
 **Done when:**
 - the 21 workloads are built and deterministic;
 - each measured window's load is near `ρ*` in its saturated resource;
+- the warm start carries into the measured days what a settled cluster does, on average
+  over seeds (SPEC §9.4: a 7-day lead-in as the yardstick, after the single-run comparison
+  with a 48 h lead-in failed);
 - the summaries (`summary.csv`, `D_days.csv`, `D_bursts.csv`) are in `results/workloads/`.
 
 As for `K`–`Y`, the manifests stay with the gitignored traces.
@@ -359,8 +362,11 @@ As for `K`–`Y`, the manifests stay with the gitignored traces.
 - Add the `favored_on` block for B1 to `config/weights.yaml`. `sim/weights.py` renders
   `config/priority/B1M.*` and `B1L.*` with B1's weights plus `PriorityWeightQOS = 5000`,
   and only the favored class's QOS raised (SPEC §9.2).
-- Let `sim/prepare_run.py` give an adaptive run a static base (`static: B1`), so B1's
-  static keys hold for the whole run.
+- Make sure B1's static keys hold for the whole run. A4 runs start in B1, and
+  `sim/prepare_run.py` already applies the starting configuration's `.static` file, so no
+  new setting is needed. B1M and B1L render the same `.static` as B1. `prepare_run` refuses
+  an adaptive run whose states need other static keys than the one it starts in (for
+  example, C0 switching to B1L), since the hook cannot change them mid-run.
 - Check on a `D-nat` slice (run with `DebugFlags=Priority`):
   - a scheduled switch B1 → B1L → B1 → B1M is applied each time, with the logged weights
     and QOS factors;
@@ -369,6 +375,9 @@ As for `K`–`Y`, the manifests stay with the gitignored traces.
   - a favored job comes first in every cross-class pair whose B1 priority gap is under
     5,000 (the share of cross-class pairs where it comes first is reported);
   - within a class, B1's order holds.
+
+The spells sit where the warm run has a standing queue (27–35 h). A first placement at
+14–22 h fell in the overnight lull.
 
 **Done when:** the check passes and its summary is in `results/phase4/states_check.json`.
 
@@ -506,6 +515,7 @@ Decisions for Steps 4–6 are made when their spec is written (2.1, 3.1).
 | R12 | The target level and `T_stable` are tuned on the setup workloads. | Setup and tests draw from different months (weeks 1–12 against 13–23, SPEC §9.4); the five-day tests (Phase 5) judge the choice. |
 | R13 | Fair share under B1 depends on usage history, which a run of a few days barely has. | The 12-hour lead-in (S-D); reported as a limitation; the five-day tests carry more history. |
 | R14 | A target level never fires on some patterns, or keeps a class favored most of the day. | Three levels a factor of two apart (SPEC §9.3); stage 1 reports spells and time active per pattern and flags both cases (task 4.5). |
+| R15 | The warm start's carried load varies more by seed than a settled cluster's (memory SD 0.065 against 0.033 over 8 seeds). | Every policy runs on the same workloads, so the spread is shared; the per-seed carry is reported (`results/phase4/warmstart_carry.json`). |
 
 ---
 

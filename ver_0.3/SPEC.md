@@ -1000,7 +1000,7 @@ Defaults approved 2026-11-26.
 *Approved 2026-11-27, requested after the Phase 3 answer was no. Open questions (§9.9): S-B
 (wait targets), S-C (a 5,000-point boost) and S-G (median; class gate 10% of the waiting
 jobs; levels kept) answered; defaults kept for S-A, S-D, S-E and S-F. S-D changed after
-task 4.2: two measured days and a 24 h lead-out (§9.4).*
+task 4.2: two measured days, a 24 h lead-out and a warm start (§9.4).*
 
 ### 9.1 What changes and why
 
@@ -1061,6 +1061,18 @@ waits compared with B1 alone? Two parts:
   - 5,000 is also near the geometric midpoint of the two bounds (about 4,900).
 - **Rendering:** `sim/weights.py` renders `config/priority/B1M.*` and `B1L.*` from a
   `favored_on` block in `config/weights.yaml`, so the weights are never typed by hand.
+
+**Check (task 4.3; `results/phase4/states_check.json`).** The first 37 h of `D-nat-s1`
+under B1, with `DebugFlags=Priority`. Scheduled switches B1 → B1L → B1 → B1M → B1, twice,
+from 27 to 35 h, where the warm run has a standing queue. A first placement at 14–22 h found
+only 5–8 jobs waiting overnight, so it was moved.
+- **Static keys** held in every state: the job-size factor depends on the CPU request only.
+- **Switches:** all 8 were applied in order. The first priority calculation came 1.9 s after
+  each, covering 99–260 waiting jobs, with the new weights and QOS factors.
+- **Boost:** in all 24 snapshots during the spells (94–259 jobs waiting), favored jobs
+  carried exactly 5,000 QOS points and every other job 0.
+- **Order:** of 152,917 cross-class pairs, the favored job was ahead in 95.7% (large spells
+  99.96%, medium spells 94.1%). It was ahead in every pair whose B1 gap was under 5,000.
 
 ### 9.3 Trigger and return to baseline
 
@@ -1134,7 +1146,8 @@ The levels span the class mean waits B1 gave over the Phase 3 weeks: medium 0.7�
 |---|---|
 | Name | `D-<pattern>-s<seed>`, seeds 1–3 |
 | Patterns | `nat` (natural mix), `flood` (small-short flood), `lglong` (large-long heavy), `acct` (one account submits about half the demand), `mem` (memory-heavy medium), `alt` (6-hour blocks alternating flood and large-long), `over` (`Y`-style: natural background at 60% of `ρ*` plus six bursts, three a day, of 3–12 h, each adding 40%). Built as in §3.5. |
-| Lead-in (S-D) | 12 h of natural mix at `ρ*` before the measured days, so they start on a loaded cluster. On `X`, day 0 began on an empty cluster, and its mean wait was 0.0 h under both C0 and B1. Lead-in jobs run and are scheduled, but are not measured. |
+| Warm start (S-D) | At time 0, the running set of a busy cluster. Natural pool jobs are drawn in proportion to their run time, because a job running at a random moment is more likely a long one. Each keeps a seeded uniform share of its run time and its own time limit. The set is filled until allocated CPUs or memory reach `ρ*` of the cluster. Not measured, and the same for every pattern of a seed. Added 2026-11-27 (requested) after the first 4.3 check found the cluster still filling. From empty, the cluster reaches 0.72 of its busy-period load after 12 h and 0.93 after 48 h. In `N-s1`, the queue only stood from day 2: a median of 3 and 12 jobs waiting on days 0–1, against 461–608 on days 2–4. |
+| Lead-in (S-D) | 12 h of natural mix at `ρ*` after the warm start, so arrivals and a queue are under way when measuring starts. Lead-in jobs run and are scheduled, but are not measured. |
 | Measured days (S-D) | 48 h of the pattern from midnight, thinned to target over the whole window. This was one day until 2026-11-27, changed on request. With two days, one big job moves the window's load half as much; at the longest stabilization period about five spells fit; and the loose large target (24 h) can be passed while the pattern still runs. Jobs keep their time of day, so the workload starts at 12:00 with the lead-in. Each job carries `segment`: `leadin`, `leadout`, the pattern key, or for `over` `base` and `burstNN:<name>` as in `Y`. |
 | Lead-out (S-D) | 24 h of natural mix at `ρ*` after the measured days. It is run but not measured. Without it, submissions stop when the pattern ends and the queue only drains: late jobs meet no new arrivals and wait less than in steady running, and a favored spell has little left to reorder. Under B1, medium and large jobs waited 19–26 h on average in the Phase 3 weeks, so 24 h covers most measured jobs until they start. |
 | Load | Thinned to `ρ* = 0.95` in the saturated resource, as in §3.4 |
@@ -1148,7 +1161,9 @@ every job has ended.
 (`day`) and `workloads/build.py`.
 - **Source pool:** the eligible weeks 1–9, 11 and 12. The burst account is `account026`, the
   same as in `X`.
-- **Lead-in and lead-out:** depend on the seed only, so all patterns of a seed share them.
+- **Warm start, lead-in and lead-out:** depend on the seed only, so all patterns of a seed
+  share them.
+  - warm start: 232–287 jobs, holding 0.95–0.96 of memory and 0.75–0.93 of CPUs at time 0;
   - lead-in: 1,411–2,463 jobs, at a load of 0.82–0.95;
   - lead-out: 4,043–4,838 jobs, at a load of 0.95–1.04.
 - **Measured-window loads:**
@@ -1172,9 +1187,45 @@ every job has ended.
 | `alt` | 42,097–42,665 | memory 0.85–0.89 (each block at target) |
 | `over` | 23,252–25,720 | memory 0.92–1.07 (bursts overlap) |
 
-Whole workloads run from 5,632 jobs (`D-lglong-s2`) to 93,180 (`D-flood-s1`), so the flood
+Whole workloads run from 5,864 jobs (`D-lglong-s2`) to 93,462 (`D-flood-s1`), so the flood
 workloads are about the size of an `X` week. `D-over` has six bursts per seed, 4–12 h each,
 and every seed has all four patterns at least once.
+
+**Warm-start check (tasks 4.2–4.3; `sim/phase4_checks.py`).**
+- **Simulated check** (`results/phase4/warmstart_check.json`). `D-nat-s1` as built was run
+  against the same 9,152 measured jobs after a 48 h natural lead-in and no warm start, both
+  under B1. The rule, set before the runs: allocated CPUs and memory within 0.05, and the
+  measured jobs' mean wait within 30%. **Failed**, and the warm start was the busier one:
+
+  | Over the measured 48 h | Warm start | 48 h lead-in | `N-s1` days 2–4 (B1) |
+  |---|---|---|---|
+  | Memory / CPU in use | 0.90 / 0.85 | 0.81 / 0.77 | 0.93 / 0.79 |
+  | Jobs waiting, median | 52 | 7.5 | 658 |
+  | Mean wait of the measured jobs | 29 min | 6 min | |
+
+- **Why the two runs differ.** Count every job as running from its submission. The measured
+  jobs give the same 0.69 of memory in both runs; the load carried in from before differs,
+  0.24 against 0.13. That load comes from a few long, large jobs, so one seed is a noisy
+  yardstick, and this control had less than a settled cluster carries.
+- **Check across seeds** (`results/phase4/warmstart_carry.json`; no simulation). Memory
+  carried into the measured days, seeds 1–8:
+
+  | Before the measured days | Mean | SD over seeds | First 6 h |
+  |---|---|---|---|
+  | 7-day lead-in (a settled cluster) | 0.209 | 0.033 | 0.60 |
+  | warm start + 12 h lead-in | 0.208 | 0.065 | 0.58 |
+  | 48 h lead-in | 0.191 | 0.057 | 0.54 |
+
+- **Decision (2026-11-27, requested).** Keep the warm start, judged by this across-seed match.
+  On average it carries what a settled cluster does, but it varies about twice as much from
+  seed to seed: seeds 1–3 carry 0.25, 0.28 and 0.12 of memory. Every policy runs on the
+  same workloads, so this spreads the workloads' busyness; it does not bias one policy
+  against another.
+- **The natural days are calm by design.** In the warm run, the queue follows the daily
+  cycle: 160–250 jobs waiting from 28 to 44 h, and 5–17 overnight. Setup days are thinned to
+  `ρ*` every day, while `N-s1`'s days run at 0.53–1.41. Its midweek queue of 460–610 jobs
+  followed two overloaded days (1.31 and 1.41). So most of the setup's pressure comes from
+  the other patterns.
 
 ### 9.5 What is compared on the setup workloads
 
@@ -1256,7 +1307,8 @@ This is a setup result, tuned on these workloads. The test is §9.8.
 ### 9.8 Five-day tests (later)
 
 Specified when Phase 4 is done. Outline:
-- five-day workloads from trace weeks 13–23 only;
+- five-day workloads from trace weeks 13–23 only, with the warm start (§9.4): the Phase 3
+  weeks started empty, and their first two days had little queue;
 - natural, shifting (one pattern a day) and overlapping-burst kinds, 3 seeds;
 - B1, C0 (reference) and A4 at the chosen target level and `T_stable`;
 - §8.6's pass rules with B1 as the bar, and the targeted-jobs analysis of §9.6.
@@ -1264,14 +1316,14 @@ Specified when Phase 4 is done. Outline:
 ### 9.9 Open questions
 
 S-B, S-C and S-G answered 2026-11-27; the defaults for S-A, S-D, S-E and S-F approved the same
-day. S-D then changed after task 4.2: two measured days and a lead-out.
+day. S-D then changed after task 4.2: two measured days and a lead-out, then a warm start.
 
 | # | Question | Default |
 |---|---|---|
 | S-A | The bar: B1 (the baseline A4 returns to), or the better of B1 and C0 as in §8.2 | B1. C0 is run and reported as a reference. |
 | S-B | Trigger signal from the queue | **Answered 2026-11-27:** the median wait of each class's waiting jobs against a target per class (§9.3) |
 | S-C | Strength of the favored states: strict (favored class always first), soft (about one typical fair-share gap, about 2,000 points), or in between | **Answered 2026-11-27:** in between. `PriorityWeightQOS = 5000`, with only the favored class's QOS raised (§9.2) |
-| S-D | Lead-in, measured length and lead-out | **Answered 2026-11-27:** 12 h lead-in (default kept); two measured days and a 24 h lead-out, both requested after task 4.2 first built one-day workloads (§9.4) |
+| S-D | Warm start, lead-in, measured length and lead-out | **Answered 2026-11-27:** 12 h lead-in (default kept); two measured days and a 24 h lead-out, both requested after task 4.2 first built one-day workloads; a warm start, requested after the 4.3 check found the cluster still filling, and judged across seeds against a 7-day lead-in after its single-run check failed (§9.4) |
 | S-E | Favored spell and the stabilization periods tried | `T_active` 60 min for both states; `T_stable` ∈ {0, 30, 60, 120, 240, 480} min |
 | S-F | How the target level and `T_stable` are chosen, and the source split | In each stage, the lowest geometric-mean ratio of mean wait to B1 over the 21 setup workloads; ties broken by guards, then the looser level or longer period. Setup from weeks 1–12, tests from weeks 13–23. |
 | S-G | Target statistic, class gate and levels | **Answered 2026-11-27:** median wait of the class's waiting jobs. Class gate: a share of the queue, not a count (requested): 10% (confirmed), with the whole-queue gate of 20 kept. The three levels kept (medium / large): 2 / 6 h, 4 / 12 h, 8 / 24 h |

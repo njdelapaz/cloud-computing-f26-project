@@ -143,6 +143,16 @@ def apply_static(text: str, static_path: Path) -> str:
     return "\n".join(lines) + "\n"
 
 
+def static_keys(config: str) -> tuple[str, ...] | None:
+    """The static priority keys a configuration needs (its .static file), or None for the
+    template's own. The hook cannot change them mid-run (SPEC §7.3)."""
+    f = PRIORITY_DIR / f"{config}.static"
+    if not f.exists():
+        return None
+    return tuple(l.strip() for l in f.read_text().splitlines()
+                 if l.strip() and not l.lstrip().startswith("#"))
+
+
 def write_policy_dir(run_dir: Path, c_run: Path, initial: str, adaptive: bool,
                      triggers: Path = TRIGGERS) -> list[str]:
     """Set up RUN_DIR/policy for the simulator's policy hook (SPEC §7.2).
@@ -164,6 +174,12 @@ def write_policy_dir(run_dir: Path, c_run: Path, initial: str, adaptive: bool,
         if trig["state_config"].get(trig.get("initial_state", "mix")) != initial:
             raise ValueError(f"initial config {initial} does not match the initial state's "
                              f"config in {triggers}")
+        # Every state must run under the static keys the run starts with (SPEC §9.2).
+        base = static_keys(initial)
+        for state, config in trig["state_config"].items():
+            if static_keys(config) != base:
+                raise ValueError(f"state {state} uses {config}, whose static priority keys "
+                                 f"differ from {initial}'s; the hook cannot change them")
         params["initial_state"] = trig.get("initial_state", "mix")
         from controller.policy import Params
         Params.from_dict(params)   # fail here, not at every tick, on a bad dwell_s table

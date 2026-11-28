@@ -326,6 +326,33 @@ def segment_days(pool: pd.DataFrame, spec: dict, day0: int, n_days: int, seed: i
     return kept.assign(segment=label)
 
 
+def warm_start_jobs(pool: pd.DataFrame, seed: int, name: str, target: float) -> pd.DataFrame:
+    """Jobs already running when a workload starts, as in a busy cluster (SPEC §9.4).
+
+    At a random instant of steady operation, a job is running with probability proportional
+    to its run time, and it has used a uniform share of that run time. So pool jobs are drawn
+    in a seeded order weighted by run time (without replacement: exponential keys / run
+    time), each keeps a seeded uniform share of its run time (at least 1 s) and its own time
+    limit, and the set is the prefix whose allocated CPUs or memory, whichever is the larger
+    share of the cluster, is closest to target. The caller submits them all at time 0.
+    """
+    r = pool["runtime_s"].to_numpy(float)
+    key = rng_for(seed, name, 1).exponential(size=len(pool)) / np.maximum(r, 1.0)
+    c = pool.iloc[np.argsort(key, kind="stable")]
+    occ = np.maximum(np.cumsum(c["cpus"].to_numpy()) / CAP_CPU,
+                     np.cumsum(c["mem_mb"].to_numpy()) / CAP_MEM)
+    k = int(np.searchsorted(occ, target))
+    if k >= len(occ):
+        n = len(occ)
+    else:
+        n = k if k > 0 and abs(occ[k - 1] - target) < abs(occ[k] - target) else k + 1
+    kept = c.iloc[:n]
+    share = rng_for(seed, name, 2).random(n)
+    left = np.maximum(1, np.ceil(share * kept["runtime_s"].to_numpy())).astype("int64")
+    return kept.assign(runtime_s=left, cpu_s=kept["cpus"].to_numpy() * left,
+                       mem_s=kept["mem_mb"].to_numpy() * left, segment="warmstart")
+
+
 def day_workload(jobs: pd.DataFrame, scenario: str, pattern: str, cfg: dict, seed: int,
                  target: float) -> tuple[pd.DataFrame, dict]:
     """Scenario D (SPEC §9.4): natural lead-in, measured days of one pattern, natural lead-out.
@@ -334,8 +361,10 @@ def day_workload(jobs: pd.DataFrame, scenario: str, pattern: str, cfg: dict, see
     holds: the lead-in [0, L), natural jobs from the last L hours of a day; the measured days
     [L, L + M days), which start at midnight; the lead-out, natural jobs for leadout_hours from
     the next midnight. Lead-in and lead-out are thinned to target and depend on the seed only,
-    so all patterns of one seed share them. Segments: 'leadin', 'leadout', and for the measured
-    days the pattern key, or for an overlay pattern 'base' and 'burstNN:<name>' as in Y.
+    so all patterns of one seed share them. With warm_start, the running set of a busy cluster
+    is submitted at time 0 too (warm_start_jobs; seed only). Segments: 'warmstart', 'leadin',
+    'leadout', and for the measured days the pattern key, or for an overlay pattern 'base' and
+    'burstNN:<name>' as in Y.
     """
     pool = jobs[jobs["week"].isin(cfg["pool_weeks"])]
     burst_account = top_account(pool)
@@ -348,6 +377,9 @@ def day_workload(jobs: pd.DataFrame, scenario: str, pattern: str, cfg: dict, see
     # Built on a frame where the lead-in ends day 0 and the measured days are days 1..M, then
     # shifted so the workload starts at the lead-in.
     parts, bursts = [], []
+    if cfg.get("warm_start"):
+        warm = warm_start_jobs(pool, seed, f"{scenario}-warmstart", target)
+        parts.append(warm.assign(submit_s=DAY_S - lead))
     if lead:
         parts.append(place_window(pool, DAY_S - lead, DAY_S, target, seed,
                                   f"{scenario}-leadin", 1, "leadin"))
@@ -379,13 +411,17 @@ def day_workload(jobs: pd.DataFrame, scenario: str, pattern: str, cfg: dict, see
                 "rho_mem": k["mem_s"].sum() / (CAP_MEM * window)}
 
     seg = kept["segment"]
-    meas = kept[(seg != "leadin") & (seg != "leadout")]
+    meas = kept[~seg.isin(["warmstart", "leadin", "leadout"])]
+    warm = kept[seg == "warmstart"]
     lo = lead
     info = {"pattern": pattern, "pattern_name": spec["name"], "pool_weeks": cfg["pool_weeks"],
             "burst_account": burst_account, "leadin_hours": cfg["leadin_hours"],
             "measured_days": n_days, "leadout_hours": cfg.get("leadout_hours", 0),
             "measured_window_s": [lo, lo + n_days * DAY_S],
-            "start_time_of_day_utc": f"{(DAY_S - lead) // 3600:02d}:00",
+            "start_time_of_day_utc": f"{(DAY_S - lead) % DAY_S // 3600:02d}:00",
+            "warmstart": ({"jobs": int(len(warm)), "cpu_occupancy": warm["cpus"].sum() / CAP_CPU,
+                           "mem_occupancy": warm["mem_mb"].sum() / CAP_MEM}
+                          if len(warm) else None),
             "leadin": load(kept[seg == "leadin"], lead) if lead else None,
             "measured": load(meas, n_days * DAY_S),
             "measured_by_day": [
@@ -446,7 +482,7 @@ def write_scenario(df: pd.DataFrame, name: str, seed: int, target: float, info: 
     pairs = sorted(set(zip(df["account"], df["user"])))
     (d / "accounts.txt").write_text("# account\tuser\n" + "".join(f"{a}\t{u}\n" for a, u in pairs))
 
-    meas = df[~df["segment"].isin(["leadin", "leadout"])]   # achieved: measured window only
+    meas = df[~df["segment"].isin(["warmstart", "leadin", "leadout"])]   # measured window only
     cpu_s = float((meas["cpus"] * meas["runtime_s"]).sum())
     mem_s = float((meas["mem_mb"] * meas["runtime_s"]).sum())
     manifest = {
@@ -537,7 +573,7 @@ def write_summary(manifests: list[dict]) -> None:
             bursts.setdefault(family, []).append({"scenario": m["scenario"], "seed": m["seed"], **b})
         if "measured" in m:
             r = {"scenario": m["scenario"], "seed": m["seed"], "pattern": m["pattern"]}
-            for part in ("leadin", "measured", "leadout"):
+            for part in ("warmstart", "leadin", "measured", "leadout"):
                 for k, v in (m[part] or {}).items():
                     r[f"{part}_{k}"] = v
             for d in m["measured_by_day"]:

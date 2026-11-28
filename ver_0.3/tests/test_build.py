@@ -214,7 +214,7 @@ def make_day(pattern, seed=1, **over):
 
 
 def measured(kept):
-    return kept[~kept["segment"].isin(["leadin", "leadout"])]
+    return kept[~kept["segment"].isin(["warmstart", "leadin", "leadout"])]
 
 
 def test_day_windows_keep_time_of_day_and_pool_weeks():
@@ -280,15 +280,35 @@ def test_day_leadin_and_leadout_shared_by_patterns_and_deterministic():
     b, _ = make_day("flood", seed=1)
     c, _ = make_day("nat", seed=2)
     a2, _ = make_day("nat", seed=1)
-    for part in ("leadin", "leadout"):
+    for part in ("warmstart", "leadin", "leadout"):
         ids = lambda k: sorted(k.loc[k["segment"] == part, "src_jobid"])
         assert ids(a) == ids(b) and ids(a) != ids(c), part
     assert a.equals(a2)
 
 
+def test_warm_start_is_a_running_set_at_time_zero():
+    kept, info = make_day("nat")
+    w = kept[kept["segment"] == "warmstart"]
+    assert len(w) and (w["submit_s"] == 0).all()
+    src = POOL.set_index("src_jobid")
+    full = src.loc[w["src_jobid"], "runtime_s"].to_numpy()
+    assert (w["runtime_s"].to_numpy() >= 1).all() and (w["runtime_s"].to_numpy() <= full).all()
+    assert (w["timelimit_s"].to_numpy() == src.loc[w["src_jobid"], "timelimit_s"].to_numpy()).all()
+    # occupancy at target in the larger resource; one job is at most 1/16 of the cluster
+    occ = max(w["cpus"].sum() / build.CAP_CPU, w["mem_mb"].sum() / build.CAP_MEM)
+    assert abs(occ - 0.95) <= 1 / 32 and info["warmstart"]["jobs"] == len(w)
+    # drawn in proportion to run time: long jobs are over-represented (length bias)
+    pool = POOL[POOL["week"].isin([1, 2, 3])]
+    assert full.mean() > 1.3 * pool["runtime_s"].mean()
+    # each has used a uniform share of its run time: on average about half is left
+    assert 0.4 < (w["runtime_s"].to_numpy() / full).mean() < 0.6
+
+
 def test_day_one_day_without_leadin_or_leadout():
-    kept, info = make_day("nat", leadin_hours=0, leadout_hours=0, measured_days=1)
+    kept, info = make_day("nat", leadin_hours=0, leadout_hours=0, measured_days=1,
+                          warm_start=False)
     assert (kept["segment"] == "nat").all() and info["leadin"] is None and info["leadout"] is None
+    assert info["warmstart"] is None
     assert kept["submit_s"].between(0, DAY - 1).all()
 
 
@@ -307,7 +327,11 @@ def test_day_workloads_match_intent(d):
     lo, hi = m["measured_window_s"]
     assert set(m["pool_weeks"]) <= set(range(1, 13)) and hi - lo == m["measured_days"] * DAY
     li, out = j[j["segment"] == "leadin"], j[j["segment"] == "leadout"]
-    day = j[~j["segment"].isin(["leadin", "leadout"])]
+    warm = j[j["segment"] == "warmstart"]
+    day = j[~j["segment"].isin(["warmstart", "leadin", "leadout"])]
+    assert len(warm) == m["warmstart"]["jobs"] and (warm["submit_s"] == 0).all()
+    occ = max(warm["cpus"].sum() / 512, warm["mem_mb"].sum() / 2_048_000)
+    assert abs(occ - m["target_rho"]) <= 1 / 32
     assert li["submit_s"].between(0, lo - 1).all() and day["submit_s"].between(lo, hi - 1).all()
     assert out["submit_s"].between(hi, hi + m["leadout_hours"] * 3600 - 1).all()
     assert (len(li), len(day), len(out)) == (m["leadin"]["jobs"], m["measured"]["jobs"],

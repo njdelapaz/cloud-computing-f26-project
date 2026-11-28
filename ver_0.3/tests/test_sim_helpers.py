@@ -267,3 +267,62 @@ def test_a_job_killed_at_its_limit_a_few_seconds_late_is_a_known_issue(tmp_path)
     ev[1] = ev[1].replace("-sim-walltime 1000", "-sim-walltime 3600")     # runs to its 60-min limit
     (run / "events.txt").write_text("\n".join(ev) + "\n")
     assert check(run) == [] and "completed 2-2 s late" in KNOWN_ISSUES[0]
+
+
+def test_adaptive_states_must_share_the_starting_static_keys(tmp_path):
+    """A C0-based policy cannot switch to B1L: its static keys (B1's) differ (SPEC §9.2)."""
+    import shutil
+    import yaml
+    trig = yaml.safe_load((ROOT / "config/triggers.yaml").read_text())
+    trig["state_config"] = {**trig["state_config"], "large": "B1L"}
+    f = tmp_path / "triggers_mixed.yaml"
+    f.write_text(yaml.safe_dump(trig))
+    from sim.prepare_run import static_keys
+    assert static_keys("C0") is None and static_keys("B1L") == static_keys("B1M") == static_keys("B1")
+    try:
+        with pytest.raises(ValueError, match="static priority keys"):
+            prepare_run(Path("results/_test/mixed"), ROOT / "sim/smoke/events.txt",
+                        ROOT / "sim/smoke/accounts.txt", ROOT / "config/priority/C0.conf",
+                        policy="adaptive", triggers=f)
+    finally:
+        shutil.rmtree(ROOT / "results/_test", ignore_errors=True)
+
+
+def _snapshots(medium_boost=5000.0):
+    """One B1M snapshot: two medium jobs (boosted) and small jobs with B1 priorities around."""
+    import pandas as pd
+    t = pd.Timestamp("2024-07-08 03:00")
+    rows = []
+    for i, (qos, base) in enumerate([("medium", 1000), ("medium", 2500), ("small", 4000),
+                                     ("small", 7000)] + [("small", 100)] * 20):
+        qv = medium_boost if qos == "medium" else 0.0
+        rows.append({"snapshot": t, "state": "B1M", "spell": 1, "job_id": i, "qos": qos,
+                     "QOS_v": qv, "priority": base + qv, "Age_w": 1000.0,
+                     "Fairshare_w": 10000.0, "JobSize_w": 1000.0, "QOS_w": 5000.0})
+    return pd.DataFrame(rows)
+
+
+def test_states_check_accepts_a_correct_boost():
+    from sim.phase4_checks import check_states_and_order
+    r = check_states_and_order(_snapshots())
+    assert r["ok"] and r["queue_ok"] and r["cross_class_pairs"] == 2 * 22
+    s = r["per_snapshot"][0]
+    # the small job at 7000 leads the medium job at 1000 by more than the boost (6000), so
+    # that one pair may stay behind; the medium job at 2500 (gap 4500) must get ahead
+    assert s["violations"] == 0 and s["pairs_within_boost"] == 2 * 22 - 1
+    assert r["favored_ahead_share"] == pytest.approx(43 / 44)
+
+
+def test_states_check_flags_a_missing_boost():
+    from sim.phase4_checks import check_states_and_order
+    r = check_states_and_order(_snapshots(medium_boost=0.0))
+    assert not r["ok"] and r["violations"]
+
+
+def test_state_at_skips_the_minute_of_a_switch():
+    import pandas as pd
+    from sim.phase4_checks import state_at
+    sw = [(pd.Timestamp("2024-07-08 02:00:30"), "B1", "B1L")]
+    assert state_at(sw, pd.Timestamp("2024-07-08 01:50")) == "B1"
+    assert state_at(sw, pd.Timestamp("2024-07-08 02:00")) is None
+    assert state_at(sw, pd.Timestamp("2024-07-08 02:10")) == "B1L"

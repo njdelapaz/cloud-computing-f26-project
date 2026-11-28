@@ -102,3 +102,28 @@ def test_rendered_files_are_current(name):
         # Slurm stores weights and the total priority as 32-bit unsigned integers; every
         # factor is at most 1, so the sum of weights bounds the priority.
         assert sum(w.values()) < 2**32
+
+
+# --------------------------------------------------------------------------- Phase 4 (SPEC §9.2)
+
+@pytest.mark.parametrize("name,favored", [("B1M", "medium"), ("B1L", "large")])
+def test_b1_favored_states_are_b1_plus_a_boost(name, favored):
+    d = ROOT / "config/priority"
+    body = lambda f: [l for l in (d / f).read_text().splitlines() if l and not l.startswith("#")]
+    b1 = dict(l.split("=", 1) for l in body("B1.conf"))
+    st = dict(l.split("=", 1) for l in body(f"{name}.conf"))
+    assert st == {**b1, "PriorityWeightQOS": "5000"}
+    f = weights.qos_factors(read_qos(d / f"{name}.qos"))
+    assert f == {q: (1.0 if q == favored else 0.0) for q in ("small", "medium", "large")}
+    assert body(f"{name}.static") == body("B1.static")          # B1's static keys
+    # 5000 points is about three typical fair-share gaps under B1 (SPEC §9.2)
+    gap = SCALES["fairshare"] * int(b1["PriorityWeightFairshare"])
+    assert 2.5 < 5000 / gap < 3.5
+
+
+@pytest.mark.parametrize("bad", [{"small": 0, "medium": 100, "large": 100},   # two raised
+                                 {"small": 0, "medium": 0, "large": 0},       # none raised
+                                 {"small": 0, "medium": 100}])                # missing QOS
+def test_validate_favored_rejects_bad_states(bad):
+    with pytest.raises(ValueError):
+        weights.validate_favored("X", bad, {"small", "medium", "large"})

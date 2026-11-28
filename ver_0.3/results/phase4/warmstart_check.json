@@ -1,0 +1,45 @@
+{
+  "warm": {
+    "cpu_mean": 0.8472629123263888,
+    "mem_mean": 0.895752905951606,
+    "cpu_first_6h": 0.8140733506944444,
+    "mem_first_6h": 0.9028004828559028,
+    "waiting_median": 52.5,
+    "share_of_samples_with_20_waiting": 0.7951388888888888,
+    "measured_jobs": 9152,
+    "wait_mean_min": 29.32503095862471,
+    "run_problems": []
+  },
+  "control": {
+    "cpu_mean": 0.7647637261284722,
+    "mem_mean": 0.8069071926540798,
+    "cpu_first_6h": 0.74169921875,
+    "mem_first_6h": 0.8322618272569444,
+    "waiting_median": 7.5,
+    "share_of_samples_with_20_waiting": 0.2847222222222222,
+    "measured_jobs": 9152,
+    "wait_mean_min": 5.953837048368299,
+    "run_problems": []
+  },
+  "occupancy_differences": {
+    "cpu_mean": 0.08249918619791663,
+    "mem_mean": 0.08884571329752611,
+    "cpu_first_6h": 0.07237413194444442,
+    "mem_first_6h": 0.07053865559895833
+  },
+  "wait_mean_ratio_warm_to_control": 4.9254003292988155,
+  "paired_jobs": 9152,
+  "paired_wait_mean_min": {
+    "warm": 29.32503095862471,
+    "control": 5.953837048368299
+  },
+  "reference_N_s1_B1_days_2_to_4": {
+    "cpu_mean": 0.7864492910879629,
+    "mem_mean": 0.9255878680193864,
+    "cpu_first_6h": 0.4919704861111111,
+    "mem_first_6h": 0.8928795030381944,
+    "waiting_median": 657.5,
+    "share_of_samples_with_20_waiting": 0.8842592592592593
+  },
+  "ok": false
+}

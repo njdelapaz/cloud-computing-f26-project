@@ -1,0 +1,7 @@
+# B1L: static priority keys for sim/prepare_run.py; they replace the template's
+# lines in sim/etc/slurm.conf.in (an empty value removes the key)
+PriorityDecayHalfLife=14-0
+PriorityMaxAge=14-0
+PriorityFavorSmall=NO
+PriorityFlags=
+PriorityWeightPartition=1000

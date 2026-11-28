@@ -3,8 +3,9 @@
 Usage:
   .venv/bin/python -m sim.weights calibrate --from-check TAG      # pooled pending queues
   .venv/bin/python -m sim.weights calibrate --per-config-from TAG # each config's own queue
-  .venv/bin/python -m sim.weights render   # writes config/priority/{B0,C0..C3,B1}.{conf,qos}
-                                           # and B1.static (SPEC §8.2)
+  .venv/bin/python -m sim.weights render   # writes config/priority/{B0,C0..C3,B1}.{conf,qos},
+                                           # B1.static (SPEC §8.2), and B1's favored states
+                                           # B1M, B1L (.conf, .qos, .static; SPEC §9.2)
 
 Slurm factors (Slurm 23.11 priority/multifactor, single-node jobs on the 16-node cluster):
   QOS       = QOS priority / largest QOS priority (each job runs in its size class's QOS)
@@ -240,13 +241,29 @@ def validate(cfg: dict) -> None:
         seen.add(key)
 
 
+def validate_favored(name: str, qos_priority: dict[str, int], qos: set[str]) -> None:
+    """A favored state raises exactly one size QOS, so its boost is the QOS weight itself."""
+    if set(qos_priority) != qos:
+        raise ValueError(f"{name}: qos_priority must cover exactly {sorted(qos)}")
+    if any(not isinstance(v, int) or v < 0 for v in qos_priority.values()):
+        raise ValueError(f"{name}: QOS priorities must be non-negative integers")
+    if sum(v > 0 for v in qos_priority.values()) != 1:
+        raise ValueError(f"{name}: exactly one QOS must have a non-zero priority")
+
+
+def favored_states(cfg: dict) -> dict[str, tuple[str, dict]]:
+    """{state: (reference it builds on, state spec)} for every reference's favored_on block."""
+    return {s: (ref, spec) for ref, r in cfg.get("references", {}).items()
+            for s, spec in r.get("favored_on", {}).get("states", {}).items()}
+
+
 def render() -> dict[str, dict]:
     cfg = yaml.safe_load(WEIGHTS.read_text())
     scales = yaml.safe_load(SCALES.read_text())
     validate(cfg)
     PRIORITY_DIR.mkdir(parents=True, exist_ok=True)
     refs = cfg.get("references", {})
-    names = ["B0"] + list(cfg["configs"]) + list(refs)
+    names = ["B0"] + list(cfg["configs"]) + list(refs) + list(favored_states(cfg))
     keep = {".gitkeep"} | {f"{n}{ext}" for n in names for ext in (".conf", ".qos", ".static")}
     for stale in PRIORITY_DIR.iterdir():          # configurations no longer defined
         if stale.name not in keep:
@@ -266,6 +283,15 @@ def render() -> dict[str, dict]:
         out[name] = w
         (PRIORITY_DIR / f"{name}.conf").write_text(conf_text(name, r["name"], w))
         (PRIORITY_DIR / f"{name}.qos").write_text(qos_text(name, zero_qos))
+        (PRIORITY_DIR / f"{name}.static").write_text(static_text(name, r.get("static", {})))
+    for name, (ref, s) in favored_states(cfg).items():   # SPEC §9.2: reference + QOS boost
+        validate_favored(name, s["qos_priority"], set(cfg["size_qos"].values()))
+        r = refs[ref]
+        w = {**out[ref], "QOS": int(r["favored_on"]["qos_weight"])}
+        out[name] = w
+        title = f"{s['name']}: {ref}'s weights plus a {w['QOS']}-point boost for one size class"
+        (PRIORITY_DIR / f"{name}.conf").write_text(conf_text(name, title, w))
+        (PRIORITY_DIR / f"{name}.qos").write_text(qos_text(name, s["qos_priority"]))
         (PRIORITY_DIR / f"{name}.static").write_text(static_text(name, r.get("static", {})))
     return out
 

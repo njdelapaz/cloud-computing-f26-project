@@ -54,3 +54,13 @@ references:
       PriorityFavorSmall: "NO"
       PriorityFlags: ""                # no SMALL_RELATIVE_TO_TIME: larger requests score higher
       PriorityWeightPartition: 1000    # one partition: the same for every job
+    # Phase 4 states (SPEC §9.2, S-C): B1 plus a QOS boost for one size class. Only that
+    # class's QOS priority is non-zero, so every favored job gets qos_weight points over every
+    # other job (about three typical fair-share gaps under B1). They keep B1's static keys:
+    # each renders a .static identical to B1's, and adaptive runs check that all their states
+    # share the starting configuration's static keys (sim/prepare_run.py).
+    favored_on:
+      qos_weight: 5000
+      states:
+        B1M: {name: "B1, favor medium", qos_priority: {small: 0, medium: 100, large: 0}}
+        B1L: {name: "B1, favor large", qos_priority: {small: 0, medium: 0, large: 100}}
