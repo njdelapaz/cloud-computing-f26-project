@@ -3,7 +3,7 @@
 Status tracker for [PLAN.md](PLAN.md). It records status, decisions and results only; no task
 lengths or dates beyond the change log.
 
-**Current phase:** 4, revised strategy (SPEC §9 approved; next task 4.2). Phase 3 complete (3.7 skipped on request); answer to SPEC §1: no ([REPORT.md](REPORT.md))
+**Current phase:** 4, revised strategy (SPEC §9 approved; next task 4.3). Phase 3 complete (3.7 skipped on request); answer to SPEC §1: no ([REPORT.md](REPORT.md))
 
 ## Phase tracker
 
@@ -31,7 +31,7 @@ lengths or dates beyond the change log.
 | 3.7 Scale up (`M`) | skipped | Skipped on request (2026-11-27) after the one-week answer was a clear no; `M` was not built |
 | 3.8 Report | done | `REPORT.md`: answer no, with results by scenario, size class and day, the favored-class analysis, the fixed favor-small context, why switching did not pay, limitations and reproduction |
 | 4.1 Specify the revised strategy | done | SPEC §9 and PLAN 4.2–4.7 approved 2026-11-27 (requested). B1 baseline; favored medium and large spells only (no small state), with a 5,000-point QOS boost (S-C); trigger: the median wait of a class's waiting jobs reaches its target, the class is at least 10% of the queue and at least 20 jobs wait (S-B, S-G); each 60-min spell is followed by a return to B1 and a stabilization period. One-day setup workloads `D` (7 patterns × 3 seeds, 12 h lead-in, weeks 1–12). 238 runs in two stages: target level (tight / middle / loose), then the stabilization period (0–480 min). B1 is the bar, C0 a reference. Defaults kept for S-A, S-D, S-E, S-F |
-| 4.2 One-day setup workloads (`D`) | pending | |
+| 4.2 One-day setup workloads (`D`) | done | 21 workloads `D-<pattern>-s1..3` built and byte-identical on rebuild; X-s1 and Y-s1 still rebuild byte-identical after the builder refactor. Source weeks 1–9, 11, 12; 12 h lead-in shared by the patterns of a seed (1.4k–2.5k jobs). Measured day: nat 4.4k–5.5k jobs, flood 42.5k–42.9k, lglong 63–99, acct 2.7k–3.0k, mem 2.4k–2.7k, alt 20.8k–21.4k, over 9.7k–10.6k. Loads 0.83–0.95 in the saturated resource for single-pattern days (one large-long job can carry 0.41 of a day's memory), alt 0.84–0.88, over 0.86–1.11 (`results/workloads/D_days.csv`, `D_bursts.csv`). 183 tests pass |
 | 4.3 B1-based favored states | pending | |
 | 4.4 Return-to-baseline policy (A4) | pending | |
 | 4.5 Stage 1: target level | pending | |
@@ -98,6 +98,8 @@ lengths or dates beyond the change log.
 | Revised strategy (requested 2026-11-27) | Phase 4 (SPEC §9): B1 is the baseline; only medium and large are favored; each favored spell lasts a fixed time, then B1 holds for a stabilization period set by evaluation; the trigger reads the waiting queue only; setup on one-day workloads, tests later on five-day workloads | Phase 3: favoring small never helped small jobs, favoring medium and large helped their own jobs, and states chained into each other through the backlogs they left. |
 | Phase 4 trigger (S-B, chosen 2026-11-27) | Wait targets: a class is favored when the median wait of its waiting jobs reaches its target, provided the class is at least 10% of the waiting jobs and at least 20 jobs are waiting in all (S-G: a share of the queue, requested, in place of a fixed count); three target levels tried on the setup days (2 / 6 h, 4 / 12 h, 8 / 24 h for medium / large) | Asks whether a class has waited too long, which is what Phase 4 judges, instead of whether the queue's mix is unusual; a trigger calibrated on B1 days would count B1's large-job backlog as normal. No calibration run is needed. |
 | Phase 4 boost strength (S-C, chosen 2026-11-27) | In between strict and soft: the favored class's QOS is raised by `PriorityWeightQOS = 5000` points (others 0, in both states) | About three typical fair-share gaps under B1 (0.17 × 10000 ≈ 1,700 points), so a favored job comes first except against accounts far less used than its own; strict (> 12,000) would ignore fairness, soft (~2,000) would barely move the order. |
+| One lead-in per seed (task 4.2) | The 12 h lead-in depends on the seed only, not the pattern | All patterns of a seed then start from the same cluster state, so differences between patterns come from the measured day. |
+| Coarse day loads (finding, task 4.2) | Kept as built: single-pattern days land at 0.83–0.95 of `ρ*`, not within 2% as the weeks do | Run time counts in full on the day a job is submitted, so one large-long job can carry up to 0.41 of a day's memory, and thinning keeps the prefix closest to target (`D-nat-s1`: 0.83, or 1.14 with the next job). Skipping big jobs to hit the target would bias the mix against them. |
 | Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
@@ -134,3 +136,4 @@ lengths or dates beyond the change log.
 | 2026-11-27 | `3c12587` | 3.6: analysis of the one-week results; answer is no |
 | 2026-11-27 | `2941ce0` | 3.6: effect on the favored class while it is favored |
 | 2026-11-27 | `19decca` | 3.8: REPORT.md; Phase 3 complete (3.7 skipped on request) |
+| 2026-11-27 | `79da032` | 4.1: revised strategy spec (SPEC §9) and Phase 4 tasks |

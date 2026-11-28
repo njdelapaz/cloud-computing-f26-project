@@ -1133,13 +1133,38 @@ The levels span the class mean waits B1 gave over the Phase 3 weeks: medium 0.7�
 | Name | `D-<pattern>-s<seed>`, seeds 1–3 |
 | Patterns | `nat` (natural mix), `flood` (small-short flood), `lglong` (large-long heavy), `acct` (one account submits about half the demand), `mem` (memory-heavy medium), `alt` (6-hour blocks alternating flood and large-long), `over` (`Y`-style: natural background at 60% of `ρ*` plus three bursts of 3–12 h, each adding 40%). Built as in §3.5. |
 | Lead-in (S-D) | 12 h of natural mix at `ρ*` before the measured day, so the day starts on a loaded cluster. On `X`, day 0 began on an empty cluster, and its mean wait was 0.0 h under both C0 and B1. Lead-in jobs run and are scheduled, but are not measured. |
-| Measured day | 24 h of the pattern. Each job carries `segment` = `leadin` or the pattern name. |
+| Measured day | 24 h of the pattern, midnight to midnight. Jobs keep their time of day, so the workload starts at 12:00 with the lead-in. Each job carries `segment`: `leadin`, the pattern key, or for `over` `base` and `burstNN:<name>` as in `Y`. |
 | Load | Thinned to `ρ* = 0.95` in the saturated resource, as in §3.4 |
 | Source (S-F) | Setup draws only from trace weeks 1–12 (Jan–Mar; `K` is week 4). The five-day tests (§9.8) draw only from weeks 13–23 (Apr–Jun; `N` is week 20). Nothing is tuned on the months it is tested on. This is like a site tuning on past months and running on later ones. |
 | Size | 21 workloads (7 patterns × 3 seeds) |
 
 Each run drains as in §8.4: submissions span 36 h, and the run continues until every job has
 ended.
+
+**Built (task 4.2; `results/workloads/D_days.csv`, `D_bursts.csv`).** `config/scenarios.yaml`
+(`day`) and `workloads/build.py`.
+- **Source pool:** the eligible weeks 1–9, 11 and 12. The burst account is `account026`, the
+  same as in `X`.
+- **Lead-in:** depends on the seed only, so all patterns of a seed start from the same jobs:
+  1,411–2,463 jobs, at a load of 0.82–0.95.
+- **Measured-day loads come in coarse steps.** Run time counts in full on the day a job is
+  submitted, so one large-long job can carry up to 0.41 of a day's memory load. Thinning
+  keeps the prefix closest to the target. For `D-nat-s1`, the next job was a 6.1-day
+  large-long job that would have taken the day from 0.83 to 1.14.
+
+| Pattern | Measured-day jobs | Load in the saturated resource |
+|---|---|---|
+| `nat` | 4,402–5,475 | memory 0.83–0.95 |
+| `flood` | 42,476–42,860 | CPU 0.95 |
+| `lglong` | 63–99 | memory 0.91–0.94 |
+| `acct` | 2,730–2,954 | memory 0.95 |
+| `mem` | 2,359–2,733 | memory 0.95 |
+| `alt` | 20,792–21,408 | memory 0.84–0.88 (each block at target) |
+| `over` | 9,726–10,574 | memory 0.86–1.11 (bursts overlap) |
+
+`D-over` bursts: each seed has three of the four patterns, 4–12 h each. Seed 1 has flood,
+one-account and large-long; seed 2 has flood, memory-heavy and one-account; seed 3 has flood,
+large-long and one-account.
 
 ### 9.5 What is compared on the setup workloads
 

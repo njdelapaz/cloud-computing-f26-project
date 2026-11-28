@@ -347,8 +347,12 @@ S-A, S-D, S-E and S-F.)
   - source weeks only from 1–12;
   - outputs byte-identical for the same seed.
 
-**Done when:** the 21 workloads are built and deterministic, each day's load is near `ρ*`
-in its saturated resource, and the manifests are in `results/workloads/`.
+**Done when:**
+- the 21 workloads are built and deterministic;
+- each day's load is near `ρ*` in its saturated resource;
+- the summaries (`summary.csv`, `D_days.csv`, `D_bursts.csv`) are in `results/workloads/`.
+
+As for `K`–`Y`, the manifests stay with the gitignored traces.
 
 ### 4.3 B1-based favored states
 - Add the `favored_on` block for B1 to `config/weights.yaml`. `sim/weights.py` renders

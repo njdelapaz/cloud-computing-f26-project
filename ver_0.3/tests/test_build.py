@@ -175,3 +175,152 @@ def test_overlay_bursts_match_intent(d):
             assert (jobs["mem_mb"] * 32 > jobs["cpus"] * 128000).all()
         elif b["name"] == "one-account burst":
             assert set(jobs["account"]) == {m["burst_account"]}
+
+
+# --------------------------------------------------------------------------- one-day D (Phase 4)
+
+DAY = 86400
+
+
+def day_pool(n=60000, seed=0):
+    """Synthetic trace jobs over weeks 0-15 with a time of day, account and source id."""
+    df = synthetic(n, seed)
+    rng = np.random.default_rng(seed + 1)
+    df["week"] = rng.integers(0, 16, n)
+    df["tod"] = rng.integers(0, DAY, n)
+    df["submit"] = build.trace.WEEK0 + df["week"] * WEEK + rng.integers(0, 7, n) * DAY + df["tod"]
+    acc = rng.choice([f"a{i}" for i in range(8)], n, p=[.3] + [.1] * 7)
+    df["account"] = pd.Categorical(acc)
+    df["user"] = pd.Categorical(["u" + a for a in acc])
+    df["src_jobid"] = np.arange(n)
+    df["src_state"] = "COMPLETED"
+    return df
+
+
+POOL = day_pool()
+
+
+def day_cfg(**over):
+    import yaml
+    cfg = yaml.safe_load(build.CONFIG.read_text())["day"]["D"]
+    return {**cfg, "pool_weeks": [1, 2, 3], **over}
+
+
+def make_day(pattern, seed=1, **over):
+    return build.day_workload(POOL, "D", pattern, day_cfg(**over), seed, 0.95)
+
+
+def test_day_windows_keep_time_of_day_and_pool_weeks():
+    kept, info = make_day("nat")
+    lead = 12 * 3600
+    li, day = kept[kept["segment"] == "leadin"], kept[kept["segment"] == "nat"]
+    assert len(li) and len(day) and len(li) + len(day) == len(kept)
+    assert li["submit_s"].between(0, lead - 1).all()
+    assert (li["submit_s"] == li["tod"] - (DAY - lead)).all()        # last 12 h of a day
+    assert day["submit_s"].between(lead, lead + DAY - 1).all()
+    assert (day["submit_s"] == lead + day["tod"]).all()             # midnight to midnight
+    assert set(kept["week"]) <= {1, 2, 3}
+    assert info["measured_window_s"] == [lead, lead + DAY]
+    assert abs(max(info["day"]["rho_cpu"], info["day"]["rho_mem"]) / 0.95 - 1) <= 0.02
+    assert abs(max(info["leadin"]["rho_cpu"], info["leadin"]["rho_mem"]) / 0.95 - 1) <= 0.02
+
+
+@pytest.mark.parametrize("pattern,classes", [("flood", {"sm-short"}), ("lglong", {"lg-long"})])
+def test_day_class_patterns(pattern, classes):
+    kept, _ = make_day(pattern)
+    day = kept[kept["segment"] == pattern]
+    assert len(day) and set(day["class"].astype(str)) == classes
+
+
+def test_day_memory_heavy_medium():
+    kept, _ = make_day("mem")
+    day = kept[kept["segment"] == "mem"]
+    assert set(day["class"].astype(str)) <= {"med-short", "med-med", "med-long"}
+    assert (day["mem_mb"] * 32 > day["cpus"] * 128000).all()
+
+
+def test_day_one_account_burst():
+    kept, info = make_day("acct")
+    day = kept[kept["segment"] == "acct"]
+    share = day.loc[day["account"] == info["burst_account"], "mem_s"].sum() / day["mem_s"].sum()
+    assert info["burst_account"] == "a0" and 0.4 <= share <= 0.6
+
+
+def test_day_alternating_blocks():
+    kept, _ = make_day("alt")
+    day = kept[kept["segment"] == "alt"]
+    block = (day["submit_s"] - 12 * 3600) // (6 * 3600)
+    assert set(block) == {0, 1, 2, 3}
+    for b, cls in day.groupby(block)["class"]:
+        assert set(cls.astype(str)) == ({"sm-short"} if b % 2 == 0 else {"lg-long"})
+
+
+def test_day_overlapping_bursts_stay_in_the_day():
+    kept, info = make_day("over")
+    lead = 12 * 3600
+    assert len(info["bursts"]) == 3
+    base = kept[kept["segment"] == "base"]
+    assert len(base) and base["submit_s"].between(lead, lead + DAY - 1).all()
+    for b in info["bursts"]:
+        jobs = kept[kept["segment"] == f"burst{b['burst']:02d}:{b['name']}"]
+        assert len(jobs) == b["jobs"] >= 1 and 3 <= b["hours"] <= 12
+        lo = lead + b["start_h"] * 3600
+        assert b["start_h"] + b["hours"] <= 24
+        assert jobs["submit_s"].between(lo, lo + b["hours"] * 3600 - 1).all(), b
+
+
+def test_day_leadin_shared_by_patterns_and_deterministic():
+    a, _ = make_day("nat", seed=1)
+    b, _ = make_day("flood", seed=1)
+    c, _ = make_day("nat", seed=2)
+    a2, _ = make_day("nat", seed=1)
+    lead = lambda k: sorted(k.loc[k["segment"] == "leadin", "src_jobid"])
+    assert lead(a) == lead(b) and lead(a) != lead(c)
+    assert a.equals(a2)
+
+
+def test_day_without_leadin():
+    kept, info = make_day("nat", leadin_hours=0)
+    assert (kept["segment"] == "nat").all() and info["leadin"] is None
+    assert kept["submit_s"].between(0, DAY - 1).all()
+
+
+@needs_build
+@pytest.mark.parametrize("d", scenario_dirs("D-"), ids=lambda d: d.name)
+def test_day_workloads_match_intent(d):
+    """Built D workloads (SPEC §9.4). Load bounds are loose: one large-long job can carry up
+    to 0.41 of a day's memory load, and thinning keeps the prefix closest to target."""
+    m = json.loads((d / "manifest.json").read_text())
+    j = pd.read_parquet(d / "jobs.parquet")
+    lo, hi = m["measured_window_s"]
+    assert set(m["pool_weeks"]) <= set(range(1, 13))
+    li, day = j[j["segment"] == "leadin"], j[j["segment"] != "leadin"]
+    assert li["submit_s"].between(0, lo - 1).all() and day["submit_s"].between(lo, hi - 1).all()
+    assert len(day) == m["day"]["jobs"] and len(li) == m["leadin"]["jobs"]
+    target, pat = m["target_rho"], m["pattern"]
+    rho = max(m["day"]["rho_cpu"], m["day"]["rho_mem"])
+    assert 0.8 <= max(m["leadin"]["rho_cpu"], m["leadin"]["rho_mem"]) / target <= 1.1
+    if pat not in ("alt", "over"):                 # blocks or bursts are at target, the day is not
+        assert 0.8 <= rho / target <= 1.1, rho
+    classes = set(day["class"].astype(str))
+    if pat == "flood":
+        assert classes == {"sm-short"}
+    elif pat == "lglong":
+        assert classes == {"lg-long"}
+    elif pat == "mem":
+        assert classes <= {"med-short", "med-med", "med-long"}
+        assert (day["mem_mb"] * 32 > day["cpus"] * 128000).all()
+    elif pat == "acct":
+        mem = day["mem_mb"] * day["runtime_s"]
+        assert 0.4 <= mem[day["account"] == m["burst_account"]].sum() / mem.sum() <= 0.6
+    elif pat == "alt":
+        block = (day["submit_s"] - lo) // (6 * 3600)
+        for b, cls in day.groupby(block)["class"]:
+            assert set(cls.astype(str)) == ({"sm-short"} if b % 2 == 0 else {"lg-long"})
+    elif pat == "over":
+        assert len(day[day["segment"] == "base"]) and len(m["bursts"]) == 3
+        for b in m["bursts"]:
+            jobs = day[day["segment"] == f"burst{b['burst']:02d}:{b['name']}"]
+            t0 = lo + b["start_h"] * 3600
+            assert len(jobs) == b["jobs"] >= 1
+            assert jobs["submit_s"].between(t0, t0 + b["hours"] * 3600 - 1).all(), b

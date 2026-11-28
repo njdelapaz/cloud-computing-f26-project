@@ -1,0 +1,10 @@
+scenario,seed,burst,name,start_h,hours,jobs,rho_cpu,rho_mem
+D-over,1,0,small-short flood,6,11,6380,0.3799,0.3075
+D-over,1,1,one-account burst,7,12,310,0.1942,0.3801
+D-over,1,2,large-long heavy,5,11,11,0.1696,0.3191
+D-over,2,0,small-short flood,4,10,6318,0.3800,0.3118
+D-over,2,1,memory-heavy medium,9,6,322,0.1569,0.3798
+D-over,2,2,one-account burst,17,4,84,0.2166,0.3792
+D-over,3,0,small-short flood,10,12,7412,0.3800,0.3117
+D-over,3,1,large-long heavy,11,11,37,0.2156,0.4145
+D-over,3,2,one-account burst,0,12,360,0.1807,0.3801

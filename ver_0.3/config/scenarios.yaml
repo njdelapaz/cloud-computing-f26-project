@@ -40,3 +40,32 @@ overlay:
       - {name: large-long heavy, classes: [lg-long]}
       - {name: one-account burst, account: top}       # the pool's top account by memory load
       - {name: memory-heavy medium, classes: [med-short, med-med, med-long], memory_bound: true}
+
+day:
+  # One-day setup workloads for Phase 4 (SPEC §9.4): a natural lead-in at target_rho, then one
+  # measured day of a pattern. Built as D-<pattern>-s<seed>. Jobs keep their time of day; the
+  # measured day runs midnight to midnight, so the lead-in is the previous day from noon.
+  D:
+    # Source jobs: eligible weeks 1-12 only (Jan-Mar; week 10 is the maintenance week and not
+    # eligible; K is week 4). The five-day tests draw from weeks 13-23.
+    pool_weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12]
+    leadin_hours: 12        # natural mix, not measured; the same for every pattern of a seed
+    patterns:
+      nat: {name: natural}
+      flood: {name: small-short flood, classes: [sm-short]}
+      lglong: {name: large-long heavy, classes: [lg-long]}
+      acct: {name: one-account burst, burst_share: 0.5}
+      mem: {name: memory-heavy medium, classes: [med-short, med-med, med-long], memory_bound: true}
+      alt: {name: alternating bursts, alternate: [flood, lglong], block_hours: 6}
+      over:
+        name: overlapping bursts
+        overlay:                 # as scenario Y, within the one day
+          base_share: 0.6
+          burst_share: 0.4
+          burst_count: 3
+          burst_hours: [3, 12]
+          patterns:
+            - {name: small-short flood, classes: [sm-short]}
+            - {name: large-long heavy, classes: [lg-long]}
+            - {name: one-account burst, account: top}
+            - {name: memory-heavy medium, classes: [med-short, med-med, med-long], memory_bound: true}

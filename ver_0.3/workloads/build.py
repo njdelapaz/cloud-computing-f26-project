@@ -1,13 +1,15 @@
 """Task 1.5: build workload scenarios (SPEC §3) from the trace.
 
 Usage:  .venv/bin/python -m workloads.build [SCENARIO ...] [--seeds 1 2 3]
+        (a day scenario's name, D, builds all its patterns D-nat, D-flood, ...)
 
 For each scenario and seed, writes workloads/traces/<scenario>-s<seed>/ (gitignored):
   jobs.parquet   one row per job (SPEC §3.3 fields, plus job_id/name and X segment)
   events.txt     simulator job-trace lines, job names jobid_1001.. in submission order
   accounts.txt   account<TAB>user associations for sim/prepare_run.py
   manifest.json  source, filters, seed, thinning, target and achieved load, class counts, hashes
-and a summary to results/workloads/summary.csv (+ X segment table).
+and summaries to results/workloads/: summary.csv, plus X_segments.csv, Y_bursts.csv,
+D_days.csv and D_bursts.csv for the scenarios that have them.
 """
 from __future__ import annotations
 
@@ -147,6 +149,31 @@ def top_account(pool: pd.DataFrame) -> str:
     return str(load.idxmax())
 
 
+def segment_block(pool: pd.DataFrame, spec: dict, t0: int, t1: int, seed: int, name: str,
+                  part: int, target: float, burst_account: str, label: str) -> pd.DataFrame:
+    """One pattern block [t0, t1) inside one day (scenarios X and D).
+
+    Takes the pool jobs whose time of day falls in the block, filters them by the pattern,
+    thins them to target over the block and re-times them to (day of t0) + time of day.
+    """
+    tod0, tod1 = t0 % DAY_S, (t1 - 1) % DAY_S + 1
+    in_block = pool[(pool["tod"] >= tod0) & (pool["tod"] < tod1)]
+    window = t1 - t0
+    if "burst_share" in spec:
+        # The burst account supplies `share` of the target; other accounts fill the rest.
+        a = in_block[in_block["account"] == burst_account]
+        o = in_block[in_block["account"] != burst_account]
+        ka, _ = thin(a, rng_for(seed, name, part), target * spec["burst_share"], window)
+        ko, _ = thin(o, rng_for(seed, name, part + 100), target, window,
+                     base_cpu_s=ka["cpu_s"].sum(), base_mem_s=ka["mem_s"].sum())
+        kept = pd.concat([ka, ko])
+    else:
+        kept, _ = thin(segment_candidates(in_block, spec), rng_for(seed, name, part),
+                       target, window)
+    day = t0 // DAY_S
+    return kept.assign(submit_s=day * DAY_S + kept["tod"], segment=label)
+
+
 def shifting_week(jobs: pd.DataFrame, name: str, cfg: dict, seed: int, target: float
                   ) -> tuple[pd.DataFrame, dict]:
     """Scenario X: one segment per day, each thinned to target in its own binding resource.
@@ -161,22 +188,8 @@ def shifting_week(jobs: pd.DataFrame, name: str, cfg: dict, seed: int, target: f
     parts, seg_info = {}, []
 
     def build_block(i_seg, spec, t0, t1, part):
-        tod0, tod1 = t0 % DAY_S, (t1 - 1) % DAY_S + 1
-        in_block = pool[(pool["tod"] >= tod0) & (pool["tod"] < tod1)]
-        window = t1 - t0
-        if "burst_share" in spec:
-            # The burst account supplies `share` of the target; other accounts fill the rest.
-            a = in_block[in_block["account"] == burst_account]
-            o = in_block[in_block["account"] != burst_account]
-            ka, _ = thin(a, rng_for(seed, name, part), target * spec["burst_share"], window)
-            ko, _ = thin(o, rng_for(seed, name, part + 100), target, window,
-                         base_cpu_s=ka["cpu_s"].sum(), base_mem_s=ka["mem_s"].sum())
-            kept = pd.concat([ka, ko])
-        else:
-            kept, _ = thin(segment_candidates(in_block, spec), rng_for(seed, name, part),
-                           target, window)
-        day = t0 // DAY_S
-        return kept.assign(submit_s=day * DAY_S + kept["tod"], segment=f"{i_seg}:{spec['name']}")
+        return segment_block(pool, spec, t0, t1, seed, name, part, target, burst_account,
+                             f"{i_seg}:{spec['name']}")
 
     for i, spec in enumerate(segs):
         t0, t1 = i * DAY_S, (i + 1) * DAY_S
@@ -222,6 +235,40 @@ def place_window(pool: pd.DataFrame, t0: int, t1: int, rho_target: float, seed: 
     return pd.concat(pieces) if pieces else pool.iloc[:0]
 
 
+def place_bursts(pool: pd.DataFrame, cfg: dict, span_h: int, offset_h: int, seed: int,
+                 name: str, target: float, burst_account: str, rng: np.random.Generator
+                 ) -> tuple[list[pd.DataFrame], list[dict]]:
+    """Bursts of cfg['patterns'] at seeded random whole hours in [offset_h, offset_h + span_h).
+
+    Patterns are used in turn from a seeded order. Each burst lasts a seeded number of hours
+    in cfg['burst_hours'] and adds cfg['burst_share'] * target while it runs. start_h in the
+    returned table is relative to offset_h. Used by scenario Y (the week) and D-over (one day).
+    """
+    patterns = cfg["patterns"]
+    order = rng.permutation(len(patterns))
+    lo, hi = cfg["burst_hours"]
+    parts, bursts = [], []
+    for b in range(cfg["burst_count"]):
+        spec = patterns[order[b % len(patterns)]]
+        hours = int(rng.integers(lo, hi + 1))
+        start_h = int(rng.integers(0, span_h - hours + 1))
+        cand = segment_candidates(pool, spec)
+        if spec.get("account") == "top":
+            cand = cand[cand["account"] == burst_account]
+        label = f"burst{b:02d}:{spec['name']}"
+        t0 = (offset_h + start_h) * 3600
+        # At least one job per burst: one multi-day large job can exceed a short burst's
+        # whole target, and thinning would otherwise keep nothing.
+        k = place_window(cand, t0, t0 + hours * 3600, target * cfg["burst_share"], seed, name,
+                         100 + b, label, min_jobs=1)
+        parts.append(k)
+        bursts.append({"burst": b, "name": spec["name"], "start_h": start_h, "hours": hours,
+                       "jobs": int(len(k)),
+                       "rho_cpu": k["cpu_s"].sum() / (CAP_CPU * hours * 3600),
+                       "rho_mem": k["mem_s"].sum() / (CAP_MEM * hours * 3600)})
+    return parts, bursts
+
+
 def overlay_week(jobs: pd.DataFrame, name: str, cfg: dict, seed: int, target: float
                  ) -> tuple[pd.DataFrame, dict]:
     """Scenario Y: natural background all week plus overlapping bursts at random times.
@@ -238,27 +285,9 @@ def overlay_week(jobs: pd.DataFrame, name: str, cfg: dict, seed: int, target: fl
 
     parts = [place_window(pool, d * DAY_S, (d + 1) * DAY_S, target * cfg["base_share"], seed,
                           name, 1 + d, "base") for d in range(7)]
-    patterns = cfg["patterns"]
-    order = rng.permutation(len(patterns))
-    lo, hi = cfg["burst_hours"]
-    bursts = []
-    for b in range(cfg["burst_count"]):
-        spec = patterns[order[b % len(patterns)]]
-        hours = int(rng.integers(lo, hi + 1))
-        start_h = int(rng.integers(0, week_h - hours + 1))
-        cand = segment_candidates(pool, spec)
-        if spec.get("account") == "top":
-            cand = cand[cand["account"] == burst_account]
-        label = f"burst{b:02d}:{spec['name']}"
-        # At least one job per burst: one multi-day large job can exceed a short burst's
-        # whole target, and thinning would otherwise keep nothing.
-        k = place_window(cand, start_h * 3600, (start_h + hours) * 3600,
-                         target * cfg["burst_share"], seed, name, 100 + b, label, min_jobs=1)
-        parts.append(k)
-        bursts.append({"burst": b, "name": spec["name"], "start_h": start_h, "hours": hours,
-                       "jobs": int(len(k)),
-                       "rho_cpu": k["cpu_s"].sum() / (CAP_CPU * hours * 3600),
-                       "rho_mem": k["mem_s"].sum() / (CAP_MEM * hours * 3600)})
+    burst_parts, bursts = place_bursts(pool, cfg, week_h, 0, seed, name, target, burst_account,
+                                       rng)
+    parts += burst_parts
 
     active = np.zeros(week_h, dtype=int)
     for bi in bursts:
@@ -270,6 +299,64 @@ def overlay_week(jobs: pd.DataFrame, name: str, cfg: dict, seed: int, target: fl
             "hours_with_2plus_bursts": int((active >= 2).sum()),
             "bursts": bursts}
     return pd.concat(parts), info
+
+
+def day_workload(jobs: pd.DataFrame, scenario: str, pattern: str, cfg: dict, seed: int,
+                 target: float) -> tuple[pd.DataFrame, dict]:
+    """Scenario D (SPEC §9.4): a natural lead-in, then one measured day of one pattern.
+
+    Every job keeps its time of day. The measured day runs midnight to midnight and fills
+    [L, L + 24 h) of the workload, where L = leadin_hours; the lead-in [0, L) holds natural
+    jobs from the last L hours of a day, thinned to target. The lead-in depends on the seed
+    only, so all patterns of one seed start from the same jobs. Segments: 'leadin', then the
+    pattern key, or for an overlay pattern 'base' and 'burstNN:<name>' as in Y.
+    """
+    pool = jobs[jobs["week"].isin(cfg["pool_weeks"])]
+    burst_account = top_account(pool)
+    lead = int(cfg["leadin_hours"] * 3600)
+    name = f"{scenario}-{pattern}"
+    spec = cfg["patterns"][pattern]
+
+    # Built on a two-day frame (lead-in at the end of day 0, measured day = day 1), then
+    # shifted so the workload starts at the lead-in.
+    parts, bursts = [], []
+    if lead:
+        parts.append(place_window(pool, DAY_S - lead, DAY_S, target, seed,
+                                  f"{scenario}-leadin", 1, "leadin"))
+    t0, t1 = DAY_S, 2 * DAY_S
+    if "overlay" in spec:
+        ov = spec["overlay"]
+        parts.append(place_window(pool, t0, t1, target * ov["base_share"], seed, name, 1,
+                                  "base"))
+        bp, bursts = place_bursts(pool, ov, 24, 24, seed, name, target, burst_account,
+                                  rng_for(seed, name, 999_999))
+        parts += bp
+    elif "alternate" in spec:
+        step = int(spec["block_hours"] * 3600)
+        for b, s in enumerate(range(t0, t1, step)):
+            sub = cfg["patterns"][spec["alternate"][b % len(spec["alternate"])]]
+            parts.append(segment_block(pool, sub, s, min(s + step, t1), seed, name, 1000 + b,
+                                       target, burst_account, pattern))
+    else:
+        parts.append(segment_block(pool, spec, t0, t1, seed, name, 1000, target,
+                                   burst_account, pattern))
+    kept = pd.concat(parts)
+    kept = kept.assign(submit_s=kept["submit_s"] - (DAY_S - lead))
+
+    def load(k, window):
+        return {"jobs": int(len(k)), "rho_cpu": k["cpu_s"].sum() / (CAP_CPU * window),
+                "rho_mem": k["mem_s"].sum() / (CAP_MEM * window)}
+
+    is_lead = kept["segment"] == "leadin"
+    info = {"pattern": pattern, "pattern_name": spec["name"], "pool_weeks": cfg["pool_weeks"],
+            "burst_account": burst_account, "leadin_hours": cfg["leadin_hours"],
+            "measured_window_s": [lead, lead + DAY_S],
+            "start_time_of_day_utc": f"{(DAY_S - lead) // 3600:02d}:00",
+            "leadin": load(kept[is_lead], lead) if lead else None,
+            "day": load(kept[~is_lead], DAY_S)}
+    if bursts:
+        info["bursts"] = bursts
+    return kept, info
 
 
 # --------------------------------------------------------------------------- output
@@ -313,7 +400,7 @@ def git_commit() -> str:
 
 
 def write_scenario(df: pd.DataFrame, name: str, seed: int, target: float, info: dict,
-                   quota: int | None) -> dict:
+                   quota: int | None, window_s: int = trace.WEEK_S) -> dict:
     d = TRACES / f"{name}-s{seed}"
     d.mkdir(parents=True, exist_ok=True)
     df.to_parquet(d / "jobs.parquet", index=False)
@@ -321,16 +408,17 @@ def write_scenario(df: pd.DataFrame, name: str, seed: int, target: float, info: 
     pairs = sorted(set(zip(df["account"], df["user"])))
     (d / "accounts.txt").write_text("# account\tuser\n" + "".join(f"{a}\t{u}\n" for a, u in pairs))
 
-    cpu_s = float((df["cpus"] * df["runtime_s"]).sum())
-    mem_s = float((df["mem_mb"] * df["runtime_s"]).sum())
+    meas = df[df["segment"] != "leadin"]       # achieved load: the measured window only
+    cpu_s = float((meas["cpus"] * meas["runtime_s"]).sum())
+    mem_s = float((meas["mem_mb"] * meas["runtime_s"]).sum())
     manifest = {
         "scenario": name, "seed": seed, "built_from_commit": git_commit(),
         "filters": {"partitions": list(trace.KEEP_PARTITIONS), "gpus": 0, "started": 1,
                     "single_node": True, "max_cpus": trace.NODE_CORES,
                     "max_mem_mb": trace.NODE_MEM_MB, "max_timelimit_s": trace.MAX_TIMELIMIT_S},
         "target_rho": target, "class_quota": quota,
-        "achieved": {"rho_cpu": cpu_s / (CAP_CPU * trace.WEEK_S),
-                     "rho_mem": mem_s / (CAP_MEM * trace.WEEK_S)},
+        "achieved": {"rho_cpu": cpu_s / (CAP_CPU * window_s),
+                     "rho_mem": mem_s / (CAP_MEM * window_s)},
         "jobs": int(len(df)), "users": int(df["user"].nunique()),
         "accounts": int(df["account"].nunique()), "associations": len(pairs),
         "class_counts": {k: int(v) for k, v in df["class"].value_counts(sort=False).items()},
@@ -346,20 +434,32 @@ def build(names: list[str] | None = None, seeds: list[int] | None = None) -> lis
     cfg = yaml.safe_load(CONFIG.read_text())
     target, quota = cfg["target_rho"], cfg.get("class_quota")
     seeds = seeds or cfg["seeds"]
-    all_names = list(cfg["natural"]) + list(cfg["shifting"]) + list(cfg.get("overlay", {}))
+    days = {f"{s}-{p}": (s, p) for s, c in cfg.get("day", {}).items() for p in c["patterns"]}
+    all_names = (list(cfg["natural"]) + list(cfg["shifting"]) + list(cfg.get("overlay", {}))
+                 + list(days))
     names = names or all_names
+    # A day scenario's own name (D) stands for all its patterns.
+    names = [n for x in names for n in ([k for k in days if days[k][0] == x] or [x])]
+    unknown = [n for n in names if n not in all_names]
+    if unknown:
+        raise SystemExit(f"unknown scenario(s): {unknown}; known: {all_names}")
     jobs = load_jobs()
     manifests = []
     for name in names:
         for seed in seeds:
+            window = trace.WEEK_S
             if name in cfg["natural"]:
                 kept, info = natural_week(jobs, name, cfg["natural"][name]["week"], seed, target,
                                           quota)
             elif name in cfg["shifting"]:
                 kept, info = shifting_week(jobs, name, cfg["shifting"][name], seed, target)
+            elif name in days:
+                s, pat = days[name]
+                kept, info = day_workload(jobs, s, pat, cfg["day"][s], seed, target)
+                window = DAY_S
             else:
                 kept, info = overlay_week(jobs, name, cfg["overlay"][name], seed, target)
-            m = write_scenario(finalize(kept), name, seed, target, info, quota)
+            m = write_scenario(finalize(kept), name, seed, target, info, quota, window)
             manifests.append(m)
             a = m["achieved"]
             print(f"{name}-s{seed}: {m['jobs']:,} jobs, {m['accounts']} accounts, "
@@ -368,9 +468,21 @@ def build(names: list[str] | None = None, seeds: list[int] | None = None) -> lis
     return manifests
 
 
+def merge_csv(path: Path, rows: list[dict], keys: list[str]) -> None:
+    """Write rows to path, keeping the old rows of (scenario, seed) pairs not rebuilt now."""
+    new = pd.DataFrame(rows)
+    if path.exists():
+        old = pd.read_csv(path)
+        built = set(zip(new["scenario"], new["seed"]))
+        old = old[[(s, d) not in built for s, d in zip(old["scenario"], old["seed"])]]
+        new = pd.concat([old, new.dropna(axis=1, how="all")], ignore_index=True)
+    new.sort_values(keys).to_csv(path, index=False, float_format="%.4f")
+
+
 def write_summary(manifests: list[dict]) -> None:
+    """summary.csv for every scenario; X_segments, Y_bursts, D_days and D_bursts by family."""
     SUMMARY.mkdir(parents=True, exist_ok=True)
-    rows, segs, bursts = [], [], []
+    rows, segs, bursts, days = [], [], {}, []
     for m in manifests:
         row = {"scenario": m["scenario"], "seed": m["seed"], "jobs": m["jobs"],
                "users": m["users"], "accounts": m["accounts"],
@@ -378,22 +490,24 @@ def write_summary(manifests: list[dict]) -> None:
                "p": m.get("p")}
         row.update(m["class_counts"])
         rows.append(row)
+        family = m["scenario"].split("-")[0]
         for s in m.get("segments", []):
             segs.append({"scenario": m["scenario"], "seed": m["seed"], **s})
         for b in m.get("bursts", []):
-            bursts.append({"scenario": m["scenario"], "seed": m["seed"], **b})
-    path = SUMMARY / "summary.csv"
-    new = pd.DataFrame(rows)
-    if path.exists():
-        old = pd.read_csv(path)
-        keep = ~old.set_index(["scenario", "seed"]).index.isin(new.set_index(["scenario", "seed"]).index)
-        if keep.any():
-            new = pd.concat([old[keep], new], ignore_index=True)
-    new.sort_values(["scenario", "seed"]).to_csv(path, index=False, float_format="%.4f")
+            bursts.setdefault(family, []).append({"scenario": m["scenario"], "seed": m["seed"], **b})
+        if "day" in m:
+            r = {"scenario": m["scenario"], "seed": m["seed"], "pattern": m["pattern"]}
+            for part in ("leadin", "day"):
+                for k, v in (m[part] or {}).items():
+                    r[f"{part}_{k}"] = v
+            days.append(r)
+    merge_csv(SUMMARY / "summary.csv", rows, ["scenario", "seed"])
     if segs:
-        pd.DataFrame(segs).to_csv(SUMMARY / "X_segments.csv", index=False, float_format="%.4f")
-    if bursts:
-        pd.DataFrame(bursts).to_csv(SUMMARY / "Y_bursts.csv", index=False, float_format="%.4f")
+        merge_csv(SUMMARY / "X_segments.csv", segs, ["scenario", "seed", "segment"])
+    for family, b in bursts.items():
+        merge_csv(SUMMARY / f"{family}_bursts.csv", b, ["scenario", "seed", "burst"])
+    if days:
+        merge_csv(SUMMARY / "D_days.csv", days, ["scenario", "seed"])
 
 
 def main() -> None:
