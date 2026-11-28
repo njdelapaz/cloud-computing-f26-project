@@ -6,7 +6,7 @@ This document specifies Steps 1–6 of the `Project` brief in this folder:
   built in Phase 2);
 - simulation of the full setup and its evaluation (Step 6, §8, approved for Phase 3);
 - a revised strategy after the Phase 3 answer: B1 as the baseline, two favored states, and a
-  stabilization period after each favored spell, set up on one-day workloads (§9, approved
+  stabilization period after each favored spell, set up on two-day workloads (§9, approved
   for Phase 4).
 
 [PLAN.md](PLAN.md) lays out the order of work.
@@ -999,7 +999,8 @@ Defaults approved 2026-11-26.
 
 *Approved 2026-11-27, requested after the Phase 3 answer was no. Open questions (§9.9): S-B
 (wait targets), S-C (a 5,000-point boost) and S-G (median; class gate 10% of the waiting
-jobs; levels kept) answered; defaults kept for S-A, S-D, S-E and S-F.*
+jobs; levels kept) answered; defaults kept for S-A, S-D, S-E and S-F. S-D changed after
+task 4.2: two measured days and a 24 h lead-out (§9.4).*
 
 ### 9.1 What changes and why
 
@@ -1012,7 +1013,8 @@ The user's revision:
 5. judge whether the targeted jobs wait less while their state is active, as well as the
    regular metrics;
 6. set everything up on one-day workloads of different traffic patterns; test later on
-   five-day workloads.
+   five-day workloads. After the first build (task 4.2), the setup workloads were lengthened
+   to two measured days plus a lead-out, on request (§9.4).
 
 | Phase 3 result (§8.6) | What the revision does about it |
 |---|---|
@@ -1126,45 +1128,53 @@ The levels span the class mean waits B1 gave over the Phase 3 weeks: medium 0.7�
   streak. So the `T_stable = 0` runs measure what the stabilization period adds.
 - **Replay:** as in Phase 2, the logged snapshots must reproduce every online decision.
 
-### 9.4 One-day setup workloads (`D`)
+### 9.4 Setup workloads (`D`)
 
 | Item | Value |
 |---|---|
 | Name | `D-<pattern>-s<seed>`, seeds 1–3 |
-| Patterns | `nat` (natural mix), `flood` (small-short flood), `lglong` (large-long heavy), `acct` (one account submits about half the demand), `mem` (memory-heavy medium), `alt` (6-hour blocks alternating flood and large-long), `over` (`Y`-style: natural background at 60% of `ρ*` plus three bursts of 3–12 h, each adding 40%). Built as in §3.5. |
-| Lead-in (S-D) | 12 h of natural mix at `ρ*` before the measured day, so the day starts on a loaded cluster. On `X`, day 0 began on an empty cluster, and its mean wait was 0.0 h under both C0 and B1. Lead-in jobs run and are scheduled, but are not measured. |
-| Measured day | 24 h of the pattern, midnight to midnight. Jobs keep their time of day, so the workload starts at 12:00 with the lead-in. Each job carries `segment`: `leadin`, the pattern key, or for `over` `base` and `burstNN:<name>` as in `Y`. |
+| Patterns | `nat` (natural mix), `flood` (small-short flood), `lglong` (large-long heavy), `acct` (one account submits about half the demand), `mem` (memory-heavy medium), `alt` (6-hour blocks alternating flood and large-long), `over` (`Y`-style: natural background at 60% of `ρ*` plus six bursts, three a day, of 3–12 h, each adding 40%). Built as in §3.5. |
+| Lead-in (S-D) | 12 h of natural mix at `ρ*` before the measured days, so they start on a loaded cluster. On `X`, day 0 began on an empty cluster, and its mean wait was 0.0 h under both C0 and B1. Lead-in jobs run and are scheduled, but are not measured. |
+| Measured days (S-D) | 48 h of the pattern from midnight, thinned to target over the whole window. This was one day until 2026-11-27, changed on request. With two days, one big job moves the window's load half as much; at the longest stabilization period about five spells fit; and the loose large target (24 h) can be passed while the pattern still runs. Jobs keep their time of day, so the workload starts at 12:00 with the lead-in. Each job carries `segment`: `leadin`, `leadout`, the pattern key, or for `over` `base` and `burstNN:<name>` as in `Y`. |
+| Lead-out (S-D) | 24 h of natural mix at `ρ*` after the measured days. It is run but not measured. Without it, submissions stop when the pattern ends and the queue only drains: late jobs meet no new arrivals and wait less than in steady running, and a favored spell has little left to reorder. Under B1, medium and large jobs waited 19–26 h on average in the Phase 3 weeks, so 24 h covers most measured jobs until they start. |
 | Load | Thinned to `ρ* = 0.95` in the saturated resource, as in §3.4 |
 | Source (S-F) | Setup draws only from trace weeks 1–12 (Jan–Mar; `K` is week 4). The five-day tests (§9.8) draw only from weeks 13–23 (Apr–Jun; `N` is week 20). Nothing is tuned on the months it is tested on. This is like a site tuning on past months and running on later ones. |
 | Size | 21 workloads (7 patterns × 3 seeds) |
 
-Each run drains as in §8.4: submissions span 36 h, and the run continues until every job has
-ended.
+Each run drains as in §8.4: submissions span 84 h (12 + 48 + 24), and the run continues until
+every job has ended.
 
 **Built (task 4.2; `results/workloads/D_days.csv`, `D_bursts.csv`).** `config/scenarios.yaml`
 (`day`) and `workloads/build.py`.
 - **Source pool:** the eligible weeks 1–9, 11 and 12. The burst account is `account026`, the
   same as in `X`.
-- **Lead-in:** depends on the seed only, so all patterns of a seed start from the same jobs:
-  1,411–2,463 jobs, at a load of 0.82–0.95.
-- **Measured-day loads come in coarse steps.** Run time counts in full on the day a job is
-  submitted, so one large-long job can carry up to 0.41 of a day's memory load. Thinning
-  keeps the prefix closest to the target. For `D-nat-s1`, the next job was a 6.1-day
-  large-long job that would have taken the day from 0.83 to 1.14.
+- **Lead-in and lead-out:** depend on the seed only, so all patterns of a seed share them.
+  - lead-in: 1,411–2,463 jobs, at a load of 0.82–0.95;
+  - lead-out: 4,043–4,838 jobs, at a load of 0.95–1.04.
+- **Measured-window loads:**
+  - Run time counts in full on the day a job is submitted, so one large-long job can carry up
+    to 0.41 of a day's memory load, and 0.21 of two days. Thinning keeps the prefix closest
+    to the target.
+  - With one measured day, the single-pattern days landed at 0.83–0.95 (`D-nat-s1`: the
+    next job was a 6.1-day large-long job, which would have taken the day from 0.83 to 1.14).
+  - With two days thinned as one window, they land at 0.95–0.96.
+- **Uneven days:** each job gets a seeded day in the window, so where jobs are few, the
+  split between the two days is uneven. The two `lglong` days run at 0.49–1.43 of memory;
+  `nat` days at 0.86–1.13.
 
-| Pattern | Measured-day jobs | Load in the saturated resource |
+| Pattern | Measured jobs (48 h) | Load in the saturated resource |
 |---|---|---|
-| `nat` | 4,402–5,475 | memory 0.83–0.95 |
-| `flood` | 42,476–42,860 | CPU 0.95 |
-| `lglong` | 63–99 | memory 0.91–0.94 |
-| `acct` | 2,730–2,954 | memory 0.95 |
-| `mem` | 2,359–2,733 | memory 0.95 |
-| `alt` | 20,792–21,408 | memory 0.84–0.88 (each block at target) |
-| `over` | 9,726–10,574 | memory 0.86–1.11 (bursts overlap) |
+| `nat` | 9,152–11,242 | 0.95–0.96 |
+| `flood` | 85,009–86,034 | CPU 0.95 |
+| `lglong` | 178–202 | memory 0.95–0.96 |
+| `acct` | 6,911–7,103 | memory 0.95 |
+| `mem` | 4,810–5,024 | memory 0.95 |
+| `alt` | 42,097–42,665 | memory 0.85–0.89 (each block at target) |
+| `over` | 23,252–25,720 | memory 0.92–1.07 (bursts overlap) |
 
-`D-over` bursts: each seed has three of the four patterns, 4–12 h each. Seed 1 has flood,
-one-account and large-long; seed 2 has flood, memory-heavy and one-account; seed 3 has flood,
-large-long and one-account.
+Whole workloads run from 5,632 jobs (`D-lglong-s2`) to 93,180 (`D-flood-s1`), so the flood
+workloads are about the size of an `X` week. `D-over` has six bursts per seed, 4–12 h each,
+and every seed has all four patterns at least once.
 
 ### 9.5 What is compared on the setup workloads
 
@@ -1183,14 +1193,14 @@ the trigger fires:
 | | Repeats: B1 and A4-middle-60 on seed 1 of each pattern, two more runs each | 28 |
 | | Choose the target level `L*` (§9.6) | |
 | 2: stabilization | A4-`L*`-`T` for `T` ∈ {0, 30, 120, 240, 480}; 60 comes from stage 1 | 105 |
-| Total | | 238 one-day runs |
+| Total | | 238 runs |
 
 Batches, checks and reruns follow §8.4.
 
 ### 9.6 Metrics and choice of the stabilization period
 
-**Regular metrics.** Those of §8.5, computed on the measured day's jobs only. Cluster state
-is taken over the measured 24 h.
+**Regular metrics.** Those of §8.5, computed on the jobs of the measured days only (not the
+lead-in or lead-out). Cluster state is taken over the measured 48 h.
 
 **While a state is active** (`evaluation/favored.py`, extended). Each job's wait is split
 across the phases: `active-medium`, `active-large`, `stabilizing`, `armed`. Jobs whose wait
@@ -1254,14 +1264,14 @@ Specified when Phase 4 is done. Outline:
 ### 9.9 Open questions
 
 S-B, S-C and S-G answered 2026-11-27; the defaults for S-A, S-D, S-E and S-F approved the same
-day.
+day. S-D then changed after task 4.2: two measured days and a lead-out.
 
 | # | Question | Default |
 |---|---|---|
 | S-A | The bar: B1 (the baseline A4 returns to), or the better of B1 and C0 as in §8.2 | B1. C0 is run and reported as a reference. |
 | S-B | Trigger signal from the queue | **Answered 2026-11-27:** the median wait of each class's waiting jobs against a target per class (§9.3) |
 | S-C | Strength of the favored states: strict (favored class always first), soft (about one typical fair-share gap, about 2,000 points), or in between | **Answered 2026-11-27:** in between. `PriorityWeightQOS = 5000`, with only the favored class's QOS raised (§9.2) |
-| S-D | Lead-in before the measured day | 12 h of natural load, not measured |
+| S-D | Lead-in, measured length and lead-out | **Answered 2026-11-27:** 12 h lead-in (default kept); two measured days and a 24 h lead-out, both requested after task 4.2 first built one-day workloads (§9.4) |
 | S-E | Favored spell and the stabilization periods tried | `T_active` 60 min for both states; `T_stable` ∈ {0, 30, 60, 120, 240, 480} min |
 | S-F | How the target level and `T_stable` are chosen, and the source split | In each stage, the lowest geometric-mean ratio of mean wait to B1 over the 21 setup workloads; ties broken by guards, then the looser level or longer period. Setup from weeks 1–12, tests from weeks 13–23. |
 | S-G | Target statistic, class gate and levels | **Answered 2026-11-27:** median wait of the class's waiting jobs. Class gate: a share of the queue, not a count (requested): 10% (confirmed), with the whole-queue gate of 20 kept. The three levels kept (medium / large): 2 / 6 h, 4 / 12 h, 8 / 24 h |

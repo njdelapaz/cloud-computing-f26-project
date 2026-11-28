@@ -301,34 +301,62 @@ def overlay_week(jobs: pd.DataFrame, name: str, cfg: dict, seed: int, target: fl
     return pd.concat(parts), info
 
 
+def segment_days(pool: pd.DataFrame, spec: dict, day0: int, n_days: int, seed: int,
+                 name: str, part: int, target: float, burst_account: str, label: str
+                 ) -> pd.DataFrame:
+    """One pattern over n_days whole days from day0, thinned to target over the whole window.
+
+    Each pool job is given a seeded day in the window and keeps its time of day. Thinning the
+    window as one, not day by day, halves the step one big job makes in its load over two days
+    (scenario D).
+    """
+    day = rng_for(seed, name, part + 50).integers(0, n_days, len(pool))
+    cand = pool.assign(submit_s=(day0 + day) * DAY_S + pool["tod"])
+    window = n_days * DAY_S
+    if "burst_share" in spec:
+        # The burst account supplies `share` of the target; other accounts fill the rest.
+        a = cand[cand["account"] == burst_account]
+        o = cand[cand["account"] != burst_account]
+        ka, _ = thin(a, rng_for(seed, name, part), target * spec["burst_share"], window)
+        ko, _ = thin(o, rng_for(seed, name, part + 100), target, window,
+                     base_cpu_s=ka["cpu_s"].sum(), base_mem_s=ka["mem_s"].sum())
+        kept = pd.concat([ka, ko])
+    else:
+        kept, _ = thin(segment_candidates(cand, spec), rng_for(seed, name, part), target, window)
+    return kept.assign(segment=label)
+
+
 def day_workload(jobs: pd.DataFrame, scenario: str, pattern: str, cfg: dict, seed: int,
                  target: float) -> tuple[pd.DataFrame, dict]:
-    """Scenario D (SPEC §9.4): a natural lead-in, then one measured day of one pattern.
+    """Scenario D (SPEC §9.4): natural lead-in, measured days of one pattern, natural lead-out.
 
-    Every job keeps its time of day. The measured day runs midnight to midnight and fills
-    [L, L + 24 h) of the workload, where L = leadin_hours; the lead-in [0, L) holds natural
-    jobs from the last L hours of a day, thinned to target. The lead-in depends on the seed
-    only, so all patterns of one seed start from the same jobs. Segments: 'leadin', then the
-    pattern key, or for an overlay pattern 'base' and 'burstNN:<name>' as in Y.
+    Every job keeps its time of day. With L = leadin_hours and M = measured_days, the workload
+    holds: the lead-in [0, L), natural jobs from the last L hours of a day; the measured days
+    [L, L + M days), which start at midnight; the lead-out, natural jobs for leadout_hours from
+    the next midnight. Lead-in and lead-out are thinned to target and depend on the seed only,
+    so all patterns of one seed share them. Segments: 'leadin', 'leadout', and for the measured
+    days the pattern key, or for an overlay pattern 'base' and 'burstNN:<name>' as in Y.
     """
     pool = jobs[jobs["week"].isin(cfg["pool_weeks"])]
     burst_account = top_account(pool)
     lead = int(cfg["leadin_hours"] * 3600)
+    n_days = int(cfg.get("measured_days", 1))
+    tail = int(cfg.get("leadout_hours", 0) * 3600)
     name = f"{scenario}-{pattern}"
     spec = cfg["patterns"][pattern]
 
-    # Built on a two-day frame (lead-in at the end of day 0, measured day = day 1), then
+    # Built on a frame where the lead-in ends day 0 and the measured days are days 1..M, then
     # shifted so the workload starts at the lead-in.
     parts, bursts = [], []
     if lead:
         parts.append(place_window(pool, DAY_S - lead, DAY_S, target, seed,
                                   f"{scenario}-leadin", 1, "leadin"))
-    t0, t1 = DAY_S, 2 * DAY_S
+    t0, t1 = DAY_S, (1 + n_days) * DAY_S
     if "overlay" in spec:
         ov = spec["overlay"]
         parts.append(place_window(pool, t0, t1, target * ov["base_share"], seed, name, 1,
                                   "base"))
-        bp, bursts = place_bursts(pool, ov, 24, 24, seed, name, target, burst_account,
+        bp, bursts = place_bursts(pool, ov, 24 * n_days, 24, seed, name, target, burst_account,
                                   rng_for(seed, name, 999_999))
         parts += bp
     elif "alternate" in spec:
@@ -338,8 +366,11 @@ def day_workload(jobs: pd.DataFrame, scenario: str, pattern: str, cfg: dict, see
             parts.append(segment_block(pool, sub, s, min(s + step, t1), seed, name, 1000 + b,
                                        target, burst_account, pattern))
     else:
-        parts.append(segment_block(pool, spec, t0, t1, seed, name, 1000, target,
-                                   burst_account, pattern))
+        parts.append(segment_days(pool, spec, 1, n_days, seed, name, 1000, target,
+                                  burst_account, pattern))
+    if tail:
+        parts.append(place_window(pool, t1, t1 + tail, target, seed, f"{scenario}-leadout", 1,
+                                  "leadout"))
     kept = pd.concat(parts)
     kept = kept.assign(submit_s=kept["submit_s"] - (DAY_S - lead))
 
@@ -347,13 +378,20 @@ def day_workload(jobs: pd.DataFrame, scenario: str, pattern: str, cfg: dict, see
         return {"jobs": int(len(k)), "rho_cpu": k["cpu_s"].sum() / (CAP_CPU * window),
                 "rho_mem": k["mem_s"].sum() / (CAP_MEM * window)}
 
-    is_lead = kept["segment"] == "leadin"
+    seg = kept["segment"]
+    meas = kept[(seg != "leadin") & (seg != "leadout")]
+    lo = lead
     info = {"pattern": pattern, "pattern_name": spec["name"], "pool_weeks": cfg["pool_weeks"],
             "burst_account": burst_account, "leadin_hours": cfg["leadin_hours"],
-            "measured_window_s": [lead, lead + DAY_S],
+            "measured_days": n_days, "leadout_hours": cfg.get("leadout_hours", 0),
+            "measured_window_s": [lo, lo + n_days * DAY_S],
             "start_time_of_day_utc": f"{(DAY_S - lead) // 3600:02d}:00",
-            "leadin": load(kept[is_lead], lead) if lead else None,
-            "day": load(kept[~is_lead], DAY_S)}
+            "leadin": load(kept[seg == "leadin"], lead) if lead else None,
+            "measured": load(meas, n_days * DAY_S),
+            "measured_by_day": [
+                {"day": d, **load(meas[(meas["submit_s"] - lo) // DAY_S == d], DAY_S)}
+                for d in range(n_days)],
+            "leadout": load(kept[seg == "leadout"], tail) if tail else None}
     if bursts:
         info["bursts"] = bursts
     return kept, info
@@ -408,7 +446,7 @@ def write_scenario(df: pd.DataFrame, name: str, seed: int, target: float, info: 
     pairs = sorted(set(zip(df["account"], df["user"])))
     (d / "accounts.txt").write_text("# account\tuser\n" + "".join(f"{a}\t{u}\n" for a, u in pairs))
 
-    meas = df[df["segment"] != "leadin"]       # achieved load: the measured window only
+    meas = df[~df["segment"].isin(["leadin", "leadout"])]   # achieved: measured window only
     cpu_s = float((meas["cpus"] * meas["runtime_s"]).sum())
     mem_s = float((meas["mem_mb"] * meas["runtime_s"]).sum())
     manifest = {
@@ -456,7 +494,7 @@ def build(names: list[str] | None = None, seeds: list[int] | None = None) -> lis
             elif name in days:
                 s, pat = days[name]
                 kept, info = day_workload(jobs, s, pat, cfg["day"][s], seed, target)
-                window = DAY_S
+                window = info["measured_days"] * DAY_S
             else:
                 kept, info = overlay_week(jobs, name, cfg["overlay"][name], seed, target)
             m = write_scenario(finalize(kept), name, seed, target, info, quota, window)
@@ -475,6 +513,8 @@ def merge_csv(path: Path, rows: list[dict], keys: list[str]) -> None:
         old = pd.read_csv(path)
         built = set(zip(new["scenario"], new["seed"]))
         old = old[[(s, d) not in built for s, d in zip(old["scenario"], old["seed"])]]
+        # Columns only the replaced rows had (an older layout) go with them.
+        old = old.loc[:, old.notna().any() | old.columns.isin(new.columns)]
         new = pd.concat([old, new.dropna(axis=1, how="all")], ignore_index=True)
     new.sort_values(keys).to_csv(path, index=False, float_format="%.4f")
 
@@ -495,11 +535,14 @@ def write_summary(manifests: list[dict]) -> None:
             segs.append({"scenario": m["scenario"], "seed": m["seed"], **s})
         for b in m.get("bursts", []):
             bursts.setdefault(family, []).append({"scenario": m["scenario"], "seed": m["seed"], **b})
-        if "day" in m:
+        if "measured" in m:
             r = {"scenario": m["scenario"], "seed": m["seed"], "pattern": m["pattern"]}
-            for part in ("leadin", "day"):
+            for part in ("leadin", "measured", "leadout"):
                 for k, v in (m[part] or {}).items():
                     r[f"{part}_{k}"] = v
+            for d in m["measured_by_day"]:
+                for k in ("jobs", "rho_cpu", "rho_mem"):
+                    r[f"day{d['day']}_{k}"] = d[k]
             days.append(r)
     merge_csv(SUMMARY / "summary.csv", rows, ["scenario", "seed"])
     if segs:

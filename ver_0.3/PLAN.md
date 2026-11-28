@@ -20,7 +20,7 @@ stays inside `ver_0.3/`.
 | 1 | 1–3: workloads, classes, weight configurations | Scenarios `K`, `N` and `X` built; 9 classes frozen; B0 and C0–C3 verified in the simulator | All Phase 1 "done when" items met |
 | 2 | 4–5: trigger states and change mechanism | Triggers calibrated on K; policy module; simulator hook; apply test; adaptive week on K | 2.2–2.6 done; replay reproduces online decisions |
 | 3 | 6: simulation of the full setup | Static and adaptive policies run on `N`, `X` and `Y`; answer to SPEC §1 by the SPEC §8.6 rules; scale-up on `M`; `REPORT.md` | 3.2–3.8 done (met 2026-11-27 with 3.7 skipped on request) |
-| 4 | revised strategy (after the Phase 3 answer) | B1 baseline with favored medium and large spells, triggered by wait targets, each followed by a stabilization period; one-day setup workloads `D`; target level and stabilization period chosen; targeted-job waits while active | 4.2–4.7 done; S-A to S-G answered |
+| 4 | revised strategy (after the Phase 3 answer) | B1 baseline with favored medium and large spells, triggered by wait targets, each followed by a stabilization period; two-day setup workloads `D`; target level and stabilization period chosen; targeted-job waits while active | 4.2–4.7 done; S-A to S-G answered |
 
 ---
 
@@ -318,7 +318,7 @@ one-week answer was no; `REPORT.md` written.)
 
 ---
 
-## Phase 4 — Revised strategy: B1 baseline with a stabilization period (one-day setup)
+## Phase 4 — Revised strategy: B1 baseline with a stabilization period (two-day setup)
 
 (Drafted and approved 2026-11-27, requested after the Phase 3 answer was no: SPEC §9 and
 tasks 4.1–4.7 below. Open questions in SPEC §9.9: S-B, S-C and S-G answered; defaults kept for
@@ -329,27 +329,28 @@ S-A, S-D, S-E and S-F.)
   - the B1-based states (no small state);
   - the trigger: a class's waiting jobs have waited past a target (S-B, answered), then a
     fixed favored spell, a return to B1 and a stabilization period;
-  - the one-day setup workloads;
+  - the setup workloads;
   - what is compared, the metrics (including targeted jobs while their state is active),
     and how the target level and the stabilization period are chosen.
 - Expand Phase 4 in this plan.
 
 **Done when:** SPEC §9 and tasks 4.2–4.7 are agreed and committed.
 
-### 4.2 One-day setup workloads (`D`)
+### 4.2 Setup workloads (`D`)
 - Add a `day` section to `config/scenarios.yaml` (SPEC §9.4): the seven patterns, the
-  12-hour natural lead-in, and the source weeks 1–12.
+  12-hour natural lead-in, the two measured days, the 24-hour natural lead-out, and the
+  source weeks 1–12.
 - Extend `workloads/build.py` to build `D-<pattern>-s<seed>` with the same outputs as
   SPEC §3.6. Every job carries its `segment` (`leadin` or the pattern).
 - Write tests on a small pool:
-  - lead-in and day windows;
+  - lead-in, measured and lead-out windows;
   - each pattern's class filter;
   - source weeks only from 1–12;
   - outputs byte-identical for the same seed.
 
 **Done when:**
 - the 21 workloads are built and deterministic;
-- each day's load is near `ρ*` in its saturated resource;
+- each measured window's load is near `ρ*` in its saturated resource;
 - the summaries (`summary.csv`, `D_days.csv`, `D_bursts.csv`) are in `results/workloads/`.
 
 As for `K`–`Y`, the manifests stay with the gitignored traces.
@@ -396,8 +397,8 @@ slice run on `D-alt` is exact.
 
 ### 4.5 Stage 1: target level
 - Write `config/evaluation_setup.yaml` (SPEC §9.5, §9.7). Point `sim/batch.py` and
-  `evaluation/metrics.py` at it, with metrics on the measured day's jobs only and cluster
-  state over the measured 24 h.
+  `evaluation/metrics.py` at it, with metrics on the measured days' jobs only and cluster
+  state over the measured 48 h.
 - Run B1, C0, A4-tight-60, A4-middle-60 and A4-loose-60 on the 21 workloads (105 runs), one
   batch per workload.
 - Run the 28 repeat runs (B1 and A4-middle-60 on seed 1 of each pattern).
@@ -501,9 +502,9 @@ Decisions for Steps 4–6 are made when their spec is written (2.1, 3.1).
 
 | # | Risk | Mitigation |
 |---|---|---|
-| R11 | One-day runs are noisier than weeks, and B1 swung widely by seed on `X` (54 vs 900 min). | Noise band per pattern from three runs of B1 and A4-middle-60 (SPEC §9.6). The target level and `T_stable` are each chosen on all 21 workloads together. |
+| R11 | Two-day runs are noisier than weeks, and B1 swung widely by seed on `X` (54 vs 900 min). | Noise band per pattern from three runs of B1 and A4-middle-60 (SPEC §9.6). The target level and `T_stable` are each chosen on all 21 workloads together. |
 | R12 | The target level and `T_stable` are tuned on the setup workloads. | Setup and tests draw from different months (weeks 1–12 against 13–23, SPEC §9.4); the five-day tests (Phase 5) judge the choice. |
-| R13 | Fair share under B1 depends on usage history, which a one-day run barely has. | The 12-hour lead-in (S-D); reported as a limitation; the five-day tests carry more history. |
+| R13 | Fair share under B1 depends on usage history, which a run of a few days barely has. | The 12-hour lead-in (S-D); reported as a limitation; the five-day tests carry more history. |
 | R14 | A target level never fires on some patterns, or keeps a class favored most of the day. | Three levels a factor of two apart (SPEC §9.3); stage 1 reports spells and time active per pattern and flags both cases (task 4.5). |
 
 ---
