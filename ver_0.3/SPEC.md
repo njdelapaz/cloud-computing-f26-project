@@ -4,7 +4,10 @@ This document specifies Steps 1–6 of the `Project` brief in this folder:
 - workloads, job classification and priority configurations (Steps 1–3, built in Phase 1);
 - the cluster states that trigger a change and the mechanism that applies it (Steps 4–5,
   built in Phase 2);
-- simulation of the full setup and its evaluation (Step 6, §8, approved for Phase 3).
+- simulation of the full setup and its evaluation (Step 6, §8, approved for Phase 3);
+- a revised strategy after the Phase 3 answer: B1 as the baseline, two favored states, and a
+  stabilization period after each favored spell, set up on one-day workloads (§9, approved
+  for Phase 4).
 
 [PLAN.md](PLAN.md) lays out the order of work.
 
@@ -32,6 +35,7 @@ What counts as "better" is defined in §8.1 and §8.6.
 - The queue states that select a configuration (Step 4, §6).
 - The mechanism that switches configurations while the simulation runs (Step 5, §7).
 - Simulation of the full setup and its evaluation (Step 6, §8).
+- The revised strategy and its one-day setup (§9).
 
 ### Out of scope
 - Changing node selection or placement (`SelectType`, `LLN`, node weights). Only priority
@@ -988,3 +992,251 @@ Defaults approved 2026-11-26.
 | E-C | The bar: the best single static setting over all workloads, or the best per workload | Best single (`S*`); per-workload best reported. Since 2026-11-27 the static settings are C0 and B1 only (§8.2) |
 | E-D | Guards against `S*` | Size-class mean wait +25%, utilization −1 point, Jain −0.05 |
 | E-E | Repeat runs for the noise band | Three runs of C0 and A1 on seed 1 of each scenario |
+
+---
+
+## 9. Revised strategy (Phase 4)
+
+*Approved 2026-11-27, requested after the Phase 3 answer was no. Open questions (§9.9): S-B
+(wait targets), S-C (a 5,000-point boost) and S-G (median; class gate 10% of the waiting
+jobs; levels kept) answered; defaults kept for S-A, S-D, S-E and S-F.*
+
+### 9.1 What changes and why
+
+The user's revision:
+1. drop the state that favors small jobs;
+2. use B1 (§8.2) as the baseline policy;
+3. trigger a change from the current state of the queue;
+4. once a favored state's waiting period is over, return to the baseline and hold it for a
+   **stabilization period**, set by evaluation;
+5. judge whether the targeted jobs wait less while their state is active, as well as the
+   regular metrics;
+6. set everything up on one-day workloads of different traffic patterns; test later on
+   five-day workloads.
+
+| Phase 3 result (§8.6) | What the revision does about it |
+|---|---|
+| Favoring small never helped small jobs, and small-state periods carried most of the extra waiting. | No small state. |
+| Favoring medium cut medium waits by 55–91% on `N` and `Y`, and favoring large helped large jobs on `N`. | Keeps medium and large as the only states to switch to. |
+| A backlog built under one state was waited out under the next, so states chained into each other. | No state-to-state switches. Every favored spell ends in the baseline, and the baseline holds for a set time. |
+| The Phase 2–3 triggers asked whether the queue's class mix was unusual, against a calibration run. Calibrated under B1, that would count B1's own large-job backlog as normal. A3's arrivals signal was the weakest on `X` and `Y`. | The trigger asks whether a class's waiting jobs have waited past a target (§9.3). It reads the waiting queue only, and needs no calibration run. |
+
+Under B1 there is room for the two states to help. One-week means: large jobs wait 26 h on
+`N` (C0: 19.5 h), and medium jobs wait 19 h on `X` (C0: 11 h).
+
+**Question for Phase 4.** Can temporarily favoring medium or large jobs, triggered when that
+class's waiting jobs have waited past a target and always followed by a return to B1, shorten
+waits compared with B1 alone? Two parts:
+- overall, by the regular metrics;
+- for the favored class, while its state is active.
+
+### 9.2 Policy states
+
+| State | Configuration | Weights |
+|---|---|---|
+| `base` | B1 | B1 as published (§8.2) |
+| `medium` | B1M: B1, favor medium | B1, plus `PriorityWeightQOS = 5000` with QOS priorities small 0, medium 100, large 0 |
+| `large` | B1L: B1, favor large | B1, plus `PriorityWeightQOS = 5000` with QOS priorities small 0, medium 0, large 100 |
+
+- **Static keys:** adaptive runs use B1's static keys for the whole run (§8.2): decay and
+  maximum age of 14 days, no `SMALL_RELATIVE_TO_TIME`, partition weight 1000. The hook
+  changes only the five weights and the QOS priorities (§7.3), so all three states share
+  those keys. The hook and image need no change.
+- **Strength (S-C, answered 2026-11-27: in between).** A favored job gets 5,000 extra
+  points over every other job:
+  - **The bounds:** soft would be about 2,000 points, one typical fair-share gap. Strict
+    would be over 12,000, the largest gap B1's other factors can make (fair share 10000 +
+    age 1000 + job size 1000), so the favored class always comes first.
+  - **What 5,000 means:** under B1, fair share decides most of the order. The typical
+    fair-share gap between two waiting jobs is 0.17 (`config/factor_scales.yaml`), about
+    1,700 points, while age and job size add tens to hundreds. So 5,000 points is about three
+    typical gaps, and half the fair-share weight.
+  - **Effect:** a favored job comes first unless the other job's account is far less used
+    than its own, by a fair-share factor about 0.5 higher. Fair share keeps a say for the
+    most under-served accounts, and B1's order holds within each class.
+  - **Large state:** only large is raised. C1 also put medium second (50), but with a
+    partial boost that would give medium half a boost during large spells.
+  - 5,000 is also near the geometric midpoint of the two bounds (about 4,900).
+- **Rendering:** `sim/weights.py` renders `config/priority/B1M.*` and `B1L.*` from a
+  `favored_on` block in `config/weights.yaml`, so the weights are never typed by hand.
+
+### 9.3 Trigger and return to baseline
+
+**Signal (S-B, answered 2026-11-27: wait targets).** At each tick, for each candidate class
+`c`, the controller takes the class's waiting jobs from the snapshot. It computes `w_c`, the
+median of their `waited_s` (time since submit, §7.2), and compares it with a **target** `τ_c`
+for that class.
+
+This asks "has this class waited too long?" rather than "is the queue's mix unusual?". So there
+is no calibration run and no percentile table (§6.3 is not used). The snapshot already carries
+`waited_s`, so the hook does not change.
+- **Class gate:** `w_c` counts only when class `c` makes up at least `min_share` (10%) of
+  the waiting jobs. The trigger then reacts to a class that is a real part of the queue, not
+  to a few leftover jobs.
+  - The gate scales with the queue: 40 jobs when 400 are waiting, 4 when 40 are.
+  - Over the Phase 2 `K` week under C0, medium passed it at 64% of busy ticks and large at
+    45%. B1's queue has not been measured this way; stage 1 reports how often each class
+    passes (§9.5).
+- **Whole-queue gate:** as in §6.4, nothing triggers when fewer than `n_min` (20) jobs are
+  waiting. On a short queue, 10% is one or two jobs, and priority hardly matters there.
+- **Candidates:** medium and large. Small is logged (count and median wait) but never
+  triggers.
+- **Targets (S-G):** three levels are tried (§9.5). Large's target is three times medium's,
+  because a large job needs more free room before it can start.
+
+| Level | `τ_medium` | `τ_large` |
+|---|---|---|
+| tight | 2 h | 6 h |
+| middle | 4 h | 12 h |
+| loose | 8 h | 24 h |
+
+The levels span the class mean waits B1 gave over the Phase 3 weeks: medium 0.7–19 h, large
+2–26 h. Those waits only place the grid; nothing is fitted to them.
+
+**State machine.**
+
+```
+            trigger: c ∈ {medium, large} with w_c ≥ τ_c for 2 ticks, c ≥ 10% of the queue
+   ┌──────────────┐ ───────────────────────────────────────────▶ ┌──────────────┐
+   │ base (armed) │                                               │ favor c      │
+   └──────────────┘ ◀──────┐                                      │ for T_active │
+                           │ T_stable elapsed                     └──────┬───────┘
+                    ┌──────┴────────────┐                                │ T_active elapsed
+                    │ base (stabilizing)│ ◀──────────────────────────────┘
+                    │ queue not read    │
+                    └───────────────────┘
+```
+
+| Rule | Value |
+|---|---|
+| Tick, persistence | 10 min, 2 ticks, as in §6.4 |
+| Gate | Class `c` is at least `min_share` (10%) of the waiting jobs, and at least `n_min` (20) jobs are waiting in all |
+| Enter | Only from `base (armed)`, when a candidate has `w_c ≥ τ_c` on 2 consecutive ticks. If both classes do, the one with the larger `w_c / τ_c` wins. |
+| Favored spell `T_active` | The waiting period, a fixed length: 60 min for both states by default (S-E; one value per state allowed). No early exit, no switch to the other class. |
+| Return | At the first tick after `T_active`, the state goes back to B1, whatever `w_c` is then. `P_exit` is not used. |
+| Stabilization `T_stable` | B1 holds for this long, and the trigger is not evaluated. The persistence streak starts again from zero when it ends. Set by evaluation (§9.6) |
+| Start | `base (armed)` |
+
+- **Cycle:** one favored spell plus its stabilization lasts `T_active + T_stable`. At most
+  `24 h / (T_active + T_stable + 20 min)` spells fit in a day, for example about 10 with
+  60 + 60 min.
+- **Log (§7.5):** each tick logs, per class, the waiting count, `w_c` and `w_c / τ_c`,
+  plus `phase` (`armed`, `active` or `stabilizing`) and the time left in it.
+- **No stabilization:** with `T_stable = 0`, the policy can re-enter after the 2-tick
+  streak. So the `T_stable = 0` runs measure what the stabilization period adds.
+- **Replay:** as in Phase 2, the logged snapshots must reproduce every online decision.
+
+### 9.4 One-day setup workloads (`D`)
+
+| Item | Value |
+|---|---|
+| Name | `D-<pattern>-s<seed>`, seeds 1–3 |
+| Patterns | `nat` (natural mix), `flood` (small-short flood), `lglong` (large-long heavy), `acct` (one account submits about half the demand), `mem` (memory-heavy medium), `alt` (6-hour blocks alternating flood and large-long), `over` (`Y`-style: natural background at 60% of `ρ*` plus three bursts of 3–12 h, each adding 40%). Built as in §3.5. |
+| Lead-in (S-D) | 12 h of natural mix at `ρ*` before the measured day, so the day starts on a loaded cluster. On `X`, day 0 began on an empty cluster, and its mean wait was 0.0 h under both C0 and B1. Lead-in jobs run and are scheduled, but are not measured. |
+| Measured day | 24 h of the pattern. Each job carries `segment` = `leadin` or the pattern name. |
+| Load | Thinned to `ρ* = 0.95` in the saturated resource, as in §3.4 |
+| Source (S-F) | Setup draws only from trace weeks 1–12 (Jan–Mar; `K` is week 4). The five-day tests (§9.8) draw only from weeks 13–23 (Apr–Jun; `N` is week 20). Nothing is tuned on the months it is tested on. This is like a site tuning on past months and running on later ones. |
+| Size | 21 workloads (7 patterns × 3 seeds) |
+
+Each run drains as in §8.4: submissions span 36 h, and the run continues until every job has
+ended.
+
+### 9.5 What is compared on the setup workloads
+
+| Id | Kind | Setting |
+|---|---|---|
+| B1 | static | The baseline, and the bar (S-A) |
+| C0 | static | Reference only. It was the best fixed setting in Phase 3, so it is reported, but it is not the bar. |
+| A4-`L`-`T` | adaptive | §9.3 with target level `L` (tight, middle, loose) and `T_stable = T` minutes (S-E) |
+
+The runs come in two stages, because the best stabilization period can depend on how often
+the trigger fires:
+
+| Stage | Runs | Count |
+|---|---|---|
+| 1: targets | B1, C0, A4-tight-60, A4-middle-60 and A4-loose-60 on the 21 workloads | 105 |
+| | Repeats: B1 and A4-middle-60 on seed 1 of each pattern, two more runs each | 28 |
+| | Choose the target level `L*` (§9.6) | |
+| 2: stabilization | A4-`L*`-`T` for `T` ∈ {0, 30, 120, 240, 480}; 60 comes from stage 1 | 105 |
+| Total | | 238 one-day runs |
+
+Batches, checks and reruns follow §8.4.
+
+### 9.6 Metrics and choice of the stabilization period
+
+**Regular metrics.** Those of §8.5, computed on the measured day's jobs only. Cluster state
+is taken over the measured 24 h.
+
+**While a state is active** (`evaluation/favored.py`, extended). Each job's wait is split
+across the phases: `active-medium`, `active-large`, `stabilizing`, `armed`. Jobs whose wait
+was mostly (at least 50%) in a phase are compared with the same jobs in the B1 run of the same
+workload, paired by job name. Three groups:
+- **Targeted:** class `c` jobs during `active-c`. This is the question in §9.1.
+- **Others:** the other classes during `active-c`, which is the cost.
+- **Stabilizing:** all jobs during `stabilizing`. It shows whether the return to B1 settles
+  the queue, or the favored spell's backlog lands there.
+
+The net effect of each favored spell is also given, in job-hours saved and lost.
+
+**Adaptation.** Reported for each setting:
+- spells per day, by state;
+- time in each phase;
+- `w_c` at each trigger and at the end of its spell: did the spell bring the class's wait
+  down?
+- how many spells start at the first armed tick after a stabilization period, which means
+  the trigger was still holding.
+
+**Noise band.** Per pattern, the relative range of mean wait over the three runs of B1 and
+over the three runs of A4-middle-60 on seed 1, the larger of the two (§8.6).
+
+**Choosing the target level, then `T_stable` (S-F).** The same rule picks `L*` among the
+stage 1 settings and `T_stable` among the stage 2 settings:
+- For each setting, compute each workload's ratio of mean wait to B1's, and take the
+  geometric mean over the 21 workloads. Every pattern then counts the same, whatever its
+  wait scale.
+- The lowest score wins.
+- If several settings score within the noise band of the lowest, take the one with the
+  fewest guard failures (§8.6: size class +25%, utilization −1 point, Jain −0.05, all
+  against B1). After that, take the looser level, or the longer `T_stable`: fewer spells,
+  closer to the baseline.
+
+**Setup result.** Phase 4 reports, for the chosen setting and for all eight A4 settings:
+- whether it beats B1 beyond noise, by pattern;
+- whether the targeted jobs wait less while their state is active, by pattern and state;
+- the guards.
+
+This is a setup result, tuned on these workloads. The test is §9.8.
+
+### 9.7 Outputs
+
+- `config/scenarios.yaml`: a `day` section for `D`; `workloads/build.py` builds it.
+- `config/weights.yaml` → `config/priority/B1M.*`, `B1L.*`.
+- `config/triggers_A4.yaml`: state map, candidates, class gate, the three target levels,
+  `T_active`, `T_stable`. No percentile tables.
+- `config/evaluation_setup.yaml`: workloads, policies, repeats, metric and guard settings.
+  `config/evaluation.yaml` stays as it is, so Phase 3 can still be reproduced.
+- `results/phase4/`: `metrics.csv`, `selection.json` (scores and the choice in each stage),
+  `favored.json`, figures; raw runs under `results/phase4/runs/` (gitignored).
+
+### 9.8 Five-day tests (later)
+
+Specified when Phase 4 is done. Outline:
+- five-day workloads from trace weeks 13–23 only;
+- natural, shifting (one pattern a day) and overlapping-burst kinds, 3 seeds;
+- B1, C0 (reference) and A4 at the chosen target level and `T_stable`;
+- §8.6's pass rules with B1 as the bar, and the targeted-jobs analysis of §9.6.
+
+### 9.9 Open questions
+
+S-B, S-C and S-G answered 2026-11-27; the defaults for S-A, S-D, S-E and S-F approved the same
+day.
+
+| # | Question | Default |
+|---|---|---|
+| S-A | The bar: B1 (the baseline A4 returns to), or the better of B1 and C0 as in §8.2 | B1. C0 is run and reported as a reference. |
+| S-B | Trigger signal from the queue | **Answered 2026-11-27:** the median wait of each class's waiting jobs against a target per class (§9.3) |
+| S-C | Strength of the favored states: strict (favored class always first), soft (about one typical fair-share gap, about 2,000 points), or in between | **Answered 2026-11-27:** in between. `PriorityWeightQOS = 5000`, with only the favored class's QOS raised (§9.2) |
+| S-D | Lead-in before the measured day | 12 h of natural load, not measured |
+| S-E | Favored spell and the stabilization periods tried | `T_active` 60 min for both states; `T_stable` ∈ {0, 30, 60, 120, 240, 480} min |
+| S-F | How the target level and `T_stable` are chosen, and the source split | In each stage, the lowest geometric-mean ratio of mean wait to B1 over the 21 setup workloads; ties broken by guards, then the looser level or longer period. Setup from weeks 1–12, tests from weeks 13–23. |
+| S-G | Target statistic, class gate and levels | **Answered 2026-11-27:** median wait of the class's waiting jobs. Class gate: a share of the queue, not a count (requested): 10% (confirmed), with the whole-queue gate of 20 kept. The three levels kept (medium / large): 2 / 6 h, 4 / 12 h, 8 / 24 h |

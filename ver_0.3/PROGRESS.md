@@ -3,7 +3,7 @@
 Status tracker for [PLAN.md](PLAN.md). It records status, decisions and results only; no task
 lengths or dates beyond the change log.
 
-**Current phase:** 3 complete (3.7 skipped on request). Answer to SPEC §1: no ([REPORT.md](REPORT.md))
+**Current phase:** 4, revised strategy (SPEC §9 approved; next task 4.2). Phase 3 complete (3.7 skipped on request); answer to SPEC §1: no ([REPORT.md](REPORT.md))
 
 ## Phase tracker
 
@@ -30,6 +30,13 @@ lengths or dates beyond the change log.
 | 3.6 Analysis of the one-week results | done | **Answer: no** (SPEC §8.6). `S*` = C0 (142 min mean wait over 9 workloads; B1 280). No adaptive variant effective anywhere: 26 of 27 comparisons worse than C0 (15 beyond the 22–31% noise bands); the one win (A3, N-s2, −25%) fails the small-job guard. Adaptive policies shift waits from medium/large jobs to small ones (~90% of jobs). `results/phase3/comparison.json`, five figures `results/phase3/fig_*.png` |
 | 3.7 Scale up (`M`) | skipped | Skipped on request (2026-11-27) after the one-week answer was a clear no; `M` was not built |
 | 3.8 Report | done | `REPORT.md`: answer no, with results by scenario, size class and day, the favored-class analysis, the fixed favor-small context, why switching did not pay, limitations and reproduction |
+| 4.1 Specify the revised strategy | done | SPEC §9 and PLAN 4.2–4.7 approved 2026-11-27 (requested). B1 baseline; favored medium and large spells only (no small state), with a 5,000-point QOS boost (S-C); trigger: the median wait of a class's waiting jobs reaches its target, the class is at least 10% of the queue and at least 20 jobs wait (S-B, S-G); each 60-min spell is followed by a return to B1 and a stabilization period. One-day setup workloads `D` (7 patterns × 3 seeds, 12 h lead-in, weeks 1–12). 238 runs in two stages: target level (tight / middle / loose), then the stabilization period (0–480 min). B1 is the bar, C0 a reference. Defaults kept for S-A, S-D, S-E, S-F |
+| 4.2 One-day setup workloads (`D`) | pending | |
+| 4.3 B1-based favored states | pending | |
+| 4.4 Return-to-baseline policy (A4) | pending | |
+| 4.5 Stage 1: target level | pending | |
+| 4.6 Stage 2: stabilization period | pending | |
+| 4.7 Analysis of the setup | pending | |
 
 ## Pinned third-party sources
 
@@ -88,6 +95,9 @@ lengths or dates beyond the change log.
 | A3 arrival shares (finding, task 3.3) | Large is 0 in most 60-min windows (1–5 large jobs an hour), so one or two large arrivals put it near P100; replay over K: large 36% of the time, 7.9 switches/day | Kept as approved (risk R10: reported, not tuned). The first real comparison of A3 with A1 comes from the pilot and matrix runs. |
 | Arrivals snapshot (task 3.3) | The hook writes running submission totals per QOS (`submitted`); the controller takes the difference over its window | Finished jobs leave the job list after `MinJobAge` = 300 s. Keeps the window a policy parameter, not a simulator setting. |
 | Typical-site reference B1 (requested 2026-11-26) | SchedMD's multifactor configuration example, as published: fair share 10000, age 1000, job size 1000 (larger requests first), 14-day half-life and maximum age; also a candidate for `S*` | Slurm's own default (all weights 0) is FIFO, already B0. None of C0–C3 is what a site typically runs, so B1 tests the adaptive policy against a realistic fixed setting. |
+| Revised strategy (requested 2026-11-27) | Phase 4 (SPEC §9): B1 is the baseline; only medium and large are favored; each favored spell lasts a fixed time, then B1 holds for a stabilization period set by evaluation; the trigger reads the waiting queue only; setup on one-day workloads, tests later on five-day workloads | Phase 3: favoring small never helped small jobs, favoring medium and large helped their own jobs, and states chained into each other through the backlogs they left. |
+| Phase 4 trigger (S-B, chosen 2026-11-27) | Wait targets: a class is favored when the median wait of its waiting jobs reaches its target, provided the class is at least 10% of the waiting jobs and at least 20 jobs are waiting in all (S-G: a share of the queue, requested, in place of a fixed count); three target levels tried on the setup days (2 / 6 h, 4 / 12 h, 8 / 24 h for medium / large) | Asks whether a class has waited too long, which is what Phase 4 judges, instead of whether the queue's mix is unusual; a trigger calibrated on B1 days would count B1's large-job backlog as normal. No calibration run is needed. |
+| Phase 4 boost strength (S-C, chosen 2026-11-27) | In between strict and soft: the favored class's QOS is raised by `PriorityWeightQOS = 5000` points (others 0, in both states) | About three typical fair-share gaps under B1 (0.17 × 10000 ≈ 1,700 points), so a favored job comes first except against accounts far less used than its own; strict (> 12,000) would ignore fairness, soft (~2,000) would barely move the order. |
 | Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
@@ -123,3 +133,4 @@ lengths or dates beyond the change log.
 | 2026-11-27 | `dc32182` | 3.5: one-week evaluation runs done |
 | 2026-11-27 | `3c12587` | 3.6: analysis of the one-week results; answer is no |
 | 2026-11-27 | `2941ce0` | 3.6: effect on the favored class while it is favored |
+| 2026-11-27 | `19decca` | 3.8: REPORT.md; Phase 3 complete (3.7 skipped on request) |
