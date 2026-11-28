@@ -391,7 +391,8 @@ The spells sit where the warm run has a standing queue (27–35 h). A first plac
   - the streak reset when the stabilization period ends.
 - Update `controller/tick.py`, `replay.py` and `summarize.py` for the per-class waits, the
   phases and the new log fields. The A1–A3 behavior stays unchanged.
-- Write `config/triggers_A4.yaml` with the three target levels (SPEC §9.3).
+- Write `config/triggers_A4.yaml` with the three target levels (SPEC §9.3), and let
+  `sim/prepare_run.py` take per-run overrides of `target_level` and `stable_s`.
 - Write unit tests:
   - the median wait, the class-share gate and the whole-queue gate, on synthetic snapshots;
   - the tie-break when both classes are over target;

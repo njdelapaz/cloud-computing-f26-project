@@ -1140,6 +1140,38 @@ The levels span the class mean waits B1 gave over the Phase 3 weeks: medium 0.7â
   streak. So the `T_stable = 0` runs measure what the stabilization period adds.
 - **Replay:** as in Phase 2, the logged snapshots must reproduce every online decision.
 
+**Built (task 4.4).** `controller/policy.py` (`signal: wait_target`), `config/triggers_A4.yaml`.
+- **One switch per tick:**
+  - the return to B1 happens at the first tick at or after the spell's end;
+  - the stabilization period ends at the first tick at or after its end, and the trigger is
+    read from that tick, so a spell can start one tick later;
+  - with `T_stable = 0`, the policy is armed at the return tick but first reads the trigger at
+    the next one.
+- **Gated ticks** (fewer than 20 waiting) keep the streak, as in A1.
+- **Per-run settings:** `sim/prepare_run.py` takes per-run overrides of `target_level` and
+  `stable_s`, so the setup runs need no extra triggers files.
+- **Log:** each tick logs, per class, the waiting count, the median wait and `w_c / Ï„_c`,
+  plus the phase and its time left.
+- **Spell statistics:** `controller/summarize.py` reports spells per state, the time in each
+  phase, the median wait at the trigger and at the return, and how many spells started at
+  the first chance after a stabilization period.
+
+**Check (task 4.4; `results/phase4/a4_slice_check.json`).** The first 36 h of `D-alt-s1`
+under A4, with tight targets so that spells occur and a 60-min stabilization period:
+- all 1,073 ticks were logged on both sides, with no command failures;
+- 4 switches were asked and 4 applied;
+- replay was exact, including phase and time left;
+- the run check was clean;
+- median command time was 40 ms.
+
+Two medium spells ran, each exactly 60 min followed by 60 min of B1; the second started at
+the first chance. The median medium wait was 2.3 and 2.5 h at the triggers, and 2.2 h and
+3 min at the returns.
+
+Once the flood blocks began, nothing triggered. At hour 28, 2,358 jobs were waiting: 2,348
+small, 0 medium and 10 large. So the class gate (10% of the queue) shuts large out while a
+flood is on, however long its jobs wait. The setup will show how much that matters.
+
 ### 9.4 Setup workloads (`D`)
 
 | Item | Value |

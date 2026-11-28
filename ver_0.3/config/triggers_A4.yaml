@@ -1,0 +1,22 @@
+# A4: wait targets with a return to the baseline (SPEC §9.3; Phase 4 answers to S-B, S-C,
+# S-E and S-G, 2026-11-27). Standalone: none of A1-A3's percentile settings apply.
+# sim/prepare_run.py turns target_level into targets_s; the evaluation picks the level
+# (stage 1) and stable_s (stage 2) by overriding these two keys per run.
+signal: wait_target
+tick_s: 600
+n_min: 20               # whole-queue gate: nothing triggers with fewer jobs waiting
+persist_ticks: 2        # the same candidate on two consecutive ticks starts a spell
+min_share: 0.10         # class gate: the class makes up at least 10% of the waiting jobs
+candidates: [medium, large]
+initial_state: base
+state_config:
+  base: B1
+  medium: B1M           # B1 plus a 5,000-point boost for medium (SPEC §9.2)
+  large: B1L            # B1 plus a 5,000-point boost for large
+active_s: 3600          # favored spell, simulated seconds (one value or one per candidate)
+stable_s: 3600          # stabilization period after each spell (stage 2: 0-28800)
+target_level: middle
+target_levels:          # median waited_s of the class's waiting jobs (S-G)
+  tight: {medium: 7200, large: 21600}       # 2 h / 6 h
+  middle: {medium: 14400, large: 43200}     # 4 h / 12 h
+  loose: {medium: 28800, large: 86400}      # 8 h / 24 h

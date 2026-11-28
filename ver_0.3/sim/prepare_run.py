@@ -119,7 +119,19 @@ def load_triggers(path: Path) -> dict:
 
 
 PARAM_KEYS = ("n_min", "p_enter", "p_exit", "persist_ticks", "dwell_s", "state_config",
-              "quantiles", "signal", "window_s", "n_min_arrivals")
+              "quantiles", "signal", "window_s", "n_min_arrivals",
+              "candidates", "targets_s", "min_share", "active_s", "stable_s")
+
+
+def resolve_triggers(trig: dict, overrides: dict | None = None) -> dict:
+    """Apply per-run overrides, then turn A4's target_level into targets_s (SPEC §9.3)."""
+    trig = {**trig, **(overrides or {})}
+    if "target_level" in trig:
+        levels = trig.get("target_levels", {})
+        if trig["target_level"] not in levels:
+            raise ValueError(f"target_level {trig['target_level']!r} not in {sorted(levels)}")
+        trig["targets_s"] = levels[trig["target_level"]]
+    return trig
 
 
 def apply_static(text: str, static_path: Path) -> str:
@@ -154,7 +166,7 @@ def static_keys(config: str) -> tuple[str, ...] | None:
 
 
 def write_policy_dir(run_dir: Path, c_run: Path, initial: str, adaptive: bool,
-                     triggers: Path = TRIGGERS) -> list[str]:
+                     triggers: Path = TRIGGERS, overrides: dict | None = None) -> list[str]:
     """Set up RUN_DIR/policy for the simulator's policy hook (SPEC §7.2).
 
     Copies every configuration (config/priority/*.conf, *.qos) to policy/configs/. With
@@ -169,8 +181,10 @@ def write_policy_dir(run_dir: Path, c_run: Path, initial: str, adaptive: bool,
     lines = ["", "## ver_0.3 policy hook (SPEC §7)", f"PolicyDir = {c_run / 'policy'}",
              f"InitialConfig = {initial}"]
     if adaptive:
-        trig = load_triggers(triggers)
+        trig = resolve_triggers(load_triggers(triggers), overrides)
         params = {k: trig[k] for k in PARAM_KEYS if k in trig}
+        if "target_level" in trig:                 # recorded for traceability only
+            params["target_level"] = trig["target_level"]
         if trig["state_config"].get(trig.get("initial_state", "mix")) != initial:
             raise ValueError(f"initial config {initial} does not match the initial state's "
                              f"config in {triggers}")
@@ -194,11 +208,13 @@ def write_policy_dir(run_dir: Path, c_run: Path, initial: str, adaptive: bool,
 
 def prepare_run(run_dir: Path, events: Path, accounts: Path, priority: Path,
                 time_start: int = 1_704_067_200, extra_conf: list[str] | None = None,
-                policy: str | None = None, triggers: Path = TRIGGERS) -> Path:
+                policy: str | None = None, triggers: Path = TRIGGERS,
+                trigger_overrides: dict | None = None) -> Path:
     """extra_conf: lines appended to slurm.conf (e.g. 'DebugFlags=Priority').
 
     policy: None (no hook), "scheduled" (configurations available for set_priority_config
-    events) or "adaptive" (policy ticks too, with parameters from `triggers`). The run starts
+    events) or "adaptive" (policy ticks too, with parameters from `triggers`, after
+    `trigger_overrides`, e.g. {"target_level": "tight", "stable_s": 0} for A4). The run starts
     in the --priority configuration. If that configuration has a .static file (B1), its keys
     replace the template's static priority keys.
     """
@@ -231,7 +247,7 @@ def prepare_run(run_dir: Path, events: Path, accounts: Path, priority: Path,
         if policy not in ("scheduled", "adaptive"):
             raise ValueError(f"unknown policy mode {policy}")
         lines = write_policy_dir(run_dir, c_run, Path(priority).stem, policy == "adaptive",
-                                 triggers)
+                                 triggers, trigger_overrides)
         with open(etc / "sim.conf", "a") as f:
             f.write("\n".join(lines) + "\n")
     return run_dir

@@ -1,6 +1,6 @@
 """Tasks 4.2-4.3: check the warm start (SPEC §9.4) and the B1-based favored states (§9.2).
 
-Usage: .venv/bin/python -m sim.phase4_checks [--part all|states|warm|carry] [--hours 37]
+Usage: .venv/bin/python -m sim.phase4_checks [--part all|states|warm|carry|a4] [--hours 37]
                                              [--run DIR] [--analyse-only]
 
 Part warm (results/phase4/warmstart_check.json). Two full runs under B1:
@@ -21,6 +21,11 @@ Part carry (results/phase4/warmstart_carry.json; no simulation). For seeds 1-8, 
   lead-in), counting every job as running from its submission: the warm start with the
   12 h lead-in, a 48 h lead-in, and a 7-day lead-in, which stands for a settled cluster
   (0.997-1.0 of its busy-period load). Reported: each variant's mean and spread over seeds.
+
+Part a4 (task 4.4; results/phase4/a4_slice_check.json). The first 36 h of D-alt-s1 under A4
+  (config/triggers_A4.yaml, tight targets so that spells occur, 60-min stabilization). Passes
+  when controller.summarize does: every tick logged on both sides, every switch applied,
+  replay exact, run check clean. Its spell statistics are reported.
 
 Part states (results/phase4/states_check.json). One run: the first --hours of D-nat-s1,
 starting in B1, with DebugFlags=Priority and
@@ -80,6 +85,33 @@ WARM = Path("results/phase4/check-warm")
 CTL = Path("results/phase4/check-warm-control")
 CTL_LEAD_H = 48
 DAY = 86_400
+A4_RUN = Path("results/phase4/check-a4")
+A4_WL = ROOT / "workloads" / "traces" / "D-alt-s1"
+A4_HOURS = 36
+A4_OVERRIDES = {"target_level": "tight", "stable_s": 3600}
+
+
+def prepare_a4() -> None:
+    lines = [l for l in (A4_WL / "events.txt").read_text().splitlines()
+             if l.strip() and int(float(l.split()[1])) < A4_HOURS * 3600]
+    ev = OUT / "checks-input" / "a4_events.txt"
+    ev.parent.mkdir(parents=True, exist_ok=True)
+    ev.write_text("\n".join(lines) + "\n")
+    prepare_run(A4_RUN, ev, A4_WL / "accounts.txt", ROOT / "config/priority/B1.conf", D_START,
+                policy="adaptive", triggers=ROOT / "config/triggers_A4.yaml",
+                trigger_overrides=A4_OVERRIDES)
+
+
+def check_a4() -> dict:
+    from controller.summarize import summarize
+    res = summarize(A4_RUN, window_h=A4_HOURS)
+    a4 = res.get("a4", {})
+    return {"workload": "D-alt-s1", "hours": A4_HOURS, "overrides": A4_OVERRIDES,
+            **{k: res[k] for k in ("ticks_controller", "ticks_simulator", "command_failures",
+                                   "switches_asked", "switches_applied", "applied_matches_asked",
+                                   "replay_mismatches", "run_problems", "command_ms_median")},
+            "spells_by_state": a4.get("by_state"), "time_share_by_phase": a4.get("time_share_by_phase"),
+            "spells": a4.get("spells"), "ok": res["ok"]}
 
 
 def run_sim(run_dir: Path) -> None:
@@ -355,14 +387,14 @@ def analyse() -> dict:
 def main() -> None:
     global RUN
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    p.add_argument("--part", choices=["all", "states", "warm", "carry"], default="all")
+    p.add_argument("--part", choices=["all", "states", "warm", "carry", "a4"], default="all")
     p.add_argument("--hours", type=float, default=37)
     p.add_argument("--run", type=Path, default=RUN, help="run folder of the states part")
     p.add_argument("--analyse-only", action="store_true", help="reuse the existing runs")
     a = p.parse_args()
     RUN = a.run
     OUT.mkdir(parents=True, exist_ok=True)
-    parts = ["warm", "states", "carry"] if a.part == "all" else [a.part]
+    parts = ["warm", "states", "carry", "a4"] if a.part == "all" else [a.part]
     if not a.analyse_only:
         runs = []
         if "warm" in parts:
@@ -371,6 +403,9 @@ def main() -> None:
         if "states" in parts:
             prepare(a.hours)
             runs.append(RUN)
+        if "a4" in parts:
+            prepare_a4()
+            runs.append(A4_RUN)
         if runs:
             with ThreadPoolExecutor(max_workers=len(runs)) as ex:
                 list(ex.map(run_sim, runs))
@@ -379,6 +414,11 @@ def main() -> None:
         res = check_warm()
         (OUT / "warmstart_check.json").write_text(json.dumps(res, indent=2, default=str) + "\n")
         summary["warm"] = res["ok"]
+    if "a4" in parts:
+        res = check_a4()
+        (OUT / "a4_slice_check.json").write_text(json.dumps(res, indent=2, default=str) + "\n")
+        summary["a4"] = {k: res[k] for k in ("ticks_controller", "switches_applied",
+                                             "replay_mismatches", "ok")}
     if "carry" in parts:
         res = check_carry()
         (OUT / "warmstart_carry.json").write_text(json.dumps(res, indent=2) + "\n")

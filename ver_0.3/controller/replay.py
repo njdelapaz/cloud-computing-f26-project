@@ -2,8 +2,9 @@
 
 Usage: python3 -m controller.replay POLICY_DIR
 
-Re-runs controller.policy.decide over the counts logged in controller.jsonl, starting from
-the initial memory, and checks that every tick's state, switch and configuration match.
+Re-runs controller.policy.decide over the counts (and, for A4, the median waits) logged in
+controller.jsonl, starting from the initial memory, and checks that every tick's state,
+switch, configuration and candidate match, and for A4 the phase and its time left.
 """
 from __future__ import annotations
 
@@ -23,8 +24,12 @@ def replay(policy_dir: Path) -> list[str]:
         rec = json.loads(line)
         # with the arrivals signal, counts are arrivals and the gate also needs the waiting total
         d, memory = decide(rec["t_sim"], rec["counts"], memory, params,
-                           waiting=rec["waiting"] if params.signal == "arrivals" else None)
-        for key in ("state", "switch", "config", "candidate"):
+                           waiting=rec["waiting"] if params.signal == "arrivals" else None,
+                           median_wait_s=rec.get("median_wait_s"))
+        keys = ("state", "switch", "config", "candidate")
+        if params.signal == "wait_target":
+            keys += ("phase", "phase_left_s")
+        for key in keys:
             if getattr(d, key) != rec[key]:
                 mismatches.append(f"tick {i} (t={rec['t_sim']}): {key} replay={getattr(d, key)!r} "
                                   f"online={rec[key]!r}")

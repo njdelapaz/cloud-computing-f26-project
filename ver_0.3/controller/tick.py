@@ -8,6 +8,8 @@ POLICY_DIR holds:
   state.json     snapshot written by the simulator for this tick (input)
   memory.json    policy memory between ticks (read and rewritten)
   arrivals_history.json  running submission totals of recent ticks (arrivals signal only)
+With the wait_target signal (A4), the median waited_s of each class's waiting jobs is taken
+from the snapshot as well.
   decision.json  this tick's decision for the simulator (output)
   controller.jsonl  one record per tick (appended)
 
@@ -19,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import statistics
 import sys
 import time
 from dataclasses import asdict
@@ -34,6 +37,17 @@ def counts_from_snapshot(state: dict) -> dict[str, int]:
         if q in counts:
             counts[q] += 1
     return counts
+
+
+def median_waits_from_snapshot(state: dict) -> dict[str, float | None]:
+    """Per size class, the median time its waiting jobs have waited (waited_s, SPEC §9.3);
+    None for a class with no job waiting."""
+    waited = {c: [] for c in CLASSES}
+    for job in state.get("waiting", []):
+        q = job.get("qos")
+        if q in waited:
+            waited[q].append(float(job.get("waited_s", 0)))
+    return {c: (statistics.median(v) if v else None) for c, v in waited.items()}
 
 
 def arrivals_from_totals(history: list, t: int, submitted: dict, window_s: int
@@ -84,6 +98,9 @@ def run(policy_dir: Path) -> dict:
         d, memory = decide(t, arrivals, memory, params, waiting=sum(waiting.values()))
         write_json(hist_path, history)
         extra = {"waiting_counts": waiting, "submitted": state["submitted"]}
+    elif params.signal == "wait_target":
+        d, memory = decide(t, waiting, memory, params,
+                           median_wait_s=median_waits_from_snapshot(state))
     else:
         d, memory = decide(t, waiting, memory, params)
     out = {"t_sim": d.t_sim, "config": d.config if d.switch else None, "reason": d.reason}

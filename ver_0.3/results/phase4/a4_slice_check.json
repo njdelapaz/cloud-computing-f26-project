@@ -1,0 +1,50 @@
+{
+  "workload": "D-alt-s1",
+  "hours": 36,
+  "overrides": {
+    "target_level": "tight",
+    "stable_s": 3600
+  },
+  "ticks_controller": 1073,
+  "ticks_simulator": 1073,
+  "command_failures": 0,
+  "switches_asked": 4,
+  "switches_applied": 4,
+  "applied_matches_asked": true,
+  "replay_mismatches": [],
+  "run_problems": [],
+  "command_ms_median": 39.8,
+  "spells_by_state": {
+    "medium": {
+      "spells": 2,
+      "per_day": 1.33,
+      "median_wait_at_trigger_min": 144.9,
+      "median_wait_at_return_min": 67.2,
+      "started_at_first_chance": 1
+    }
+  },
+  "time_share_by_phase": {
+    "active-medium": 0.056,
+    "armed": 0.889,
+    "stabilizing": 0.056
+  },
+  "spells": [
+    {
+      "state": "medium",
+      "t_start": 1720374876,
+      "wait_at_trigger_s": 8241.0,
+      "first_chance": false,
+      "t_end": 1720378476,
+      "wait_at_return_s": 7866.0
+    },
+    {
+      "state": "medium",
+      "t_start": 1720382676,
+      "wait_at_trigger_s": 9142.0,
+      "first_chance": true,
+      "t_end": 1720386276,
+      "wait_at_return_s": 194.0
+    }
+  ],
+  "ok": true
+}

@@ -211,3 +211,139 @@ def test_tick_arrivals_needs_counter_in_snapshot(tmp_path):
 def test_signal_must_be_known():
     with pytest.raises(ValueError, match="signal must be"):
         replace(PARAMS, signal="queue")
+
+
+# --------------------------------------------------------------------------- A4 (SPEC §9.3)
+
+H = 3600
+A4 = Params(n_min=20, persist_ticks=2, signal="wait_target", initial_state="base",
+            state_config={"base": "B1", "medium": "B1M", "large": "B1L"},
+            candidates=["medium", "large"], targets_s={"medium": 4 * H, "large": 12 * H},
+            min_share=0.10, active_s=H, stable_s=H)
+QUEUE = {"small": 60, "medium": 25, "large": 15}          # medium 25%, large 15% of 100
+
+
+def waits(medium=None, large=None, small=600.0):
+    return {"small": small, "medium": medium, "large": large}
+
+
+def a4_ticks(seq, params=A4, memory=None, t0=0, step=600):
+    memory = memory or Memory(state="base")
+    out = []
+    for i, (counts, w) in enumerate(seq):
+        d, memory = decide(t0 + i * step, counts, memory, params, median_wait_s=w)
+        out.append(d)
+    return out, memory
+
+
+def test_a4_starts_a_spell_after_two_ticks_past_target():
+    ds, mem = a4_ticks([(QUEUE, waits(medium=5 * H))] * 2)
+    assert not ds[0].switch and "streak 1 < 2" in ds[0].reason and ds[0].phase == "armed"
+    assert ds[1].switch and ds[1].state == "medium" and ds[1].config == "B1M"
+    assert ds[1].phase == "active" and ds[1].phase_left_s == H and ds[1].ratios["medium"] == 1.25
+    assert mem.phase == "active" and mem.phase_end_t == 600 + H
+
+
+def test_a4_below_target_or_too_small_a_share_does_not_trigger():
+    ds, _ = a4_ticks([(QUEUE, waits(medium=3 * H, large=11 * H))] * 3)      # under both targets
+    assert not any(d.switch for d in ds) and ds[-1].reason == "hold: no class past its target"
+    few = {"small": 95, "medium": 5, "large": 0}                            # medium 5% < 10%
+    ds, _ = a4_ticks([(few, waits(medium=10 * H))] * 3)
+    assert not any(d.switch for d in ds)
+
+
+def test_a4_whole_queue_gate():
+    ds, mem = a4_ticks([({"small": 10, "medium": 5, "large": 4}, waits(medium=9 * H))] * 3)
+    assert not any(d.switch for d in ds) and ds[0].reason == "hold: 19 waiting < 20"
+
+
+def test_a4_larger_ratio_wins_and_ties_go_to_large():
+    ds, _ = a4_ticks([(QUEUE, waits(medium=5 * H, large=18 * H))] * 2)      # 1.25x vs 1.5x
+    assert ds[1].state == "large"
+    ds, _ = a4_ticks([(QUEUE, waits(medium=8 * H, large=24 * H))] * 2)      # 2x each
+    assert ds[1].state == "large"
+
+
+def test_a4_spell_is_fixed_then_returns_and_stabilizes():
+    hot, cold = (QUEUE, waits(medium=5 * H)), (QUEUE, waits(medium=0, large=30 * H))
+    seq = [hot, hot] + [cold] * 5 + [hot] * 8 + [hot, hot]
+    ds, _ = a4_ticks(seq)
+    t = [d.t_sim for d in ds]
+    assert ds[1].switch and ds[1].state == "medium"                        # t = 600
+    # no early exit when the wait falls, and no switch to large although it is far past target
+    assert all(d.state == "medium" and not d.switch for d in ds[2:7])
+    ret = next(i for i, d in enumerate(ds) if d.switch and d.state == "base")
+    assert t[ret] == 600 + H and ds[ret].phase == "stabilizing" and ds[ret].config == "B1"
+    # stabilizing: the queue is not read, even with medium past its target
+    stab = [d for d in ds if d.phase == "stabilizing" and not d.switch]
+    assert stab and all("stabilizing" in d.reason for d in stab)
+    armed = next(i for i in range(ret + 1, len(ds)) if ds[i].phase_before == "stabilizing"
+                 and ds[i].phase == "armed")
+    assert t[armed] == t[ret] + H and not ds[armed].switch and ds[armed].streak == 1
+    assert ds[armed + 1].switch and ds[armed + 1].state == "medium"         # streak from zero
+
+
+def test_a4_without_stabilization_rearms_at_once():
+    p = replace(A4, stable_s=0)
+    ds, _ = a4_ticks([(QUEUE, waits(medium=5 * H))] * 12, params=p)
+    ret = next(i for i, d in enumerate(ds) if d.switch and d.state == "base")
+    assert ds[ret].phase == "armed"
+    assert not ds[ret + 1].switch and ds[ret + 1].streak == 1
+    assert ds[ret + 2].switch and ds[ret + 2].state == "medium"
+
+
+def test_a4_spell_length_per_state():
+    p = replace(A4, active_s={"medium": 2 * H, "large": H})
+    ds, _ = a4_ticks([(QUEUE, waits(medium=5 * H))] * 16, params=p)
+    on = next(i for i, d in enumerate(ds) if d.switch and d.state == "medium")
+    off = next(i for i, d in enumerate(ds) if d.switch and d.state == "base")
+    assert ds[off].t_sim - ds[on].t_sim == 2 * H
+
+
+@pytest.mark.parametrize("bad", [
+    {"targets_s": None},                                              # no targets
+    {"targets_s": {"medium": 4 * H}},                                 # one missing
+    {"state_config": {"mix": "C0", "medium": "B1M", "large": "B1L"}},  # no base state
+    {"initial_state": "mix"},
+    {"min_share": 1.5},
+    {"active_s": {"medium": H}},                                      # table missing large
+])
+def test_a4_params_are_checked(bad):
+    from dataclasses import asdict
+    with pytest.raises(ValueError):
+        Params(**{**asdict(A4), **bad})
+
+
+def test_a4_tick_command_and_replay(tmp_path):
+    from dataclasses import asdict
+    from controller.tick import median_waits_from_snapshot
+    (tmp_path / "params.json").write_text(json.dumps(asdict(A4)))
+    def snap(t, med_wait):
+        jobs = ([{"id": i, "qos": "small", "waited_s": 60} for i in range(60)] +
+                [{"id": 100 + i, "qos": "medium", "waited_s": med_wait + 60 * (i - 12)} for i in range(25)] +
+                [{"id": 200 + i, "qos": "large", "waited_s": 3600} for i in range(15)])
+        return {"t_sim": t, "config": "B1", "waiting": jobs}
+    s = snap(0, 5 * H)
+    assert median_waits_from_snapshot(s) == {"small": 60.0, "medium": 5 * H, "large": 3600.0}
+    assert median_waits_from_snapshot({"waiting": []})["large"] is None
+    for i in range(20):
+        (tmp_path / "state.json").write_text(json.dumps(snap(600 * i, 5 * H if i % 7 < 4 else 0)))
+        tick_run(tmp_path)
+    log = [json.loads(l) for l in (tmp_path / "controller.jsonl").read_text().splitlines()]
+    assert sum(r["switch"] for r in log) >= 2 and {r["phase"] for r in log} >= {"armed", "active"}
+    assert replay(tmp_path) == []
+
+
+def test_a4_spell_statistics():
+    from dataclasses import asdict
+    from controller.summarize import a4_spells
+    hot = (QUEUE, waits(medium=5 * H))
+    ds, _ = a4_ticks([hot] * 30)                     # the trigger holds throughout
+    log = [asdict(d) for d in ds]
+    s = a4_spells(log, log[-1]["t_sim"], A4.persist_ticks)
+    g = s["by_state"]["medium"]
+    # spell 1 starts at tick 1; every later one at the first chance after stabilizing
+    assert g["spells"] == len([d for d in ds if d.switch and d.state == "medium"]) >= 2
+    assert g["started_at_first_chance"] == g["spells"] - 1
+    assert g["median_wait_at_trigger_min"] == 300.0
+    assert set(s["time_share_by_phase"]) == {"armed", "active-medium", "stabilizing"}

@@ -3,7 +3,7 @@
 Status tracker for [PLAN.md](PLAN.md). It records status, decisions and results only; no task
 lengths or dates beyond the change log.
 
-**Current phase:** 4, revised strategy (SPEC §9 approved; next task 4.4). Phase 3 complete (3.7 skipped on request); answer to SPEC §1: no ([REPORT.md](REPORT.md))
+**Current phase:** 4, revised strategy (SPEC §9 approved; next task 4.5). Phase 3 complete (3.7 skipped on request); answer to SPEC §1: no ([REPORT.md](REPORT.md))
 
 ## Phase tracker
 
@@ -33,7 +33,7 @@ lengths or dates beyond the change log.
 | 4.1 Specify the revised strategy | done | SPEC §9 and PLAN 4.2–4.7 approved 2026-11-27 (requested). B1 baseline; favored medium and large spells only (no small state), with a 5,000-point QOS boost (S-C); trigger: the median wait of a class's waiting jobs reaches its target, the class is at least 10% of the queue and at least 20 jobs wait (S-B, S-G); each 60-min spell is followed by a return to B1 and a stabilization period. One-day setup workloads `D` (7 patterns × 3 seeds, 12 h lead-in, weeks 1–12). 238 runs in two stages: target level (tight / middle / loose), then the stabilization period (0–480 min). B1 is the bar, C0 a reference. Defaults kept for S-A, S-D, S-E, S-F; S-D changed after 4.2: two measured days and a 24 h lead-out |
 | 4.2 Setup workloads (`D`) | done | 21 workloads `D-<pattern>-s1..3`, rebuilt after the first one-day build as 12 h lead-in + two measured days + 24 h lead-out (requested), byte-identical on rebuild; X-s1 and Y-s1 still rebuild byte-identical after the builder refactor. Source weeks 1–9, 11, 12; lead-in and lead-out shared by the patterns of a seed. Measured jobs: nat 9.2k–11.2k, flood 85.0k–86.0k, lglong 178–202, acct 6.9k–7.1k, mem 4.8k–5.0k, alt 42.1k–42.7k, over 23.3k–25.7k (whole workloads 5.6k–93.2k jobs). Measured load 0.95–0.96 in the saturated resource for single-pattern windows, alt 0.85–0.89, over 0.92–1.07 (`results/workloads/D_days.csv`, `D_bursts.csv`). 183 tests pass; warm start added after the first 4.3 check (232–287 running jobs at time 0, 0.95–0.96 of memory). Warm-start checks: the simulated comparison with a 48 h lead-in failed (warm busier: memory 0.90 vs 0.81, mean wait 29 vs 6 min); across 8 seeds it carries 0.208 of memory into the measured days against 0.209 for a 7-day lead-in (SD 0.065 vs 0.033), and was kept on that basis (requested) |
 | 4.3 B1-based favored states | done | B1M, B1L rendered (B1 + `PriorityWeightQOS=5000`, only the favored QOS raised, B1's `.static`); `prepare_run` refuses adaptive states with other static keys. Check on the first 37 h of D-nat-s1 (`results/phase4/states_check.json`): static keys held; 8 scheduled switches applied in order, recalculated 1.9 s later; favored jobs exactly 5,000 QOS points, others 0, in all 24 spell snapshots (94–259 waiting); favored job ahead in 95.7% of 152,917 cross-class pairs and in every pair whose B1 gap was under 5,000. First placement (14–22 h) failed its queue rule (5–8 waiting overnight) and was moved to 27–35 h. 193 tests pass |
-| 4.4 Return-to-baseline policy (A4) | pending | |
+| 4.4 Return-to-baseline policy (A4) | done | `signal: wait_target` in `controller/policy.py` (A1–A3 unchanged; their tests pass); tick, replay and summarize handle the median waits, phases and spells; `config/triggers_A4.yaml` with the three target levels; per-run overrides of `target_level` and `stable_s` in `prepare_run`. 15 new tests; 208 pass. Slice check, first 36 h of D-alt-s1 with tight targets (`results/phase4/a4_slice_check.json`): 1,073 ticks on both sides, 4 switches asked and applied, replay exact, run check clean; two 60-min medium spells, the second at the first chance |
 | 4.5 Stage 1: target level | pending | |
 | 4.6 Stage 2: stabilization period | pending | |
 | 4.7 Analysis of the setup | pending | |
@@ -105,6 +105,8 @@ lengths or dates beyond the change log.
 | Warm-start check (finding; decision requested 2026-11-27) | The simulated comparison with a 48 h lead-in failed its rule (warm busier: memory 0.90 vs 0.81, wait 29 vs 6 min); the warm start is judged instead across seeds 1–8 against a 7-day lead-in (carried memory 0.208 vs 0.209; SD 0.065 vs 0.033) | Counting jobs as running from submission, the measured jobs give 0.69 in both runs and the carried load differs, 0.24 vs 0.13; it comes from a few long, large jobs, so one control run is too noisy a yardstick. The larger per-seed spread is shared by every policy on a workload. |
 | Calm natural setup days (finding, task 4.3) | Kept: D-nat's queue follows the daily cycle (160–250 waiting by day, 5–17 overnight) | Setup days are thinned to `ρ*` every day; N-s1's days run 0.53–1.41 and its midweek queue followed two overloaded days. The other patterns supply most of the pressure. |
 | 4.3 spell placement (deviation) | The check's spells moved from 14–22 h to 27–35 h | At 14–22 h the queue had drained overnight (5–8 waiting), so two spells had nothing to reorder; the rule was kept, the hours moved. |
+| A4 tick rules (task 4.4) | At most one switch per tick; when a stabilization period ends the trigger is read at that tick; with `T_stable = 0` it is first read at the tick after the return; gated ticks keep the streak (as in A1) | Keeps the hook's one-switch-per-tick rule (SPEC §7.3) and makes the shortest gap between spells the same 2 ticks for every `T_stable` > 0. |
+| Share gate during floods (finding, task 4.4) | Kept as specified (S-G) | In the D-alt slice, once the flood blocks began, 2,348 of 2,358 waiting jobs were small: large (10 jobs, 0.4%) could not pass the 10% gate, so large is never favored while a flood is on. The setup runs show how much this costs large jobs. |
 | Week boundaries | Monday 00:00 UTC | The source cluster is on Europe/Paris time, so weeks start at 01:00 or 02:00 local; the monthly files are cut at local midnight. |
 
 ## Change log
@@ -144,3 +146,4 @@ lengths or dates beyond the change log.
 | 2026-11-27 | `79da032` | 4.1: revised strategy spec (SPEC §9) and Phase 4 tasks |
 | 2026-11-27 | `0c33f59` | 4.2: one-day setup workloads D (since lengthened to two days plus a lead-out) |
 | 2026-11-27 | `eb18082` | 4.2: setup workloads span two measured days plus a lead-out |
+| 2026-11-27 | `08da9fc` | 4.2–4.3: warm start for the setup workloads; B1M and B1L checked |

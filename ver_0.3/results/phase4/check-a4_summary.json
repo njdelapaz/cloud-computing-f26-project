@@ -1,0 +1,85 @@
+{
+  "ticks_controller": 1073,
+  "ticks_simulator": 1073,
+  "command_failures": 0,
+  "switches_asked": 4,
+  "switches_applied": 4,
+  "applied_matches_asked": true,
+  "replay_mismatches": [],
+  "run_problems": [],
+  "known_simulator_issues": [
+    "1 job(s) completed 2-2 s late at busy instants: ['jobid_20001']",
+    "1 job(s) ran to their time limit because the simulator lost their finish event: ['jobid_21986']"
+  ],
+  "span_days": 7.44,
+  "switches_per_day": 0.54,
+  "time_share_by_state": {
+    "base": 0.989,
+    "medium": 0.011
+  },
+  "reversals_within_2h": 3,
+  "command_ms_median": 39.8,
+  "gated_ticks": 852,
+  "submission_week": {
+    "switches": 4,
+    "switches_per_day": 2.67,
+    "time_share_by_state": {
+      "base": 0.944,
+      "medium": 0.056
+    },
+    "reversals_within_2h": 3,
+    "minutes_between_switches_median": 60.0,
+    "switches_at_minimum_dwell": 3,
+    "stays_by_state": {
+      "base": {
+        "stays": 1,
+        "minimum_stay_min": 60.0,
+        "median_stay_min": 70.0,
+        "at_minimum": 1
+      },
+      "medium": {
+        "stays": 2,
+        "minimum_stay_min": 60.0,
+        "median_stay_min": 60.0,
+        "at_minimum": 2
+      }
+    },
+    "gated_ticks": 1
+  },
+  "window_h": 36,
+  "a4": {
+    "spells": [
+      {
+        "state": "medium",
+        "t_start": 1720374876,
+        "wait_at_trigger_s": 8241.0,
+        "first_chance": false,
+        "t_end": 1720378476,
+        "wait_at_return_s": 7866.0
+      },
+      {
+        "state": "medium",
+        "t_start": 1720382676,
+        "wait_at_trigger_s": 9142.0,
+        "first_chance": true,
+        "t_end": 1720386276,
+        "wait_at_return_s": 194.0
+      }
+    ],
+    "by_state": {
+      "medium": {
+        "spells": 2,
+        "per_day": 1.33,
+        "median_wait_at_trigger_min": 144.9,
+        "median_wait_at_return_min": 67.2,
+        "started_at_first_chance": 1
+      }
+    },
+    "time_share_by_phase": {
+      "active-medium": 0.056,
+      "armed": 0.889,
+      "stabilizing": 0.056
+    }
+  },
+  "ok": true
+}
